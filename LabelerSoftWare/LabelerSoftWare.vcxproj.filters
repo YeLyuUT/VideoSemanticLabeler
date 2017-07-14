@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{0c81fa23-a761-4f73-b953-5f370c991f2c}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{64715eb5-cda5-4da6-bd09-6e6d81a45a0f}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="XMLInfomationReader">
+      <UniqueIdentifier>{3fdb017c-8f00-400d-9bc9-0d292262a515}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ProcessControl">
+      <UniqueIdentifier>{ebcdd425-8918-4c6b-96bc-2db9e200435b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataType">
+      <UniqueIdentifier>{498f41c8-e1ea-448a-8bbb-062ff5297b75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EditableSurface">
+      <UniqueIdentifier>{f4a618bf-79c5-486a-b8ad-3bdc30f9d3ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MatConversion">
+      <UniqueIdentifier>{a98b76d9-bd26-4fd9-9bca-64194482ed8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ClassSelection">
+      <UniqueIdentifier>{980f66b6-1df8-4fe7-8505-797a655a4eb0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="labelersoftware.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_labelersoftware.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_labelersoftware.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Rcc\qrc_labelersoftware.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clickableprogressbar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_clickableprogressbar.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_clickableprogressbar.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="lvideowidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_lvideowidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_lvideowidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="videocontrol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="videothread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_videothread.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_videothread.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessSettingReader.cpp">
+      <Filter>XMLInfomationReader</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessControl.cpp">
+      <Filter>ProcessControl</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_Surface.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Surface.cpp">
+      <Filter>EditableSurface</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_Surface.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageConversion.cpp">
+      <Filter>MatConversion</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassSelection.cpp">
+      <Filter>ClassSelection</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_ClassSelection.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_ClassSelection.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawTaskControl.cpp">
+      <Filter>EditableSurface</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_DrawTaskControl.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_DrawTaskControl.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="labelersoftware.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="labelersoftware.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="labelersoftware.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="clickableprogressbar.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="lvideowidget.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="videothread.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Surface.h">
+      <Filter>EditableSurface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ClassSelection.h">
+      <Filter>ClassSelection</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DrawTaskControl.h">
+      <Filter>EditableSurface</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeneratedFiles\Uic\ui_labelersoftware.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="videocontrol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessSettingReader.h">
+      <Filter>XMLInfomationReader</Filter>
+    </ClInclude>
+    <ClInclude Include="DataType.h">
+      <Filter>DataType</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessControl.h">
+      <Filter>ProcessControl</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageConversion.h">
+      <Filter>MatConversion</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
