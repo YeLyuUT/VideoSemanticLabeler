@@ -93,21 +93,22 @@ namespace ImageConversion
 		// 8-bit, 3 channel
 		case QImage::Format_RGB888:
 		{
-			if (!inCloneImageData) {
-				qWarning() << "ASM::QImageToCvMat() - Conversion requires cloning since we use a temporary QImage";
-			}
-			QImage swapped = image.rgbSwapped();
-			return cv::Mat(swapped.height(), swapped.width(), CV_8UC3, const_cast<uchar*>(swapped.bits()), swapped.bytesPerLine()).clone();
+			qWarning() << "ASM::QImageToCvMat() - conversion color order may be different";		
+			cv::Mat mat(image.height(), image.width(), CV_8UC3, const_cast<uchar*>(image.bits()), image.bytesPerLine());
+			return (inCloneImageData ? mat.clone() : mat);
 		}
 
 		// 8-bit, 1 channel
 		case QImage::Format_Indexed8:
 		{
 			cv::Mat  mat(image.height(), image.width(), CV_8UC1, const_cast<uchar*>(image.bits()), image.bytesPerLine());
-
 			return (inCloneImageData ? mat.clone() : mat);
 		}
-
+		case QImage::Format_Grayscale8:
+		{
+			cv::Mat  mat(image.height(), image.width(), CV_8UC1, const_cast<uchar*>(image.bits()), image.bytesPerLine());
+			return (inCloneImageData ? mat.clone() : mat);
+		}
 		default:
 			qDebug()<<QString("Image format is not supported: depth=%0 and %0 format\n").arg(image.depth()).arg(image.format());
 			break;

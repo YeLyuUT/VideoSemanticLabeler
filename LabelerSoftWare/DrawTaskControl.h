@@ -16,8 +16,11 @@ public:
 private:
 	void doSegmentation();//TODO
 
+	void updateSurface(Surface *sf);
+	void updateImgByTouchedSegments(QImage& Img);
+	void updateOutPutImg(QRect boundingRect, QImage& mask);
 private slots:
-void retrieveSegments(int PenWidth, QPainterPath& paintPath);
+void retrievePainterPath(int PenWidth, QPainterPath& paintPath);
 
 private:
 	/*Internal Images*/
@@ -33,6 +36,7 @@ private:
 	Surface *_surfaceOriginal;
 	Surface *_surfaceOutPut;
 	QImage _InputImg;
-	
+	ClassSelection *_selection;
+	QRect _boundingRect;
 };
 

@@ -142,3 +142,12 @@ bool ClassSelection::eventFilter(QObject * watched, QEvent * ev)
 	}
 	return QWidget::eventFilter(watched, ev);;
 }
+
+QColor ClassSelection::getCurrentColor()
+{
+	return _curColor;
+}
+string ClassSelection::getCurrentString()
+{
+	return _curLabelText;
+}

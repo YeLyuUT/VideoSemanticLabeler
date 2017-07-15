@@ -2,6 +2,7 @@
 #include <qdebug.h>
 #include "ImageConversion.h"
 #include <QPainter>
+#include <QRect>
 
 //#define CHECK_QIMAGE
 
@@ -14,8 +15,10 @@ Surface::Surface(QImage &Img, QWidget*parent) :QLabel(parent)
 	this->setMouseTracking(true);
 	LButtonDown = false;
 	myPenColor.setRgb(0, 0, 0);
-	myPenWidth = 1;
+	myPenRadius = 1;
 	bSelectClass = false;
+	setCursorInvisible(true);
+	bDrawCursor = true;
 }
 
 
@@ -80,26 +83,46 @@ void Surface::paintEvent(QPaintEvent *ev)
 	painter.drawImage(dirtyRect, _pImage, dirtyRect);
 	if (LButtonDown)
 	{
-		painter.setPen(QPen(myPenColor, myPenWidth, Qt::SolidLine, Qt::RoundCap,
+		painter.setPen(QPen(myPenColor, (myPenRadius * 2 + 1), Qt::SolidLine, Qt::RoundCap,
 			Qt::RoundJoin));
 		painter.drawPath(paintPath);
 		qDebug() << "painter.drawPath";
 	}
+	if(bDrawCursor)
+		paintCursor();
+	qDebug() << "paintEvent";
+}
+
+void Surface::updateRectArea(QRect rect, int rad, bool drawCursor)
+{
+	bool store = bDrawCursor;
+	bDrawCursor = drawCursor;
+	update(rect.adjusted(-rad, -rad, +rad, +rad).adjusted(-3, -3, 3, 3));
+	bDrawCursor = store;
 }
 
 void Surface::drawLineTo(const QPoint &endPoint)
 {	
 	/*QPainter painter(&_pImage);
-	painter.setPen(QPen(myPenColor, myPenWidth, Qt::SolidLine, Qt::RoundCap,
+	painter.setPen(QPen(myPenColor, myPenRadius, Qt::SolidLine, Qt::RoundCap,
 		Qt::RoundJoin));*/
 	paintPath.moveTo(lastPoint);
 	paintPath.lineTo(endPoint);
 	//painter.drawLine(lastPoint, endPoint);
 
-	//int rad = (myPenWidth / 2) + 2;
+	//int rad = (myPenRadius / 2) + 2;
 	//update(QRect(lastPoint, endPoint).normalized().adjusted(-rad, -rad, +rad, +rad));
-	update(paintPath.boundingRect().toRect().adjusted(-1, -1, 1, 1));
+	updateRectArea(QRect(lastPoint, endPoint).normalized(), myPenRadius, false);
 	lastPoint = endPoint;
+}
+
+void Surface::paintCursor()
+{
+	QPainter painter(this);
+	painter.setPen(QPen(myPenColor, _cursorEdgeWidth, Qt::SolidLine, Qt::RoundCap,
+		Qt::RoundJoin));
+	painter.setBrush(QBrush(myPenColor, Qt::DiagCrossPattern));
+	painter.drawEllipse(_mousePos, myPenRadius, myPenRadius);
 }
 
 void Surface::mouseMoveEvent(QMouseEvent *ev)
@@ -110,14 +133,27 @@ void Surface::mouseMoveEvent(QMouseEvent *ev)
 		qDebug() <<"Draw: " <<'(' << ev->x() << ':' << ev->y() << ')' << endl;
 		drawLineTo(ev->pos());
 	}
+	updateCursorArea(false);
+	_mousePos = ev->pos();
+	updateCursorArea(true);
 }
+
+void Surface::updateCursorArea(bool drawCursor)
+{
+	bool beforeCursor = bDrawCursor;
+	bDrawCursor = drawCursor;
+	this->update(QRect(_mousePos.x() - (myPenRadius + _cursorEdgeWidth), _mousePos.y() - (myPenRadius + _cursorEdgeWidth), \
+		(myPenRadius + _cursorEdgeWidth) * 2 + 3, (myPenRadius + _cursorEdgeWidth) * 2 + 3));
+	bDrawCursor = beforeCursor;
+}
+
 void Surface::mouseReleaseEvent(QMouseEvent *ev)
 {
 	if (LButtonDown)
 	{
 		LButtonDown = false;
-		emit painterPathCreated(myPenWidth, paintPath);
-		update(paintPath.boundingRect().toRect().adjusted(-1, -1, 1, 1));
+		emit painterPathCreated(myPenRadius * 2 + 1, paintPath);
+		updateRectArea(paintPath.boundingRect().toRect(), myPenRadius, false);
 		paintPath = QPainterPath();
 	}
 #ifdef CHECK_QIMAGE
@@ -132,8 +168,11 @@ void Surface::wheelEvent(QWheelEvent*ev)
 	QPoint numSteps = numDegrees / 15;
 	if (ev->modifiers() == Qt::KeyboardModifiers::enum_type::ControlModifier)
 	{
-		qDebug() << "ControlModifier-" << "numSteps:" << numSteps << endl;
-		
+		updateCursorArea(false);
+		myPenRadius += numSteps.y()*4;
+		myPenRadius = qMax(0, myPenRadius);
+		updateCursorArea(true);
+		qDebug() << "myPenRadius" << myPenRadius << endl;
 	}
 	else
 	{
@@ -142,8 +181,25 @@ void Surface::wheelEvent(QWheelEvent*ev)
 	ev->accept();
 }
 
-void Surface::setCursor()
+void Surface::leaveEvent(QEvent*ev)
 {
+	bDrawCursor = false;
+	updateCursorArea(false);
+	qDebug() << "leaveEvent";
+	QLabel::leaveEvent(ev);
+}
 
+void Surface::enterEvent(QEvent*ev)
+{
+	bDrawCursor = true;
+	QLabel::enterEvent(ev);
+}
+
+void Surface::setCursorInvisible(bool b)
+{
+	if(b)
+		this->setCursor(Qt::BlankCursor);
+	else
+		this->setCursor(Qt::ArrowCursor);
 }
 

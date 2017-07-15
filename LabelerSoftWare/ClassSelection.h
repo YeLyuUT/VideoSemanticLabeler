@@ -20,6 +20,8 @@ public:
 	bool setToItem(int num);
 	QString getSelectedItemText();
 	bool eventFilter(QObject * watched, QEvent * ev);
+	QColor getCurrentColor();
+	string getCurrentString();
 signals:
 	void classChanged(QString text, QColor color);
 protected:

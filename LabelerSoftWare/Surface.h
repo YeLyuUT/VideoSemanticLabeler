@@ -30,9 +30,11 @@ signals:
 public slots:
 void changeClass(QString txt, QColor clr);
 private:
-	void setCursor();
-
+	void setCursorInvisible(bool);
+	void paintCursor();
 	void drawLineTo(const QPoint &endPoint);
+	void updateCursorArea(bool drawCursor);
+	void updateRectArea(QRect rect, int rad, bool drawCursor);
 protected:
 	void keyPressEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
 	void keyReleaseEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
@@ -41,15 +43,20 @@ protected:
 	void mouseReleaseEvent(QMouseEvent *ev) Q_DECL_OVERRIDE;
 	void paintEvent(QPaintEvent *ev) Q_DECL_OVERRIDE;
 	void wheelEvent(QWheelEvent*ev) Q_DECL_OVERRIDE;
+	void leaveEvent(QEvent*ev) Q_DECL_OVERRIDE;
+	void enterEvent(QEvent*ev) Q_DECL_OVERRIDE;
 private:
 	QImage _pImage;
 	bool LButtonDown;
 	bool bSelectClass;
+	bool bDrawCursor;
 
 	QPoint lastPoint;
 	QPainterPath paintPath;
+	const int _cursorEdgeWidth = 2;
 
-	int myPenWidth;
+	QPoint _mousePos;
+	int myPenRadius;
 	QColor myPenColor;
 };
 
