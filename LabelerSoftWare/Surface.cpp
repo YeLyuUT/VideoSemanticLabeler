@@ -279,14 +279,19 @@ void Surface::wheelEvent(QWheelEvent*ev)
 	}
 	else
 	{
+		double oldScaleRatio = getScaleRatio();
 		setScaleRatioRank(getScaleRatioRank() + numSteps.y());
 		updateScaleRatioByRank();
+		double newScaleRatio = getScaleRatio();
+		QPoint newPos = getPointAfterNewScale(ev->pos(), oldScaleRatio, newScaleRatio);
+		emit mousePositionShifted(newPos - ev->pos());
 		applyScaleRatio();
 		update();
 		qDebug() << "numSteps:" << numSteps << endl;
 	}
 	ev->accept();
 }
+
 
 void Surface::leaveEvent(QEvent*ev)
 {
@@ -308,6 +313,15 @@ void Surface::setCursorInvisible(bool b)
 		this->setCursor(Qt::BlankCursor);
 	else
 		this->setCursor(Qt::ArrowCursor);
+}
+
+QPoint Surface::getPointAfterNewScale(QPoint pt, double scaleOld, double scaleNew)
+{
+	double x = pt.x();
+	double y = pt.y();
+	x = x / scaleOld*scaleNew;
+	y = y / scaleOld*scaleNew;
+	return QPoint(x, y);
 }
 
 void Surface::setScaleRatio(double ratio, double maximum, double minimum)

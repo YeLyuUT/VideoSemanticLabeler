@@ -32,6 +32,7 @@ signals:
 	void openClassSelection();
 	void closeClassSelection();
 	void painterPathCreated(int PenWidth,QPainterPath& painterPath);
+	void mousePositionShifted(QPoint diff);
 public slots:
 void changeClass(QString txt, QColor clr);
 void applyScaleRatio();
@@ -55,6 +56,8 @@ private:
 	void drawLineTo(const QPoint &endPoint);
 	void updateCursorArea(bool drawCursor);
 	void updateRectArea(QRect rect, int rad, bool drawCursor);
+
+	QPoint getPointAfterNewScale(QPoint pt,double scaleOld,double scaleNew);
 
 	QPoint FilterScalePoint(QPoint pt);
 protected:

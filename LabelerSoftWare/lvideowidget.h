@@ -14,7 +14,6 @@
 #include "clickableprogressbar.h"
 #include <QLineEdit>
 
-
 class LVideoWidget : public QWidget
 {
     Q_OBJECT
