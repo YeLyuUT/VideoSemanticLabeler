@@ -125,17 +125,23 @@
     <ClCompile Include="GeneratedFiles\Release\Moc\moc_ClassSelection.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="DrawTaskControl.cpp">
-      <Filter>EditableSurface</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_DrawTaskControl.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\Moc\moc_DrawTaskControl.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="LImageWidget.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LabelingTaskControl.cpp">
+      <Filter>EditableSurface</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_LabelingTaskControl.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_LabelingTaskControl.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_ProcessControl.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_ProcessControl.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -163,8 +169,11 @@
     <CustomBuild Include="ClassSelection.h">
       <Filter>ClassSelection</Filter>
     </CustomBuild>
-    <CustomBuild Include="DrawTaskControl.h">
+    <CustomBuild Include="LabelingTaskControl.h">
       <Filter>EditableSurface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ProcessControl.h">
+      <Filter>ProcessControl</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -179,9 +188,6 @@
     </ClInclude>
     <ClInclude Include="DataType.h">
       <Filter>DataType</Filter>
-    </ClInclude>
-    <ClInclude Include="ProcessControl.h">
-      <Filter>ProcessControl</Filter>
     </ClInclude>
     <ClInclude Include="ImageConversion.h">
       <Filter>MatConversion</Filter>

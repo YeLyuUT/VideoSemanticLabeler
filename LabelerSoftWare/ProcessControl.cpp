@@ -5,18 +5,23 @@
 #include <QDebug>
 #include <exception>
 #include <labelersoftware.h>
+#include <LabelingTaskControl.h>
 
-ProcessControl::ProcessControl(string filePath, string outputDir, LabelList& labelList)
+ProcessControl::ProcessControl(string filePath, string outputDir, LabelList& labelList, QObject* parent) :QObject(parent)
 {
 	_type = PROCESS_TYPE_NONE;
 	_filePath = filePath;
 	_outputDir = outputDir;
 	_labelList = labelList;
+	_selection = new ClassSelection(labelList);
+	w = NULL;
 }
 
 
 ProcessControl::~ProcessControl()
 {
+	if (w) { w->deleteLater(); w = NULL; }
+	if (_selection) { _selection->deleteLater(); _selection = NULL; }
 }
 
 void ProcessControl::process()
@@ -104,13 +109,28 @@ bool ProcessControl::checkCreateOutputDir()
 void ProcessControl::processImages()
 {
 	qDebug()<<"processImages" << endl;
-	LabelerSoftWare *w = new LabelerSoftWare(1, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
+	w = new LabelerSoftWare(1, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
 	w->show();
 }
 
 void ProcessControl::processVideo()
 {
 	qDebug() << "processVideo" << endl;
-	LabelerSoftWare *w = new LabelerSoftWare(2, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
+	w = new LabelerSoftWare(2, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
+	connect(w->getVideoWidget(), SIGNAL(edittingStarted(QImage&)), this, SLOT(hasNewLabelingProcess(QImage&)));
+	connect(w->getVideoWidget(), SIGNAL(edittingStopped()), this, SLOT(closeLabelingProcess()));
 	w->show();
+}
+
+void ProcessControl::hasNewLabelingProcess(QImage&Img)
+{
+	_labelingTask = new LabelingTaskControl(Img, _selection, this);
+	qDebug() << "LabelingTaskControl Created";
+}
+
+void ProcessControl::closeLabelingProcess()
+{
+	_labelingTask->deleteLater();
+	_labelingTask = NULL;
+	qDebug() << "LabelingTaskControl Closed";
 }

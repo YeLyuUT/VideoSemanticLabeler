@@ -1,10 +1,12 @@
-#include "DrawTaskControl.h"
+#include "LabelingTaskControl.h"
 #include <QImage>
 #include <QPainter>
 #include "ImageConversion.h"
 //#define CHECK_RETRIEVE_PAINTERPATH
 //#define CHECK_MASK_OUTPUTIMAGE
-DrawTaskControl::DrawTaskControl(QImage& Img, ClassSelection* selection)
+
+
+LabelingTaskControl::LabelingTaskControl(QImage& Img, ClassSelection* selection, QObject* parent) :QObject(parent)
 {
 	_InputImg = Img.copy();
 	_selection = selection;
@@ -42,38 +44,43 @@ DrawTaskControl::DrawTaskControl(QImage& Img, ClassSelection* selection)
 	_surfaceOutPut->show();
 }
 
-DrawTaskControl* DrawTaskControl::getDrawControl(QImage& Img, ClassSelection* selection)
-{
-	static DrawTaskControl ctrl(Img, selection);
-	return &ctrl;
-}
+//LabelingTaskControl* LabelingTaskControl::getDrawControl(QImage& Img, ClassSelection* selection, bool newDraw)
+//{
+//	static shared_ptr<LabelingTaskControl> pCtrl;
+//	if(newDraw)
+//		pCtrl.reset(new LabelingTaskControl(Img, selection));
+//	return pCtrl.get();
+//}
 
-DrawTaskControl::~DrawTaskControl()
+LabelingTaskControl::~LabelingTaskControl()
 {
+	_surfaceSegmentation->deleteLater();
+	_surfaceOriginal->deleteLater();
+	_surfaceOutPut->deleteLater();
 	releaseAll();
 }
 
-QImage& DrawTaskControl::_segImg()
+QImage& LabelingTaskControl::_segImg()
 {
 	static QImage img;
 	return img;
 }
-Mat& DrawTaskControl::_labelImg()
+Mat& LabelingTaskControl::_labelImg()
 {
 	static Mat img;
 	return img;
 }
-QImage& DrawTaskControl::_outPutImg()
+QImage& LabelingTaskControl::_outPutImg()
 {
 	static QImage img;
 	return img;
 }
-QImage& DrawTaskControl::_painterPathImage()
+QImage& LabelingTaskControl::_painterPathImage()
 {
 	static QImage img;
 	return img;
 }
-void DrawTaskControl::releaseAll()
+void LabelingTaskControl::releaseAll()
 {
 	_segImg() = QImage();
 	_labelImg() = Mat();
@@ -81,7 +88,7 @@ void DrawTaskControl::releaseAll()
 	_painterPathImage() = QImage();
 }
 
-void DrawTaskControl::setupOtherImg()
+void LabelingTaskControl::setupOtherImg()
 {
 	_segImg() = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_RGB888);
 	_outPutImg() = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_RGB888);
@@ -93,7 +100,7 @@ void DrawTaskControl::setupOtherImg()
 	_labelImg().setTo(0);
 }
 
-void DrawTaskControl::retrievePainterPath(int PenWidth, QPainterPath& paintPath)
+void LabelingTaskControl::retrievePainterPath(int PenWidth, QPainterPath& paintPath)
 {
 	_painterPathImage().fill(0);
 	QPainter painter(&_painterPathImage());
@@ -111,7 +118,7 @@ void DrawTaskControl::retrievePainterPath(int PenWidth, QPainterPath& paintPath)
 	updateOutPutImg(_boundingRect, _painterPathImage());
 }
 
-void DrawTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
+void LabelingTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
 {
 	Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg(), false);
 	Mat maskImg = ImageConversion::QImage_to_cvMat(mask, false);
@@ -126,12 +133,12 @@ void DrawTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
 	updateSurface(_surfaceOutPut);
 }
 
-void DrawTaskControl::updateImgByTouchedSegments(QImage& Img)
+void LabelingTaskControl::updateImgByTouchedSegments(QImage& Img)
 {
 	//TODO how to floodfill with segmentation
 }
 
-void DrawTaskControl::updateSurface(Surface *sf)
+void LabelingTaskControl::updateSurface(Surface *sf)
 {
 	if (sf)
 	{
@@ -139,3 +146,4 @@ void DrawTaskControl::updateSurface(Surface *sf)
 		sf->update();
 	}
 }
+

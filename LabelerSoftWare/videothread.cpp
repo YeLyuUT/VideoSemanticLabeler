@@ -185,3 +185,8 @@ unsigned int VideoThread::getSkipFrameNum()
 {
 	return _skipFrameNum;
 }
+
+QImage& VideoThread::getCurrentImage()
+{
+	return _img;
+}

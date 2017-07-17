@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QSizePolicy>
 #include <QMessageBox>
+
 using namespace cv;
 LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
 {
@@ -23,11 +24,13 @@ LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
 	wCurrentFrameNumEdit = nullptr;
 	wEditButton = nullptr;
 	wCommitButton = nullptr;
+	wSaveButton = nullptr;
     vcontrol = new VideoControl();
     vthread = new VideoThread(vcontrol);
     constructInterface();
 	setupConnections();
 	_skipFrameNum = 1;
+	isEditting = false;
 }
 
 LVideoWidget::~LVideoWidget()
@@ -57,6 +60,7 @@ void LVideoWidget::setupConnections()
 	connect(wPauseButton, SIGNAL(clicked()), this, SLOT(pause()));
 	connect(wStopButton, SIGNAL(clicked()), this, SLOT(stop()));
 	connect(wEditButton, SIGNAL(clicked()), this, SLOT(edit()));
+	connect(wSaveButton, SIGNAL(clicked()), this, SLOT(save()));
 	connect(wCommitButton, SIGNAL(clicked()), this, SLOT(commitSetting()));
 	connect(vthread, SIGNAL(updateVideoInfo(double, double, double)), this, SLOT(updateInfos(double, double, double)));
 }
@@ -82,6 +86,9 @@ void LVideoWidget::constructInterface()
 	hBoxLayout0->addWidget(wStatus);
 	wEditButton = new QPushButton("Start Labeling",this);
 	hBoxLayout0->addWidget(wEditButton);
+	wSaveButton = new QPushButton("Save Result",this);
+	hBoxLayout0->addWidget(wSaveButton);
+	wSaveButton->hide();
 	wSkipFrameNumEdit = new QLineEdit(this);
 	wSkipFrameNumEdit->setMaximumWidth(50);
 	wSkipFrameNumEdit->setText("1");
@@ -97,7 +104,7 @@ void LVideoWidget::constructInterface()
 	wTotalFrameNumText = new QLabel(this);
 	wTotalFrameNumText->setText("/0 Max 0 based Index");
 	hBoxLayout0->addWidget(wTotalFrameNumText);
-	wCommitButton = new QPushButton("Test Commit Settings", this);
+	wCommitButton = new QPushButton("Commit Settings", this);
 	hBoxLayout0->addWidget(wCommitButton);
 
 	setLineEditEnabled(true);
@@ -208,7 +215,8 @@ void LVideoWidget::constructInfoPanel()
             layout->addWidget(vecHints[i]);
         }
     }
-    wInfoPanel->show();
+    //wInfoPanel->show();
+	wInfoPanel->hide();
 }
 bool LVideoWidget::openVideo(QString fileName)
 {
@@ -274,10 +282,57 @@ void LVideoWidget::pause()
     vthread->pause();
 }
 
+void LVideoWidget::save()
+{
+	//TODO save file
+	qDebug() << "save";
+}
+
 void LVideoWidget::edit()
 {
-	stop();
-	setLineEditEnabled(true);
+	if (!isEditting)
+	{
+		//stop();
+		pause();
+		setLineEditEnabled(true);
+
+		wScrollArea->hide();
+		wProgressBar->hide();
+		wPlayButton->hide();
+		wPauseButton->hide();
+		wStopButton->hide();
+		wSaveButton->show();
+		wEditButton->setText("Stop Labeling");
+		wStatus->setText(QString("Editting..."));
+		wStatus->setStyleSheet("QLabel {  color : blue; }");
+		window()->showNormal();
+		//window()->setWindowFlags(window()->windowFlags()& ~Qt::WindowTitleHint);
+		window()->resize(1, 1);
+		//qDebug() << window()->windowFlags();
+		//window()->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+		emit edittingStarted(this->vthread->getCurrentImage());
+		isEditting = true;
+	}
+	else
+	{ 
+		wScrollArea->show();
+		wProgressBar->show();
+		wPlayButton->show();
+		wPauseButton->show();
+		wStopButton->show();
+		wSaveButton->hide();
+		wEditButton->setText("Start Labeling");
+		wStatus->setText(QString("Stopped"));
+		wStatus->setStyleSheet("QLabel {  color : red; }");
+		//window()->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+		emit edittingStopped();
+		isEditting = false;
+	}
+}
+
+void LVideoWidget::hasEditResult(QImage& result)
+{
+
 }
 
 void LVideoWidget::commitSetting()

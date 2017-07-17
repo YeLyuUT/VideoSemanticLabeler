@@ -18,7 +18,7 @@ public:
     VideoControl* getVideoControl();
     cv::Mat getNextMat();
     QImage convertToQImage(cv::Mat&img);
-    
+	QImage& getCurrentImage();
 	void setSkipFrameNum(unsigned int skipNum = 1);
 	unsigned int getSkipFrameNum();
 protected:
@@ -44,10 +44,10 @@ public:
 private:
 	void imgFilter(cv::Mat& img);
 private:
-    QTime time;
+    QTime time;//Timing the play time interval
     PLAY_STATE _currentState;
     cv::Mat _curFrame;
-    QImage _img;
+    QImage _img;//Current QImage
     VideoControl* _videoCtrl;
 	unsigned int _skipFrameNum;
 };

@@ -1,18 +1,19 @@
+/*This is a singleton class, designed to control image labeling process*/
 #pragma once
 #include <qobject.h>
 #include "Surface.h"
 #include "ClassSelection.h"
 #include <opencv.hpp>
 #include <QPainterPath>
+#include <memory>
 using cv::Mat;
-class DrawTaskControl:public QObject
+using std::shared_ptr;
+class LabelingTaskControl:public QObject
 {
 	Q_OBJECT
-private:
-	DrawTaskControl(QImage& Img, ClassSelection* selection);
 public:
-	static DrawTaskControl* getDrawControl(QImage& Img, ClassSelection* selection);
-	virtual ~DrawTaskControl();
+	LabelingTaskControl(QImage& Img, ClassSelection* selection,QObject* parent=NULL);
+	virtual ~LabelingTaskControl();
 private:
 	void doSegmentation();//TODO
 
@@ -24,10 +25,10 @@ void retrievePainterPath(int PenWidth, QPainterPath& paintPath);
 
 private:
 	/*Internal Images*/
-	static QImage& _segImg();
-	static Mat& _labelImg();
-	static QImage& _outPutImg();
-	static QImage& _painterPathImage();
+	QImage& _segImg();
+	Mat& _labelImg();
+	QImage& _outPutImg();
+	QImage& _painterPathImage();
 	void releaseAll();
 
 	void setupOtherImg();

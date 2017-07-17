@@ -22,7 +22,6 @@ LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QStr
 	mlayout = new QVBoxLayout();
 	ui.centralWidget->setLayout(mlayout);
 
-	ui.centralWidget->setLayout(mlayout);
 	if (_type == 1)
 	{
 		createImageProcessWindow();
@@ -40,11 +39,16 @@ LabelerSoftWare::~LabelerSoftWare()
 
 void LabelerSoftWare::createVideoProcessWindow()
 {
-	LVideoWidget* lvw = new LVideoWidget(this);
-	mlayout->addWidget(lvw);
-	lvw->openVideo(_filePath);
+	_lvw = new LVideoWidget(this);
+	mlayout->addWidget(_lvw);
+	_lvw->openVideo(_filePath);
 }
 void LabelerSoftWare::createImageProcessWindow()
 {
 
+}
+
+LVideoWidget* LabelerSoftWare::getVideoWidget()
+{
+	return _lvw;
 }

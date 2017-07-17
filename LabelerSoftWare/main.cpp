@@ -10,7 +10,7 @@
 #include "ProcessControl.h"
 #include "Surface.h"
 #include "ClassSelection.h"
-#include "DrawTaskControl.h"
+#include <LabelingTaskControl.h>
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
@@ -24,13 +24,13 @@ int main(int argc, char *argv[])
 			{
 		
 				MetaData metaData = r.getMetaData();
-				QImage Img("C:\\Users\\lvye\\Desktop\\unnamed.jpg");
-				ClassSelection *selection = new ClassSelection(metaData.labelList);
-				DrawTaskControl::getDrawControl(Img, selection);
+				//QImage Img("C:\\Users\\lvye\\Desktop\\unnamed.jpg");
+				
+				//DrawTaskControl::getDrawControl(Img, selection);
 				
 				//selection->show();
-				/*ProcessControl pCon(metaData.filePath, metaData.outputDir, metaData.labelList);
-				pCon.process();*/
+				ProcessControl *pCon = new ProcessControl(metaData.filePath, metaData.outputDir, metaData.labelList);
+				pCon->process();
 			}
 			else
 			{

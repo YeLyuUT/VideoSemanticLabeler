@@ -5,14 +5,16 @@
 #include "ui_labelersoftware.h"
 #include "DataType.h"
 #include <QVBoxLayout>
+#include <LVideoWidget.h>
 
 class LabelerSoftWare : public QMainWindow
 {
 	Q_OBJECT
-
 public:
 	LabelerSoftWare(int processingType, QString inputFilePath, QString outputDir, LabelList labelList, QWidget *parent = 0);
 	virtual ~LabelerSoftWare();
+
+	LVideoWidget* getVideoWidget();
 private:
 	void createVideoProcessWindow();
 	void createImageProcessWindow();
@@ -24,6 +26,7 @@ private:
 	QString _filePath;
 	QString _outputDir;
 	LabelList _labelList;
+	LVideoWidget* _lvw;
 };
 
 #endif // LABELERSOFTWARE_H

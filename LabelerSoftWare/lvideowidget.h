@@ -43,6 +43,7 @@ private:
     QPushButton* wStopButton;
 	QPushButton* wEditButton;
 	QPushButton* wCommitButton;
+	QPushButton* wSaveButton;
 	QHBoxLayout *hBoxLayout0;//layout contain settings
 
     VideoThread* vthread;
@@ -50,16 +51,20 @@ private:
     QVector<QLabel*> vecHints;
     QVBoxLayout* MainLayout;
 	int _skipFrameNum;
+	bool isEditting;
 signals:
     void hasOpennedVideo();
     void hasClosedVideo();
-	
+	void edittingStarted(QImage&);
+	void edittingStopped();
 public slots:
     void play();
     void stop();
     void pause();
 	void edit();
+	void save();
 	void commitSetting();
+	void hasEditResult(QImage&);
     void showImage(const QImage&img);
     void changeFrameSize(int width,int height);
     void constructInfoPanel();
