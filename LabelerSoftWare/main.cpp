@@ -22,8 +22,9 @@ int main(int argc, char *argv[])
 			ProcessSettingReader r(xmlPath);
 			if (r.parse())
 			{
-				QImage Img("C:\\Users\\lvye\\Desktop\\unnamed.jpg");
+		
 				MetaData metaData = r.getMetaData();
+				QImage Img("C:\\Users\\lvye\\Desktop\\unnamed.jpg");
 				ClassSelection *selection = new ClassSelection(metaData.labelList);
 				DrawTaskControl::getDrawControl(Img, selection);
 				

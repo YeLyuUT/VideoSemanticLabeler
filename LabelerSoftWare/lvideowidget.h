@@ -20,7 +20,7 @@ class LVideoWidget : public QWidget
     Q_OBJECT
 public:
     explicit LVideoWidget(QWidget *parent = 0);
-    ~LVideoWidget();
+	virtual ~LVideoWidget();
 public:
     bool openVideo(QString fileName);
 private:

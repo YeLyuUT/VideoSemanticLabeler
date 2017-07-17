@@ -2,6 +2,9 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <ImageConversion.h>
+#include <vector>
+//#define IMPROVE_IMG
+
 using namespace cv;
 VideoThread::VideoThread(VideoControl* videoCtrl)
 {
@@ -128,11 +131,26 @@ void VideoThread::setShowNextFrame(int frameNum)
 	emitNextImage();
 }
 
+void VideoThread::imgFilter(Mat& img)
+{
+#ifdef IMPROVE_IMG
+	std::vector<Mat> vecMats;
+	cv::split(img, vecMats);
+	for (size_t i = 0; i < 3; i++)
+	{
+		//cv::GaussianBlur(vecMats[i], vecMats[i], cv::Size(3, 3), 1.0);
+		cv::medianBlur(vecMats[i], vecMats[i], 7);
+	}
+	cv::merge(vecMats, img);
+#endif
+}
+
 void VideoThread::emitNextImage()
 {
     Mat img = getNextMat();
     if(!img.empty())
     {
+		imgFilter(img);
         _img = convertToQImage(img);
         emit sendImage(_img);
     }

@@ -12,7 +12,7 @@ class LabelerSoftWare : public QMainWindow
 
 public:
 	LabelerSoftWare(int processingType, QString inputFilePath, QString outputDir, LabelList labelList, QWidget *parent = 0);
-	~LabelerSoftWare();
+	virtual ~LabelerSoftWare();
 private:
 	void createVideoProcessWindow();
 	void createImageProcessWindow();

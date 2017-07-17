@@ -42,7 +42,7 @@ public:
      void updateVideoInfo(double Msec,double posFrame,double frameRatio);
 	 void changeState(int);
 private:
-
+	void imgFilter(cv::Mat& img);
 private:
     QTime time;
     PLAY_STATE _currentState;

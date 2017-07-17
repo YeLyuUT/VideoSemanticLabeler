@@ -15,7 +15,7 @@ class ClassSelection :
 	Q_OBJECT
 public:
 	explicit ClassSelection(LabelList& ls, QWidget* parent = NULL, int wItemNumber = 4);
-	~ClassSelection();
+	virtual ~ClassSelection();
 public:
 	bool setToItem(int num);
 	QString getSelectedItemText();

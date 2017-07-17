@@ -10,7 +10,7 @@ class ClickableProgressBar:public QProgressBar
     Q_OBJECT
 public:
     ClickableProgressBar(QWidget* parent = 0);
-    ~ClickableProgressBar();
+	virtual ~ClickableProgressBar();
 public:
     void mousePressEvent(QMouseEvent*event);
     void mouseMoveEvent(QMouseEvent *event);

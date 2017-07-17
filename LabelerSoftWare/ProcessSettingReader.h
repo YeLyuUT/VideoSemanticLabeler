@@ -16,7 +16,7 @@ public:
 	struct MetaData _data;
 public:
 	explicit ProcessSettingReader(string filePath);
-	~ProcessSettingReader();
+	virtual ~ProcessSettingReader();
 public:
 	MetaData getMetaData();
 	bool parse();

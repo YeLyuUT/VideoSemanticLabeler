@@ -10,7 +10,7 @@ class VideoControl
 {
 public:
     VideoControl();
-    ~VideoControl();
+	virtual ~VideoControl();
 public:
     bool open(QString filePath);
     bool isOpenned();

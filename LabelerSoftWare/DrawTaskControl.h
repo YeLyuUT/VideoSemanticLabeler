@@ -12,7 +12,7 @@ private:
 	DrawTaskControl(QImage& Img, ClassSelection* selection);
 public:
 	static DrawTaskControl* getDrawControl(QImage& Img, ClassSelection* selection);
-	~DrawTaskControl();
+	virtual ~DrawTaskControl();
 private:
 	void doSegmentation();//TODO
 

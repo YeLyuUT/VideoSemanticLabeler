@@ -134,6 +134,9 @@
     <ClCompile Include="GeneratedFiles\Release\Moc\moc_DrawTaskControl.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="LImageWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="labelersoftware.h">
@@ -182,6 +185,9 @@
     </ClInclude>
     <ClInclude Include="ImageConversion.h">
       <Filter>MatConversion</Filter>
+    </ClInclude>
+    <ClInclude Include="LImageWidget.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

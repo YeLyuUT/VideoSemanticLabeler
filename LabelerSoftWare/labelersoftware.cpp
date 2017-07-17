@@ -21,6 +21,8 @@ LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QStr
 	ui.setupUi(this);
 	mlayout = new QVBoxLayout();
 	ui.centralWidget->setLayout(mlayout);
+
+	ui.centralWidget->setLayout(mlayout);
 	if (_type == 1)
 	{
 		createImageProcessWindow();

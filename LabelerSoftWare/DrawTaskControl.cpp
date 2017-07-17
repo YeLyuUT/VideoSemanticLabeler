@@ -33,6 +33,10 @@ DrawTaskControl::DrawTaskControl(QImage& Img, ClassSelection* selection)
 	QObject::connect(_surfaceSegmentation, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
 	QObject::connect(_surfaceOutPut, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
 
+	_surfaceOriginal->setReferenceImage(&_outPutImg());
+	_surfaceSegmentation->setReferenceImage(&_InputImg);
+	_surfaceOutPut->setReferenceImage(&_InputImg);
+
 	_surfaceSegmentation->show();
 	_surfaceOriginal->show();
 	_surfaceOutPut->show();
@@ -111,13 +115,14 @@ void DrawTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
 {
 	Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg(), false);
 	Mat maskImg = ImageConversion::QImage_to_cvMat(mask, false);
+
+	QColor clr = _selection->getCurrentColor();
+	outPutImg.setTo(Vec3b(clr.red(), clr.green(), clr.blue()), maskImg);
 #ifdef CHECK_MASK_OUTPUTIMAGE
 	cv::imshow("CHECK_MASK_OUTPUTIMAGE outPutImg", outPutImg);
 	cv::imshow("CHECK_MASK_OUTPUTIMAGE maskImg", maskImg);
 	cv::waitKey(1);
 #endif
-	QColor clr = _selection->getCurrentColor();
-	outPutImg.setTo(Vec3b(clr.red(), clr.green(), clr.blue()), maskImg);
 	updateSurface(_surfaceOutPut);
 }
 
@@ -128,6 +133,9 @@ void DrawTaskControl::updateImgByTouchedSegments(QImage& Img)
 
 void DrawTaskControl::updateSurface(Surface *sf)
 {
-	if(sf)
+	if (sf)
+	{
+		sf->updateImage();
 		sf->update();
+	}
 }
