@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QSizePolicy>
 #include <QMessageBox>
+#include <QScrollBar>
 
 using namespace cv;
 LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
@@ -28,6 +29,7 @@ LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
     vcontrol = new VideoControl();
     vthread = new VideoThread(vcontrol);
     constructInterface();
+	addEventFilters();
 	setupConnections();
 	_skipFrameNum = 1;
 	isEditting = false;
@@ -63,6 +65,14 @@ void LVideoWidget::setupConnections()
 	connect(wSaveButton, SIGNAL(clicked()), this, SLOT(save()));
 	connect(wCommitButton, SIGNAL(clicked()), this, SLOT(commitSetting()));
 	connect(vthread, SIGNAL(updateVideoInfo(double, double, double)), this, SLOT(updateInfos(double, double, double)));
+	connect(wFrame, SIGNAL(mousePositionShiftedByScale(QPoint,double,double)), this, SLOT(shiftScrollArea(QPoint,double,double)));
+	
+}
+
+void LVideoWidget::addEventFilters()
+{
+	wScrollArea->viewport()->installEventFilter(this);
+	wFrame->installEventFilter(this);
 }
 
 void LVideoWidget::constructInterface()
@@ -72,7 +82,8 @@ void LVideoWidget::constructInterface()
 	/*1st level create canvas*/
     wScrollArea = new QScrollArea();
     wScrollArea->setBackgroundRole(QPalette::Dark);
-    wFrame = new QLabel();
+
+	wFrame = new Surface(QImage(), this);
     wScrollArea->setWidget(wFrame);
     MainLayout->addWidget(wScrollArea);
 
@@ -345,8 +356,10 @@ void LVideoWidget::showImage(const QImage&img)
 {
     if(!img.isNull())
     {
-        wFrame->setPixmap(QPixmap::fromImage(img));
-        wFrame->show();
+        //wFrame->setPixmap(QPixmap::fromImage(img));
+		wFrame->setOriginalImage(img);
+		wFrame->applyScaleRatio();
+		wFrame->update();
     }
 }
 
@@ -385,3 +398,41 @@ void LVideoWidget::currentFrameNumChanged(const QString& str)
 	qDebug() << num << endl;
 }
 
+bool LVideoWidget::eventFilter(QObject* obj, QEvent* ev)
+{
+	if (qobject_cast<Surface*>(obj) == wFrame)
+	{
+		//shiftScrollArea(QPoint());
+		if (ev->type() == QEvent::Type::Wheel)
+		{
+			if (((QWheelEvent*)ev)->modifiers() == Qt::KeyboardModifier::AltModifier)
+			{
+
+			}
+		}
+	}
+	return QWidget::eventFilter(obj, ev);
+}
+
+void LVideoWidget::shiftScrollArea(QPoint mousePt, double oldRatio, double newRatio)
+{
+	QScrollBar* barY = wScrollArea->verticalScrollBar();
+	QScrollBar* barX = wScrollArea->horizontalScrollBar();
+	double ptX = (mousePt.x()) / oldRatio;
+	double ptY = (mousePt.y()) / oldRatio;
+	double ptXNew = (mousePt.x()) / newRatio;
+	double ptYNew = (mousePt.y()) / newRatio;
+	double diffX = (ptXNew - ptX)*newRatio;
+	double diffY = (ptYNew - ptY)*newRatio;
+
+	int scrollPos_X_New = barX->value() - diffX;
+	int scrollPos_Y_New = barY->value() - diffY;
+
+	scrollPos_Y_New = qMax(barY->minimum(), scrollPos_Y_New);
+	scrollPos_Y_New = qMin(barY->maximum(), scrollPos_Y_New);
+	scrollPos_X_New = qMax(barX->minimum(), scrollPos_X_New);
+	scrollPos_X_New = qMin(barX->maximum(), scrollPos_X_New);
+
+	barY->setValue(scrollPos_Y_New);
+	barX->setValue(scrollPos_X_New);
+}

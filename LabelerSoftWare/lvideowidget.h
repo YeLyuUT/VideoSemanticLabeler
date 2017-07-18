@@ -13,6 +13,9 @@
 #include <QVBoxLayout>
 #include "clickableprogressbar.h"
 #include <QLineEdit>
+#include <Surface.h>
+#include <QEvent>
+#include <QObject>
 
 class LVideoWidget : public QWidget
 {
@@ -26,10 +29,13 @@ private:
 	bool isOpenned();
 	void closeVideo();
 	void constructInterface();
+	void addEventFilters();
 	void setupConnections();
 	void setLineEditEnabled(bool e);
+protected:
+	virtual bool eventFilter(QObject* obj, QEvent* ev);
 private:
-    QLabel* wFrame;
+    Surface* wFrame;
     QLabel* wStatus;
 	QLabel* wTotalFrameNumText;
 	QLabel* wSkipFrameNumText;
@@ -50,6 +56,7 @@ private:
     VideoControl* vcontrol;
     QVector<QLabel*> vecHints;
     QVBoxLayout* MainLayout;
+	QPoint _oldScrollPos;
 	int _skipFrameNum;
 	bool isEditting;
 signals:
@@ -69,6 +76,8 @@ public slots:
     void changeFrameSize(int width,int height);
     void constructInfoPanel();
 	void receiveVideoState(int state);
+
+	void shiftScrollArea(QPoint mousePt,double oldRatio,double newRatio);
 
     void deleteInfoPanel();
 

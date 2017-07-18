@@ -12,14 +12,21 @@ class Surface :	public QLabel
 {
 	Q_OBJECT
 public:
-	Surface(QImage &Img,QWidget*parent=NULL);
+	Surface(QImage Img, QWidget*parent = NULL);
 	virtual ~Surface();
 public:
+	void setOriginalImage(QImage pOriginal);
 	void setReferenceImage(QImage* pReference = NULL);
 public:
 	void expandSize();
 	void shrinkSize();
-	void drawImage();
+	void setEditable(bool b = true);
+	void startLabel();
+	void endLabel();
+	/*when image is editable, _ImageDraw is a copy of _oriImage;
+	otherwise,  _ImageDraw and _oriImage are the same.
+	*/
+	bool isEditable();
 	void fitSizeToImage();
 	/*when original image is modified, this should
 	be called to update qimage for drawing*/
@@ -32,7 +39,7 @@ signals:
 	void openClassSelection();
 	void closeClassSelection();
 	void painterPathCreated(int PenWidth,QPainterPath& painterPath);
-	void mousePositionShifted(QPoint diff);
+	void mousePositionShiftedByScale(QPoint mousePt, double oldScaleRatio, double newScaleRatio);
 public slots:
 void changeClass(QString txt, QColor clr);
 void applyScaleRatio();
@@ -54,7 +61,7 @@ private:
 	void setCursorInvisible(bool);
 	void paintCursor();
 	void drawLineTo(const QPoint &endPoint);
-	void updateCursorArea(bool drawCursor);
+	void updateCursorArea(bool drawCursor);//updateCursorArea(false) can clean cursor;updateCursorArea(true) can redraw cursor
 	void updateRectArea(QRect rect, int rad, bool drawCursor);
 
 	QPoint getPointAfterNewScale(QPoint pt,double scaleOld,double scaleNew);
@@ -71,22 +78,24 @@ protected:
 	void wheelEvent(QWheelEvent*ev) Q_DECL_OVERRIDE;
 	void leaveEvent(QEvent*ev) Q_DECL_OVERRIDE;
 	void enterEvent(QEvent*ev) Q_DECL_OVERRIDE;
+
 private:
-	QImage* _oriImage;
+	QImage _oriImage;
 	QImage _ImageDraw;
 	QImage* _referenceImage;
-	bool LButtonDown;
-	bool bSelectClass;
-	bool bDrawCursor;
+	bool _bLButtonDown;
+	bool _bSelectClass;
+	bool _bDrawCursor;
+	bool _bEdit;
 
-	QPoint lastPoint;
-	QPainterPath tempDrawPath;//for temp draw stroke display
-	QPainterPath paintPath;//the real path matched with the original scale image
+	QPoint _lastPoint;
+	QPainterPath _tempDrawPath;//for temp draw stroke display
+	QPainterPath _paintPath;//the real path matched with the original scale image
 	const int _cursorEdgeWidth = 2;
 
 	QPoint _mousePos;
-	int myPenRadius;
-	QColor myPenColor;
+	int _myPenRadius;
+	QColor _myPenColor;
 private:
 	double _scaleRatio;
 	int _scaleRatioRank;

@@ -39,6 +39,10 @@ LabelingTaskControl::LabelingTaskControl(QImage& Img, ClassSelection* selection,
 	_surfaceSegmentation->setReferenceImage(&_InputImg);
 	_surfaceOutPut->setReferenceImage(&_InputImg);
 
+	_surfaceOriginal->setEditable(true);
+	_surfaceSegmentation->setEditable(true);
+	_surfaceOutPut->setEditable(true);
+
 	_surfaceSegmentation->show();
 	_surfaceOriginal->show();
 	_surfaceOutPut->show();

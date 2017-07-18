@@ -103,6 +103,7 @@ bool ProcessControl::checkCreateOutputDir()
 		{
 			return false;
 		}
+		return false;
 	}
 }
 
