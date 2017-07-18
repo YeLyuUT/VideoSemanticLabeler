@@ -11,6 +11,7 @@
 using namespace cv;
 LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
 {
+	
     wFrame= nullptr;
     wProgressBar= nullptr;
     wScrollArea= nullptr;
@@ -26,13 +27,14 @@ LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
 	wEditButton = nullptr;
 	wCommitButton = nullptr;
 	wSaveButton = nullptr;
-    vcontrol = new VideoControl();
-    vthread = new VideoThread(vcontrol);
     constructInterface();
+	vcontrol = new VideoControl();
+	vthread = new VideoThread(vcontrol);
 	addEventFilters();
 	setupConnections();
 	_skipFrameNum = 1;
 	isEditting = false;
+
 }
 
 LVideoWidget::~LVideoWidget()
@@ -44,6 +46,13 @@ LVideoWidget::~LVideoWidget()
 	}
 	if (vcontrol != nullptr) delete vcontrol;
     qDebug()<<"Video Widget Deleted."<<endl;
+}
+
+void LVideoWidget::hideEvent(QHideEvent* ev)
+{
+	qDebug() << "hideEvent";
+	emit signalClose();
+	QWidget::hideEvent(ev);
 }
 
 void LVideoWidget::setupConnections()
@@ -65,14 +74,13 @@ void LVideoWidget::setupConnections()
 	connect(wSaveButton, SIGNAL(clicked()), this, SLOT(save()));
 	connect(wCommitButton, SIGNAL(clicked()), this, SLOT(commitSetting()));
 	connect(vthread, SIGNAL(updateVideoInfo(double, double, double)), this, SLOT(updateInfos(double, double, double)));
-	connect(wFrame, SIGNAL(mousePositionShiftedByScale(QPoint,double,double)), this, SLOT(shiftScrollArea(QPoint,double,double)));
+	connect(wFrame, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), wScrollArea, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
 	
 }
 
 void LVideoWidget::addEventFilters()
 {
-	wScrollArea->viewport()->installEventFilter(this);
-	wFrame->installEventFilter(this);
+
 }
 
 void LVideoWidget::constructInterface()
@@ -80,7 +88,7 @@ void LVideoWidget::constructInterface()
     MainLayout = new QVBoxLayout();
     this->setLayout(MainLayout);
 	/*1st level create canvas*/
-    wScrollArea = new QScrollArea();
+    wScrollArea = new SmartScrollArea();
     wScrollArea->setBackgroundRole(QPalette::Dark);
 
 	wFrame = new Surface(QImage(), this);
@@ -412,27 +420,4 @@ bool LVideoWidget::eventFilter(QObject* obj, QEvent* ev)
 		}
 	}
 	return QWidget::eventFilter(obj, ev);
-}
-
-void LVideoWidget::shiftScrollArea(QPoint mousePt, double oldRatio, double newRatio)
-{
-	QScrollBar* barY = wScrollArea->verticalScrollBar();
-	QScrollBar* barX = wScrollArea->horizontalScrollBar();
-	double ptX = (mousePt.x()) / oldRatio;
-	double ptY = (mousePt.y()) / oldRatio;
-	double ptXNew = (mousePt.x()) / newRatio;
-	double ptYNew = (mousePt.y()) / newRatio;
-	double diffX = (ptXNew - ptX)*newRatio;
-	double diffY = (ptYNew - ptY)*newRatio;
-
-	int scrollPos_X_New = barX->value() - diffX;
-	int scrollPos_Y_New = barY->value() - diffY;
-
-	scrollPos_Y_New = qMax(barY->minimum(), scrollPos_Y_New);
-	scrollPos_Y_New = qMin(barY->maximum(), scrollPos_Y_New);
-	scrollPos_X_New = qMax(barX->minimum(), scrollPos_X_New);
-	scrollPos_X_New = qMin(barX->maximum(), scrollPos_X_New);
-
-	barY->setValue(scrollPos_Y_New);
-	barX->setValue(scrollPos_X_New);
 }

@@ -6,6 +6,8 @@
 #include <opencv.hpp>
 #include <QPainterPath>
 #include <memory>
+#include <QScrollArea>
+#include <SmartScrollArea.h>
 using cv::Mat;
 using std::shared_ptr;
 class LabelingTaskControl:public QObject
@@ -36,6 +38,9 @@ private:
 	Surface *_surfaceSegmentation;
 	Surface *_surfaceOriginal;
 	Surface *_surfaceOutPut;
+	SmartScrollArea* _SA1;//ScrollArea1	
+	SmartScrollArea* _SA2;//ScrollArea2	
+	SmartScrollArea* _SA3;//ScrollArea3	
 	QImage _InputImg;
 	ClassSelection *_selection;
 	QRect _boundingRect;

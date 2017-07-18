@@ -43,9 +43,25 @@ LabelingTaskControl::LabelingTaskControl(QImage& Img, ClassSelection* selection,
 	_surfaceSegmentation->setEditable(true);
 	_surfaceOutPut->setEditable(true);
 
+
+	_SA1 = new SmartScrollArea();
+	_SA2 = new SmartScrollArea();
+	_SA3 = new SmartScrollArea();
+
+	/*_SA1->setWidget(_surfaceOriginal);
+	_SA2->setWidget(_surfaceSegmentation);
+	_SA3->setWidget(_surfaceOutPut);*/
+
+	QObject::connect(_surfaceOriginal, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA1, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
+	QObject::connect(_surfaceSegmentation, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA2, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
+	QObject::connect(_surfaceOutPut, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA3, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
+
 	_surfaceSegmentation->show();
 	_surfaceOriginal->show();
 	_surfaceOutPut->show();
+	/*_SA1->show();
+	_SA2->show();
+	_SA3->show();*/
 }
 
 //LabelingTaskControl* LabelingTaskControl::getDrawControl(QImage& Img, ClassSelection* selection, bool newDraw)
@@ -61,6 +77,9 @@ LabelingTaskControl::~LabelingTaskControl()
 	_surfaceSegmentation->deleteLater();
 	_surfaceOriginal->deleteLater();
 	_surfaceOutPut->deleteLater();
+	_SA1->deleteLater();
+	_SA2->deleteLater();
+	_SA3->deleteLater();
 	releaseAll();
 }
 

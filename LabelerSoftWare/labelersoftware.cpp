@@ -17,7 +17,7 @@ LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QStr
 	_filePath = inputFilePath;
 	_outputDir = outputDir;
 	_labelList = labelList;
-	this->setAttribute(Qt::WA_DeleteOnClose);
+	//this->setAttribute(Qt::WA_DeleteOnClose);
 	ui.setupUi(this);
 	mlayout = new QVBoxLayout();
 	ui.centralWidget->setLayout(mlayout);

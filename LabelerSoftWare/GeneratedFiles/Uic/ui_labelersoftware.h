@@ -44,9 +44,9 @@ public:
         centralWidget = new QWidget(LabelerSoftWareClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         LabelerSoftWareClass->setCentralWidget(centralWidget);
-        /*statusBar = new QStatusBar(LabelerSoftWareClass);
+        statusBar = new QStatusBar(LabelerSoftWareClass);
         statusBar->setObjectName(QStringLiteral("statusBar"));
-        LabelerSoftWareClass->setStatusBar(statusBar);*/
+        LabelerSoftWareClass->setStatusBar(statusBar);
 
         retranslateUi(LabelerSoftWareClass);
 

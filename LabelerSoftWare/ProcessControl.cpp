@@ -22,6 +22,7 @@ ProcessControl::~ProcessControl()
 {
 	if (w) { w->deleteLater(); w = NULL; }
 	if (_selection) { _selection->deleteLater(); _selection = NULL; }
+	if (_labelingTask) { _labelingTask->deleteLater(); _labelingTask = NULL; }
 }
 
 void ProcessControl::process()
@@ -120,6 +121,7 @@ void ProcessControl::processVideo()
 	w = new LabelerSoftWare(2, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
 	connect(w->getVideoWidget(), SIGNAL(edittingStarted(QImage&)), this, SLOT(hasNewLabelingProcess(QImage&)));
 	connect(w->getVideoWidget(), SIGNAL(edittingStopped()), this, SLOT(closeLabelingProcess()));
+	connect(w->getVideoWidget(), SIGNAL(signalClose()), this, SLOT(labelerSoftWareQuit()));
 	w->show();
 }
 
@@ -134,4 +136,11 @@ void ProcessControl::closeLabelingProcess()
 	_labelingTask->deleteLater();
 	_labelingTask = NULL;
 	qDebug() << "LabelingTaskControl Closed";
+}
+
+void ProcessControl::labelerSoftWareQuit()
+{
+	qDebug() << "labelerSoftWareQuit";
+	this->deleteLater();
+	//return true;
 }

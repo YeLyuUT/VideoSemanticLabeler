@@ -19,6 +19,7 @@ public:
 	public slots:
 	void hasNewLabelingProcess(QImage&Img);
 	void closeLabelingProcess();
+	void labelerSoftWareQuit();
 private:
 	bool checkCreateOutputDir();
 	int checkForProcessType();

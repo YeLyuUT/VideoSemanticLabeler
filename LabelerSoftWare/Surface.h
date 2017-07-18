@@ -18,11 +18,12 @@ public:
 	void setOriginalImage(QImage pOriginal);
 	void setReferenceImage(QImage* pReference = NULL);
 public:
-	void expandSize();
-	void shrinkSize();
+	void zoom(int step, QPoint pt = QPoint(0, 0));//step is the relative scale ratio rank, pt is the focus point.
 	void setEditable(bool b = true);
 	void startLabel();
 	void endLabel();
+
+	double getZoomRatio();
 	/*when image is editable, _ImageDraw is a copy of _oriImage;
 	otherwise,  _ImageDraw and _oriImage are the same.
 	*/

@@ -143,6 +143,15 @@
     <ClCompile Include="GeneratedFiles\Release\Moc\moc_ProcessControl.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="SmartScrollArea.cpp">
+      <Filter>EditableSurface</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_SmartScrollArea.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_SmartScrollArea.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="labelersoftware.h">
@@ -174,6 +183,9 @@
     </CustomBuild>
     <CustomBuild Include="ProcessControl.h">
       <Filter>ProcessControl</Filter>
+    </CustomBuild>
+    <CustomBuild Include="SmartScrollArea.h">
+      <Filter>EditableSurface</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

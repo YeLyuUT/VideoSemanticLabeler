@@ -16,6 +16,7 @@
 #include <Surface.h>
 #include <QEvent>
 #include <QObject>
+#include <SmartScrollArea.h>
 
 class LVideoWidget : public QWidget
 {
@@ -34,6 +35,7 @@ private:
 	void setLineEditEnabled(bool e);
 protected:
 	virtual bool eventFilter(QObject* obj, QEvent* ev);
+	void hideEvent(QHideEvent* ev);
 private:
     Surface* wFrame;
     QLabel* wStatus;
@@ -42,7 +44,7 @@ private:
 	QLineEdit* wSkipFrameNumEdit;
 	QLineEdit* wCurrentFrameNumEdit;
     ClickableProgressBar* wProgressBar;
-    QScrollArea* wScrollArea;
+    SmartScrollArea* wScrollArea;
     QDockWidget* wInfoPanel;
     QPushButton* wPlayButton;
     QPushButton* wPauseButton;
@@ -64,6 +66,7 @@ signals:
     void hasClosedVideo();
 	void edittingStarted(QImage&);
 	void edittingStopped();
+	void signalClose();
 public slots:
     void play();
     void stop();
@@ -76,8 +79,6 @@ public slots:
     void changeFrameSize(int width,int height);
     void constructInfoPanel();
 	void receiveVideoState(int state);
-
-	void shiftScrollArea(QPoint mousePt,double oldRatio,double newRatio);
 
     void deleteInfoPanel();
 

@@ -23,14 +23,21 @@ Surface::Surface(QImage Img, QWidget*parent) :QLabel(parent)
 	_scaleRatioRank = 0;
 	_scaleRatio = 1.0;
 	_bEdit = false;
+	fitSizeToImage();
 }
-
 
 Surface::~Surface()
 {
 #ifdef CHECK_QIMAGE
 	cv::destroyAllWindows();
 #endif
+}
+
+void Surface::fitSizeToImage()
+{
+	int width = _oriImage.width();
+	int height = _oriImage.height();
+	this->resize(width, height);
 }
 
 void Surface::setEditable(bool b)
@@ -300,15 +307,7 @@ void Surface::wheelEvent(QWheelEvent*ev)
 	}
 	if (ev->modifiers() == Qt::KeyboardModifier::AltModifier)
 	{
-		double oldScaleRatio = getScaleRatio();
-		setScaleRatioRank(getScaleRatioRank() + numSteps.x());
-		updateScaleRatioByRank();
-		double newScaleRatio = getScaleRatio();
-		QPoint newPos = getPointAfterNewScale(ev->pos(), oldScaleRatio, newScaleRatio);
-		emit mousePositionShiftedByScale(ev->pos(), oldScaleRatio, newScaleRatio);
-		applyScaleRatio();
-		this->resize(_ImageDraw.width(), _ImageDraw.height());
-		update();
+		zoom(numSteps.x(), ev->pos());
 		qDebug() << "AltModifier";
 	}
 	ev->accept();
@@ -321,7 +320,7 @@ void Surface::leaveEvent(QEvent*ev)
 		_bDrawCursor = false;
 		updateCursorArea(false);
 	}
-	qDebug() << "leaveEvent";
+	//qDebug() << "leaveEvent";
 	QLabel::leaveEvent(ev);
 }
 
@@ -474,4 +473,22 @@ void Surface::applyScaleRatio()
 	else
 		_ImageDraw = _oriImage.copy();
 	
+}
+
+void Surface::zoom(int step, QPoint pt)
+{
+	double oldScaleRatio = getScaleRatio();
+	setScaleRatioRank(getScaleRatioRank() + step);
+	updateScaleRatioByRank();
+	double newScaleRatio = getScaleRatio();
+	QPoint newPos = getPointAfterNewScale(pt, oldScaleRatio, newScaleRatio);
+	emit mousePositionShiftedByScale(pt, oldScaleRatio, newScaleRatio);
+	applyScaleRatio();
+	this->resize(_ImageDraw.width(), _ImageDraw.height());
+	update();
+}
+
+double Surface::getZoomRatio()
+{
+	return this->_scaleRatio;
 }
