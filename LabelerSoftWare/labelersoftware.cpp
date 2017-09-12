@@ -6,6 +6,8 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include "videothread.h"
+#include <QApplication>
+#include <QDesktopWidget>
 
 #include <QString>
 #include <QDebug>
@@ -13,6 +15,7 @@
 LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QString outputDir, LabelList labelList, QWidget *parent)
 	: QMainWindow(parent)
 {
+	_lvw = NULL;
 	_type = processingType;
 	_filePath = inputFilePath;
 	_outputDir = outputDir;
@@ -34,7 +37,17 @@ LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QStr
 
 LabelerSoftWare::~LabelerSoftWare()
 {
+}
 
+void LabelerSoftWare::moveToTopCenter()
+{
+	_lastRectPos = this->pos();
+	this->move(QApplication::desktop()->screen()->rect().center().x() - this->window()->width() / 2, 0);
+}
+
+void LabelerSoftWare::moveToLastPos()
+{
+	this->move(_lastRectPos);
 }
 
 void LabelerSoftWare::createVideoProcessWindow()
@@ -48,7 +61,7 @@ void LabelerSoftWare::createImageProcessWindow()
 
 }
 
-LVideoWidget* LabelerSoftWare::getVideoWidget()
+LVideoWidget*& LabelerSoftWare::getVideoWidget()
 {
 	return _lvw;
 }

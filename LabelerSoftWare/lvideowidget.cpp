@@ -7,11 +7,13 @@
 #include <QSizePolicy>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QApplication>
+
+#include <labelersoftware.h>
 
 using namespace cv;
 LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
 {
-	
     wFrame= nullptr;
     wProgressBar= nullptr;
     wScrollArea= nullptr;
@@ -27,6 +29,7 @@ LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
 	wEditButton = nullptr;
 	wCommitButton = nullptr;
 	wSaveButton = nullptr;
+	wOpenSaveDir = nullptr;
     constructInterface();
 	vcontrol = new VideoControl();
 	vthread = new VideoThread(vcontrol);
@@ -72,6 +75,7 @@ void LVideoWidget::setupConnections()
 	connect(wStopButton, SIGNAL(clicked()), this, SLOT(stop()));
 	connect(wEditButton, SIGNAL(clicked()), this, SLOT(edit()));
 	connect(wSaveButton, SIGNAL(clicked()), this, SLOT(save()));
+	connect(wOpenSaveDir, SIGNAL(clicked()), this, SLOT(openSaveDir()));
 	connect(wCommitButton, SIGNAL(clicked()), this, SLOT(commitSetting()));
 	connect(vthread, SIGNAL(updateVideoInfo(double, double, double)), this, SLOT(updateInfos(double, double, double)));
 	connect(wFrame, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), wScrollArea, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
@@ -108,6 +112,9 @@ void LVideoWidget::constructInterface()
 	wSaveButton = new QPushButton("Save Result",this);
 	hBoxLayout0->addWidget(wSaveButton);
 	wSaveButton->hide();
+	wOpenSaveDir = new QPushButton("Open Saving Directory");
+	hBoxLayout0->addWidget(wOpenSaveDir);
+	wOpenSaveDir->hide();
 	wSkipFrameNumEdit = new QLineEdit(this);
 	wSkipFrameNumEdit->setMaximumWidth(50);
 	wSkipFrameNumEdit->setText("1");
@@ -161,7 +168,7 @@ void LVideoWidget::changeVideoPos(double framePosRatio)
     int total_count = vcontrol->getFrameCount();
     int framePos = qMin<int>(total_count,qMax<int>(0,(int)(total_count-1)*framePosRatio));
     vthread->setNextFrame(framePos);
-	vthread->emitAll();
+	vthread->emitNextImageAndInfos();
 }
 
 void LVideoWidget::changeFrameSize(int width,int height)
@@ -211,7 +218,6 @@ void LVideoWidget::updateCurrentFrameNum(double num)
 
 void LVideoWidget::constructInfoPanel()
 {
-
     /*create docker widget*/
     wInfoPanel=new QDockWidget("Video Info",this);
 	wInfoPanel->setFloating(true);
@@ -303,8 +309,15 @@ void LVideoWidget::pause()
 
 void LVideoWidget::save()
 {
-	//TODO save file
-	qDebug() << "save";
+	qDebug() << "emit signal save";
+	emit signalSave();
+}
+
+void LVideoWidget::openSaveDir()
+{
+	qDebug() << "emit signal OpenSaveDir";
+	emit signalOpenSaveDir();
+
 }
 
 void LVideoWidget::edit()
@@ -312,34 +325,47 @@ void LVideoWidget::edit()
 	if (!isEditting)
 	{
 		//stop();
+
 		pause();
 		setLineEditEnabled(true);
 
 		wScrollArea->hide();
-		wProgressBar->hide();
+		//wProgressBar->hide();
+		wProgressBar->setClickable(false);
 		wPlayButton->hide();
 		wPauseButton->hide();
 		wStopButton->hide();
 		wSaveButton->show();
+		wOpenSaveDir->show();
 		wEditButton->setText("Stop Labeling");
 		wStatus->setText(QString("Editting..."));
 		wStatus->setStyleSheet("QLabel {  color : blue; }");
 		window()->showNormal();
 		//window()->setWindowFlags(window()->windowFlags()& ~Qt::WindowTitleHint);
 		window()->resize(1, 1);
+
+		QWidget* pa = (QWidget*)this->parent();
+		LabelerSoftWare* ppa = (LabelerSoftWare*)pa->parent();
+		ppa->moveToTopCenter();
 		//qDebug() << window()->windowFlags();
 		//window()->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-		emit edittingStarted(this->vthread->getCurrentImage());
+		emit edittingStarted(this->vcontrol);
 		isEditting = true;
 	}
 	else
 	{ 
+		QWidget* pa = (QWidget*)this->parent();
+		LabelerSoftWare* ppa = (LabelerSoftWare*)pa->parent();
+		ppa->moveToLastPos();
+
 		wScrollArea->show();
-		wProgressBar->show();
+		//wProgressBar->show();
+		wProgressBar->setClickable(true);
 		wPlayButton->show();
 		wPauseButton->show();
 		wStopButton->show();
 		wSaveButton->hide();
+		wOpenSaveDir->hide();
 		wEditButton->setText("Start Labeling");
 		wStatus->setText(QString("Stopped"));
 		wStatus->setStyleSheet("QLabel {  color : red; }");
@@ -385,7 +411,7 @@ void LVideoWidget::skipFrameNumChanged(const QString& str)
 		wSkipFrameNumEdit->setText(QString("1"));
 		_skipFrameNum = 1;
 	}
-	vthread->setSkipFrameNum(_skipFrameNum);
+	vcontrol->setSkipFrameNum(_skipFrameNum);
 	qDebug() << _skipFrameNum << endl;
 }
 
@@ -396,7 +422,11 @@ void LVideoWidget::currentFrameNumChanged(const QString& str)
 	if (ok&&num >= 0&&num<=vcontrol->getFrameCount())
 	{
 		vthread->setNextFrame(num);
-		vthread->emitNextImage();
+		if (!isEditting)
+		{
+			vthread->emitNextImage();
+		}
+		emit signalFrameIdx(num);
 	}
 	else
 	{
@@ -408,16 +438,47 @@ void LVideoWidget::currentFrameNumChanged(const QString& str)
 
 bool LVideoWidget::eventFilter(QObject* obj, QEvent* ev)
 {
-	if (qobject_cast<Surface*>(obj) == wFrame)
-	{
-		//shiftScrollArea(QPoint());
-		if (ev->type() == QEvent::Type::Wheel)
-		{
-			if (((QWheelEvent*)ev)->modifiers() == Qt::KeyboardModifier::AltModifier)
-			{
+	//if (qobject_cast<Surface*>(obj) == wFrame)
+	//{
+	//	//shiftScrollArea(QPoint());
+	//	if (ev->type() == QEvent::Type::Wheel)
+	//	{
+	//		if (((QWheelEvent*)ev)->modifiers() == Qt::KeyboardModifier::AltModifier)
+	//		{
 
-			}
-		}
-	}
+	//		}
+	//	}
+	//}
+	//if (isEditting)
+	//{
+	//	if (keypressevent);
+	//}
 	return QWidget::eventFilter(obj, ev);
+}
+
+void LVideoWidget::keyPressEvent(QKeyEvent *ev)
+{
+	//if (isEditting)
+	//{
+	//	switch (ev->type())
+	//	{
+	//	case Qt::Key::Key_Right:
+
+	//		break;
+	//	case Qt::Key::Key_Left:
+	//		break;
+	//	}
+	//}
+}
+
+VideoControl* LVideoWidget::getInternalVideoControl()
+{
+	return this->vcontrol;
+}
+
+void LVideoWidget::setSkipFrameNum(int num)
+{
+	wSkipFrameNumEdit->setText(QString("%1").arg(num));
+	_skipFrameNum = num;
+	vcontrol->setSkipFrameNum(num);
 }

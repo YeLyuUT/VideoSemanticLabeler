@@ -11,7 +11,7 @@ VideoThread::VideoThread(VideoControl* videoCtrl)
 	_currentState = PLAY_STATE::STOP;
 	_videoCtrl = videoCtrl;
 	time.start();
-	_skipFrameNum = 1;
+	
 }
 
 VideoControl* VideoThread::getVideoControl()
@@ -75,9 +75,9 @@ void VideoThread::run()
         this->msleep(qMax(0,delay-dtime));
         time.start();
 
-		if (_skipFrameNum >= 2)
+		if (_videoCtrl->getSkipFrameNum() >= 2)
 		{
-			_videoCtrl->forwardFrames(_skipFrameNum - 1);
+			_videoCtrl->forwardFrames(_videoCtrl->getSkipFrameNum() - 1);
 		}
         emitNextImage();
 		emitNextFrameInfo();
@@ -167,23 +167,10 @@ void VideoThread::emitNextFrameInfo()
 	emit updateVideoInfo(Msec, posFrame, frameRatio);
 }
 
-void VideoThread::emitAll()
+void VideoThread::emitNextImageAndInfos()
 {
 	emitNextImage();
 	emitNextFrameInfo();
-}
-
-void VideoThread::setSkipFrameNum(unsigned int skipNum)
-{
-	if (skipNum >= 2)
-		_skipFrameNum = skipNum;
-	else
-		_skipFrameNum = 1;
-}
-
-unsigned int VideoThread::getSkipFrameNum()
-{
-	return _skipFrameNum;
 }
 
 QImage& VideoThread::getCurrentImage()

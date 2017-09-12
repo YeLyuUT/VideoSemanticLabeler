@@ -5,6 +5,8 @@
 #include <QRect>
 #include <qmessagebox.h>
 //#define CHECK_QIMAGE
+QColor Surface::_myPenColor(0, 0, 0);
+int Surface::_myPenRadius = 10;
 
 Surface::Surface(QImage Img, QWidget*parent) :QLabel(parent)
 {
@@ -15,14 +17,14 @@ Surface::Surface(QImage Img, QWidget*parent) :QLabel(parent)
 	
 	this->setMouseTracking(true);
 	_bLButtonDown = false;
-	_myPenColor.setRgb(0, 0, 0);
-	_myPenRadius = 1;
+	
 	_bSelectClass = false;
 	setCursorInvisible(false);
 	_bDrawCursor = true;
 	_scaleRatioRank = 0;
 	_scaleRatio = 1.0;
 	_bEdit = false;
+	_scrollArea = nullptr;
 	fitSizeToImage();
 }
 
@@ -31,6 +33,26 @@ Surface::~Surface()
 #ifdef CHECK_QIMAGE
 	cv::destroyAllWindows();
 #endif
+}
+
+QImage Surface::getImage()
+{
+	return this->_ImageDraw;
+}
+
+QImage Surface::getOriImage()
+{
+	return this->_oriImage;
+}
+
+QImage Surface::getImageCpy()
+{
+	return this->_ImageDraw.copy();
+}
+
+QImage Surface::getOriImageCpy()
+{
+	return this->_oriImage.copy();
 }
 
 void Surface::fitSizeToImage()
@@ -72,6 +94,11 @@ void Surface::setOriginalImage(QImage pOriginal)
 		_ImageDraw = _oriImage;
 	}
 	//this->setPixmap(QPixmap::fromImage(_ImageDraw));
+}
+
+void Surface::setScrollArea(QScrollArea* pScrollArea)
+{
+	_scrollArea = pScrollArea;
 }
 
 void Surface::setReferenceImage(QImage* pReference)
@@ -135,6 +162,25 @@ void Surface::showInternalImg()
 	showScaled();
 }
 
+bool Surface::eventFilter(QObject* obj, QEvent* evt)
+{
+	if (obj != nullptr)
+	{
+		if ((QScrollArea*)obj == _scrollArea)
+		{
+			if (evt->type() == QEvent::KeyPress)	
+			{
+				keyPressEvent((QKeyEvent *)evt);	
+			}
+			else if (evt->type() == QEvent::KeyRelease)
+			{
+				keyReleaseEvent((QKeyEvent *)evt);	
+			}
+		}
+	}
+	return false;
+}
+
 void Surface::keyPressEvent(QKeyEvent *ev)
 {
 	switch (ev->key())
@@ -153,6 +199,7 @@ void Surface::keyPressEvent(QKeyEvent *ev)
 		//qDebug() << "showReferenceImg()";
 		this->showReferenceImg(); break;
 	//case Qt::Key::Key_Space:qDebug() << "Key_Space" ; break;
+
 	default:break;
 	}
 	QLabel::keyPressEvent(ev);

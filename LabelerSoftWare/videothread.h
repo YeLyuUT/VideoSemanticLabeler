@@ -19,14 +19,12 @@ public:
     cv::Mat getNextMat();
     QImage convertToQImage(cv::Mat&img);
 	QImage& getCurrentImage();
-	void setSkipFrameNum(unsigned int skipNum = 1);
-	unsigned int getSkipFrameNum();
 protected:
     void run();
 public:
 	void emitNextImage();
 	void emitNextFrameInfo();
-	void emitAll();//emitNextImageAndInfos
+	void emitNextImageAndInfos();
 public slots:
     void pause();
     void play();
@@ -49,7 +47,7 @@ private:
     cv::Mat _curFrame;
     QImage _img;//Current QImage
     VideoControl* _videoCtrl;
-	unsigned int _skipFrameNum;
+	
 };
 
 

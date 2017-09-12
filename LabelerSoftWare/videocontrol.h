@@ -31,6 +31,9 @@ public:
     double getPosFrames();
     double getPosAviRatio();
     double getMode();
+	unsigned int getSkipFrameNum();
+	void setSkipFrameNum(unsigned int num = 1);
+	void setPosFrames(int idx);
 public:
     struct PROPS
     {
@@ -48,7 +51,7 @@ public:
 private:
     cv::VideoCapture _videoCap;
 
-
+	unsigned int _skipFrameNum;
     QString _filePath;
     mutable QReadWriteLock _lock;
 };

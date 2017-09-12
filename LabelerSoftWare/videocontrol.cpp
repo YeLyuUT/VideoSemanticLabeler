@@ -4,12 +4,30 @@
 using namespace cv;
 VideoControl::VideoControl():_lock(QReadWriteLock::Recursive)
 {
-
+	_skipFrameNum = 1;
 }
 
 VideoControl::~VideoControl()
 {
 
+}
+
+unsigned int VideoControl::getSkipFrameNum()
+{
+	return _skipFrameNum;
+}
+
+void VideoControl::setSkipFrameNum(unsigned int num)
+{
+	if (num >= 2)
+		_skipFrameNum = num;
+	else
+		_skipFrameNum = 1;
+}
+
+void VideoControl::setPosFrames(int idx)
+{
+	_videoCap.set(CAP_PROP_POS_FRAMES, idx);
 }
 
 bool VideoControl::open(QString filePath)
@@ -81,7 +99,8 @@ void VideoControl::retrievePalyInfos()
 void VideoControl::reset(int frameNumber)
 {
     QWriteLocker locker(&_lock);
-    _videoCap.set(CAP_PROP_POS_FRAMES,frameNumber );
+	_videoCap.set(CAP_PROP_POS_FRAMES, frameNumber);
+
 }
 
 bool VideoControl::getFrame(Mat& img)

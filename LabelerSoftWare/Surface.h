@@ -6,6 +6,7 @@
 #include <opencv.hpp>
 #include <ClassSelection.h>
 #include <QPainterPath>
+#include <QScrollArea>
 using cv::Mat;
 using cv::Vec3b;
 class Surface :	public QLabel
@@ -15,8 +16,14 @@ public:
 	Surface(QImage Img, QWidget*parent = NULL);
 	virtual ~Surface();
 public:
+	QImage getImage();
+	QImage getOriImage();
+	QImage getImageCpy();
+	QImage getOriImageCpy();
+public:
 	void setOriginalImage(QImage pOriginal);
 	void setReferenceImage(QImage* pReference = NULL);
+	void setScrollArea(QScrollArea* pScrollArea=NULL);
 public:
 	void zoom(int step, QPoint pt = QPoint(0, 0));//step is the relative scale ratio rank, pt is the focus point.
 	void setEditable(bool b = true);
@@ -79,9 +86,10 @@ protected:
 	void wheelEvent(QWheelEvent*ev) Q_DECL_OVERRIDE;
 	void leaveEvent(QEvent*ev) Q_DECL_OVERRIDE;
 	void enterEvent(QEvent*ev) Q_DECL_OVERRIDE;
+	bool eventFilter(QObject* obj,QEvent* evt) Q_DECL_OVERRIDE;
 
 private:
-	QImage _oriImage;
+	QImage _oriImage;//This image will not be changed
 	QImage _ImageDraw;
 	QImage* _referenceImage;
 	bool _bLButtonDown;
@@ -89,14 +97,15 @@ private:
 	bool _bDrawCursor;
 	bool _bEdit;
 
+	QScrollArea* _scrollArea;	
 	QPoint _lastPoint;
 	QPainterPath _tempDrawPath;//for temp draw stroke display
 	QPainterPath _paintPath;//the real path matched with the original scale image
 	const int _cursorEdgeWidth = 2;
 
 	QPoint _mousePos;
-	int _myPenRadius;
-	QColor _myPenColor;
+	static int _myPenRadius;
+	static QColor _myPenColor;
 private:
 	double _scaleRatio;
 	int _scaleRatioRank;

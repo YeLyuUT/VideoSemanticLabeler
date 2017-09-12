@@ -22,11 +22,13 @@ public:
     double getPosRatio(QPoint pos,double vmin=0,double vmax=1);
     int getPosFromRatio(double ratio);
 
+	void setClickable(bool b);//true for changing progress bar pos when clicked, false otherwise
 signals:
     void sendPosRatio(double ratio);
 private:
     bool bLMouseDown;
     QPoint pos;
+	bool clickable;
 };
 
 #endif // CLICKABLEPROGRESSBAR_H

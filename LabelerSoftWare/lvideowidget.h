@@ -26,6 +26,8 @@ public:
 	virtual ~LVideoWidget();
 public:
     bool openVideo(QString fileName);
+	VideoControl* getInternalVideoControl();
+	void setSkipFrameNum(int num);
 private:
 	bool isOpenned();
 	void closeVideo();
@@ -36,6 +38,7 @@ private:
 protected:
 	virtual bool eventFilter(QObject* obj, QEvent* ev);
 	void hideEvent(QHideEvent* ev);
+	void keyPressEvent(QKeyEvent *ev);
 private:
     Surface* wFrame;
     QLabel* wStatus;
@@ -52,6 +55,7 @@ private:
 	QPushButton* wEditButton;
 	QPushButton* wCommitButton;
 	QPushButton* wSaveButton;
+	QPushButton* wOpenSaveDir;
 	QHBoxLayout *hBoxLayout0;//layout contain settings
 
     VideoThread* vthread;
@@ -64,15 +68,19 @@ private:
 signals:
     void hasOpennedVideo();
     void hasClosedVideo();
-	void edittingStarted(QImage&);
+	void edittingStarted(VideoControl* vidCtrl);
 	void edittingStopped();
 	void signalClose();
+	void signalSave();
+	void signalOpenSaveDir();
+	void signalFrameIdx(int frameIdx);
 public slots:
     void play();
     void stop();
     void pause();
 	void edit();
 	void save();
+	void openSaveDir();
 	void commitSetting();
 	void hasEditResult(QImage&);
     void showImage(const QImage&img);

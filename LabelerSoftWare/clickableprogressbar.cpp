@@ -15,35 +15,44 @@ ClickableProgressBar::~ClickableProgressBar()
 
 void ClickableProgressBar::mousePressEvent(QMouseEvent*event)
 {
-    if(event->button()==Qt::LeftButton&&event->type()==QMouseEvent::MouseButtonPress)
-    {
-        pos = event->pos();
-        double ratio = getPosRatio(pos);
-        setProgressBarValue(ratio);
-        bLMouseDown=true;
-    }
+	if(clickable)
+	{
+		if (event->button() == Qt::LeftButton&&event->type() == QMouseEvent::MouseButtonPress)
+		{
+			pos = event->pos();
+			double ratio = getPosRatio(pos);
+			setProgressBarValue(ratio);
+			bLMouseDown = true;
+		}
+	}
 }
 
 void ClickableProgressBar::mouseMoveEvent(QMouseEvent *event)
 {
-    if(bLMouseDown)
-    {
-        pos = event->pos();
-        double ratio = getPosRatio(pos);
-        setProgressBarValue(ratio);
+	if (clickable)
+	{
+		if(bLMouseDown)
+		{
+			pos = event->pos();
+			double ratio = getPosRatio(pos);
+			setProgressBarValue(ratio);
 
-    }
+		}
+	}
 }
 void ClickableProgressBar::mouseReleaseEvent(QMouseEvent *event)
 {
-    if(bLMouseDown)
-    {
-        pos = event->pos();
-        double ratio = getPosRatio(pos);
-        setProgressBarValue(ratio);
-        emit sendPosRatio(ratio);
-        bLMouseDown=false;
-    }
+	if (clickable)
+	{
+		if (bLMouseDown)
+		{
+			pos = event->pos();
+			double ratio = getPosRatio(pos);
+			setProgressBarValue(ratio);
+			emit sendPosRatio(ratio);
+			bLMouseDown = false;
+		}
+	}
 }
 
 void ClickableProgressBar::setProgressBarValue(double ratio)
@@ -77,3 +86,7 @@ int ClickableProgressBar::getPosFromRatio(double ratio)
     return int(ratio*span+this->minimum());
 }
 
+void ClickableProgressBar::setClickable(bool b)
+{
+	clickable = b;
+}

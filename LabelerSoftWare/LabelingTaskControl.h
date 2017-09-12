@@ -8,29 +8,54 @@
 #include <memory>
 #include <QScrollArea>
 #include <SmartScrollArea.h>
+#include <videocontrol.h>
+#include <ProcessControl.h>
 using cv::Mat;
 using std::shared_ptr;
+class ProcessControl;
 class LabelingTaskControl:public QObject
 {
 	Q_OBJECT
 public:
-	LabelingTaskControl(QImage& Img, ClassSelection* selection,QObject* parent=NULL);
+	LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl* vidCtrl, ClassSelection* selection, QString outPutDir = QString(), QObject* parent = NULL);
 	virtual ~LabelingTaskControl();
 private:
 	void doSegmentation();//TODO
 
+	void setupColorSelectionConnections();//set quick access to color selection panel
+	void setupScrollAreaConnections();
+	void setupSurfacePainterPathConnections();
+	void setupConnections();
+	void unsetConnections();
+
 	void updateSurface(Surface *sf);
 	void updateImgByTouchedSegments(QImage& Img);
 	void updateOutPutImg(QRect boundingRect, QImage& mask);
-private slots:
-void retrievePainterPath(int PenWidth, QPainterPath& paintPath);
+	
+	bool saveResult(QString filePath);
+	bool maySaveResult(QString filePath);
+	bool checkModified();
+	QString getResultSavingPath();
 
+protected:
+	
+
+public slots:
+void retrievePainterPath(int PenWidth, QPainterPath& paintPath);
+void saveLabelResult();//save directory is set by constructor
+void openSaveDir();//open the directory that will be used to hold saving files
+void clearResult();
+void loadResultFromDir();
 private:
 	/*Internal Images*/
-	QImage& _segImg();
+	/*QImage& _segImg();
 	Mat& _labelImg();
 	QImage& _outPutImg();
-	QImage& _painterPathImage();
+	QImage& _painterPathImage();*/
+	QImage _segImg;
+	Mat _labelImg;
+	QImage _outPutImg;
+	QImage _painterPathImage;
 	void releaseAll();
 
 	void setupOtherImg();
@@ -44,5 +69,9 @@ private:
 	QImage _InputImg;
 	ClassSelection *_selection;
 	QRect _boundingRect;
+	bool _modified;
+	QString _outPutDir;
+	int _frameIdx;
+	VideoControl* _pVidCtrl;
 };
 

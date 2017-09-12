@@ -1,6 +1,8 @@
 #include "SmartScrollArea.h"
 #include <QScrollBar>
 #include <QDebug>
+#include <Surface.h>
+#include <QApplication>
 
 SmartScrollArea::SmartScrollArea(QWidget*parent) :QScrollArea(parent)
 {
@@ -46,23 +48,34 @@ void SmartScrollArea::keyPressEvent(QKeyEvent*ev)
 	qDebug() << "SmartScrollArea::keyPressEvent";
 	switch (ev->key())
 	{
-	case Qt::Key::Key_W://move up
+	case Qt::Key::Key_W://move up	
+		this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() - 100);	
 		break;
 	case Qt::Key::Key_S://move down
+		this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() + 100);
 		break;
 	case Qt::Key::Key_A://move left
+		this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() - 100);
 		break;
 	case Qt::Key::Key_D://move right
+		this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() + 100);
 		break;
 	case Qt::Key::Key_E://zoom in
+
 		break;
 	case Qt::Key::Key_Q://zoom out
+		break;
+	case Qt::Key::Key_Shift://color selection
 		break;
 	default:
 		break;
 	}
+	//if (qobject_cast<QKeyEvent*>())
+	//{
+
+	//}
 	//ev->ignore();
-	return QScrollArea::keyPressEvent(ev);
+	//return QScrollArea::keyPressEvent(ev);
 }
 
 void SmartScrollArea::keyReleaseEvent(QKeyEvent*ev)

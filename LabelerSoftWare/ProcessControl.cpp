@@ -6,23 +6,31 @@
 #include <exception>
 #include <labelersoftware.h>
 #include <LabelingTaskControl.h>
+#include <ImageConversion.h>
 
-ProcessControl::ProcessControl(string filePath, string outputDir, LabelList& labelList, QObject* parent) :QObject(parent)
+ProcessControl::ProcessControl(string filePath, string outputDir, int skipFrameNum, LabelList& labelList, QObject* parent) :QObject(parent)
 {
 	_type = PROCESS_TYPE_NONE;
 	_filePath = filePath;
 	_outputDir = outputDir;
 	_labelList = labelList;
 	_selection = new ClassSelection(labelList);
-	w = NULL;
+	_w = NULL;
+	_labelingTask = NULL;	
+	_isLabeling = false;
+	_skipFrameNum = skipFrameNum;
 }
 
 
 ProcessControl::~ProcessControl()
 {
-	if (w) { w->deleteLater(); w = NULL; }
+	if (_w) { _w->deleteLater(); _w = NULL; }
 	if (_selection) { _selection->deleteLater(); _selection = NULL; }
-	if (_labelingTask) { _labelingTask->deleteLater(); _labelingTask = NULL; }
+	if (_labelingTask) 
+	{ 
+
+		_labelingTask->deleteLater(); _labelingTask = NULL; 
+	}
 }
 
 void ProcessControl::process()
@@ -111,36 +119,106 @@ bool ProcessControl::checkCreateOutputDir()
 void ProcessControl::processImages()
 {
 	qDebug()<<"processImages" << endl;
-	w = new LabelerSoftWare(1, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
-	w->show();
+	_w = new LabelerSoftWare(1, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
+	_w->show();
 }
 
 void ProcessControl::processVideo()
 {
 	qDebug() << "processVideo" << endl;
-	w = new LabelerSoftWare(2, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
-	connect(w->getVideoWidget(), SIGNAL(edittingStarted(QImage&)), this, SLOT(hasNewLabelingProcess(QImage&)));
-	connect(w->getVideoWidget(), SIGNAL(edittingStopped()), this, SLOT(closeLabelingProcess()));
-	connect(w->getVideoWidget(), SIGNAL(signalClose()), this, SLOT(labelerSoftWareQuit()));
-	w->show();
+	_w = new LabelerSoftWare(2, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
+	connect(_w->getVideoWidget(), SIGNAL(edittingStarted(VideoControl*)), this, SLOT(hasNewLabelingProcess(VideoControl*)));
+	connect(_w->getVideoWidget(), SIGNAL(edittingStopped()), this, SLOT(closeLabelingProcess()));
+	connect(_w->getVideoWidget(), SIGNAL(signalClose()), this, SLOT(labelerSoftWareQuit()));
+	_w->show();
 }
 
-void ProcessControl::hasNewLabelingProcess(QImage&Img)
+void ProcessControl::hasNewLabelingProcess(VideoControl* pVidCtrl)
 {
-	_labelingTask = new LabelingTaskControl(Img, _selection, this);
+	_w->getVideoWidget()->setSkipFrameNum(_skipFrameNum);
+	_labelingTask = new LabelingTaskControl(this, pVidCtrl, _selection, QString::fromStdString(this->_outputDir), this);
 	qDebug() << "LabelingTaskControl Created";
+	QObject::connect(_w->getVideoWidget(), SIGNAL(signalSave()), _labelingTask, SLOT(saveLabelResult()));
+	QObject::connect(_w->getVideoWidget(), SIGNAL(signalOpenSaveDir()), _labelingTask, SLOT(openSaveDir()));
+	QObject::connect(_w->getVideoWidget(), SIGNAL(signalFrameIdx(int)), this, SLOT(switchToLabelFrame(int)));
+	_isLabeling = true;
 }
 
 void ProcessControl::closeLabelingProcess()
 {
-	_labelingTask->deleteLater();
-	_labelingTask = NULL;
-	qDebug() << "LabelingTaskControl Closed";
+	if (_labelingTask != NULL)
+	{
+		_labelingTask->deleteLater();
+		_labelingTask = NULL;
+		qDebug() << "LabelingTaskControl Closed";
+	}
+	_isLabeling = false;
+	_w->getVideoWidget()->setSkipFrameNum(1);
+}
+
+void ProcessControl::switchToNextLabelFrame()
+{
+	if (_isLabeling)
+	{
+		closeLabelingProcess();
+		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
+		pVidCtrl->setPosFrames(pVidCtrl->getPosFrames() + pVidCtrl->getSkipFrameNum());
+		hasNewLabelingProcess(pVidCtrl);
+	}
+}
+
+void ProcessControl::switchToPreviousLabelFrame()
+{
+	if (_isLabeling)
+	{
+		closeLabelingProcess();
+		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
+		pVidCtrl->setPosFrames(pVidCtrl->getPosFrames() - pVidCtrl->getSkipFrameNum());
+		hasNewLabelingProcess(pVidCtrl);
+	}
+}
+
+void ProcessControl::switchToLabelFrame(int idx)
+{
+	if (_isLabeling)
+	{
+		closeLabelingProcess();
+		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
+		pVidCtrl->setPosFrames(idx);
+		hasNewLabelingProcess(pVidCtrl);
+	}
 }
 
 void ProcessControl::labelerSoftWareQuit()
 {
-	qDebug() << "labelerSoftWareQuit";
+	qDebug() << "LabelerSoftWareQuit";
 	this->deleteLater();
 	//return true;
+}
+
+bool ProcessControl::eventFilter(QObject* obj, QEvent* ev)
+{
+	if (_isLabeling)
+	{
+		if (qobject_cast<SmartScrollArea*>(obj) != nullptr)
+		{
+			if (ev->type() == QEvent::KeyPress)
+			{
+				QKeyEvent* kevt = (QKeyEvent*)ev;
+				switch (kevt->key())
+				{
+				case Qt::Key::Key_Left:
+					switchToPreviousLabelFrame();
+					break;
+				case Qt::Key::Key_Right:
+					switchToNextLabelFrame();
+					break;
+				default:
+					break;
+				}
+
+			}
+		}
+	}
+	return false;
 }

@@ -14,7 +14,10 @@ public:
 	LabelerSoftWare(int processingType, QString inputFilePath, QString outputDir, LabelList labelList, QWidget *parent = 0);
 	virtual ~LabelerSoftWare();
 
-	LVideoWidget* getVideoWidget();
+	LVideoWidget*& getVideoWidget();
+
+	void moveToTopCenter();
+	void moveToLastPos();
 private:
 	void createVideoProcessWindow();
 	void createImageProcessWindow();
@@ -27,6 +30,7 @@ private:
 	QString _outputDir;
 	LabelList _labelList;
 	LVideoWidget* _lvw;
+	QPoint _lastRectPos;
 };
 
 #endif // LABELERSOFTWARE_H

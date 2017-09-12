@@ -14,4 +14,5 @@ struct MetaData
 	string filePath;
 	string outputDir;
 	LabelList labelList;
+	int skipFrameNum;
 };

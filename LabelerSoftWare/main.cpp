@@ -16,7 +16,8 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	do 
 	{
-		string xmlPath = "E:\\WorkingDirectory\\MY\\ProjectDataCollection\\UAVBenchMark\\Encapsulator\\LabelerSoftWare\\LabelerSoftWare\\processSetting.xml";
+		//string xmlPath = "E:\\WorkingDirectory\\MY\\ProjectDataCollection\\UAVBenchMark\\Encapsulator\\LabelerSoftWare\\LabelerSoftWare\\processSetting.xml";
+		string xmlPath = "C:\\Work\\VSSolutions\\labelersoftware\\example\\processSetting.xml";
 		try
 		{
 			ProcessSettingReader r(xmlPath);
@@ -29,7 +30,7 @@ int main(int argc, char *argv[])
 				//DrawTaskControl::getDrawControl(Img, selection);
 				
 				//selection->show();
-				ProcessControl *pCon = new ProcessControl(metaData.filePath, metaData.outputDir, metaData.labelList);
+				ProcessControl *pCon = new ProcessControl(metaData.filePath, metaData.outputDir, metaData.skipFrameNum, metaData.labelList);
 				pCon->process();
 			}
 			else
