@@ -45,11 +45,17 @@
     <Filter Include="EditableSurface">
       <UniqueIdentifier>{f4a618bf-79c5-486a-b8ad-3bdc30f9d3ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="MatConversion">
-      <UniqueIdentifier>{a98b76d9-bd26-4fd9-9bca-64194482ed8a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ClassSelection">
       <UniqueIdentifier>{980f66b6-1df8-4fe7-8505-797a655a4eb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{e25f186e-6195-46ac-be73-8b3e2cb2baf7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\MatConversion">
+      <UniqueIdentifier>{a98b76d9-bd26-4fd9-9bca-64194482ed8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\QtDebug">
+      <UniqueIdentifier>{0db330d1-709b-4d62-9267-dec61d312666}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -114,7 +120,7 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="ImageConversion.cpp">
-      <Filter>MatConversion</Filter>
+      <Filter>Utility\MatConversion</Filter>
     </ClCompile>
     <ClCompile Include="ClassSelection.cpp">
       <Filter>ClassSelection</Filter>
@@ -151,6 +157,9 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\Moc\moc_SmartScrollArea.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="QtDebug.cpp">
+      <Filter>Utility\QtDebug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -202,10 +211,13 @@
       <Filter>DataType</Filter>
     </ClInclude>
     <ClInclude Include="ImageConversion.h">
-      <Filter>MatConversion</Filter>
+      <Filter>Utility\MatConversion</Filter>
     </ClInclude>
     <ClInclude Include="LImageWidget.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QtDebug.h">
+      <Filter>Utility\QtDebug</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

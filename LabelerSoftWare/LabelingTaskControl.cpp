@@ -7,8 +7,14 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <exception>
+
 //#define CHECK_RETRIEVE_PAINTERPATH
 //#define CHECK_MASK_OUTPUTIMAGE
+//#define CHECK_QIMAGE
+#ifdef CHECK_QIMAGE
+#include <QtDebug.h>
+#endif // CHECK_QIMAGE
+
 
 LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl* pCtrl, ClassSelection* selection, QString outPutDir, QObject* parent) :QObject(parent)
 {
@@ -82,29 +88,14 @@ void LabelingTaskControl::setupConnections()
 	setupColorSelectionConnections();
 	setupScrollAreaConnections();
 	setupSurfacePainterPathConnections();
+	setupSurfaceHotKeyConnections();
 }
 
-void LabelingTaskControl::unsetConnections()
+void LabelingTaskControl::setupSurfaceHotKeyConnections()
 {
-	//QObject::connect(_surfaceSegmentation, SIGNAL(openClassSelection()), _selection, SLOT(show()));
-	//QObject::connect(_surfaceSegmentation, SIGNAL(closeClassSelection()), _selection, SLOT(hide()));
-	//QObject::connect(_selection, SIGNAL(classChanged(QString, QColor)), _surfaceSegmentation, SLOT(changeClass(QString, QColor)));
-
-	//QObject::connect(_surfaceOriginal, SIGNAL(openClassSelection()), _selection, SLOT(show()));
-	//QObject::connect(_surfaceOriginal, SIGNAL(closeClassSelection()), _selection, SLOT(hide()));
-	//QObject::connect(_selection, SIGNAL(classChanged(QString, QColor)), _surfaceOriginal, SLOT(changeClass(QString, QColor)));
-
-	//QObject::connect(_surfaceOutPut, SIGNAL(openClassSelection()), _selection, SLOT(show()));
-	//QObject::connect(_surfaceOutPut, SIGNAL(closeClassSelection()), _selection, SLOT(hide()));
-	//QObject::connect(_selection, SIGNAL(classChanged(QString, QColor)), _surfaceOutPut, SLOT(changeClass(QString, QColor)));
-
-	//QObject::connect(_surfaceOriginal, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA1, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
-	//QObject::connect(_surfaceSegmentation, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA2, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
-	//QObject::connect(_surfaceOutPut, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA3, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
-
-	//QObject::disconnect(_surfaceOriginal, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
-	//QObject::disconnect(_surfaceSegmentation, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
-	//QObject::disconnect(_surfaceOutPut, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
+	QObject::connect(_surfaceSegmentation, SIGNAL(clearResult()), this, SLOT(clearResult()));
+	QObject::connect(_surfaceOriginal, SIGNAL(clearResult()), this, SLOT(clearResult()));
+	QObject::connect(_surfaceOutPut, SIGNAL(clearResult()), this, SLOT(clearResult()));
 }
 
 void LabelingTaskControl::setupColorSelectionConnections()
@@ -304,7 +295,7 @@ void LabelingTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
 #ifdef CHECK_MASK_OUTPUTIMAGE
 	cv::imshow("CHECK_MASK_OUTPUTIMAGE outPutImg", outPutImg);
 	cv::imshow("CHECK_MASK_OUTPUTIMAGE maskImg", maskImg);
-	cv::waitKey(1);
+	cv::waitKey(500);
 #endif
 	updateSurface(_surfaceOutPut);
 }
@@ -312,6 +303,16 @@ void LabelingTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
 void LabelingTaskControl::updateImgByTouchedSegments(QImage& Img)
 {
 	//TODO how to floodfill with segmentation
+}
+
+void LabelingTaskControl::updateAllSurfaces()
+{
+	/*if (_surfaceSegmentation) _surfaceSegmentation->update();
+	if (_surfaceOriginal) _surfaceOriginal->update();
+	if (_surfaceOutPut) _surfaceOutPut->update();*/
+	updateSurface(_surfaceSegmentation);
+	updateSurface(_surfaceOriginal);
+	updateSurface(_surfaceOutPut);
 }
 
 void LabelingTaskControl::updateSurface(Surface *sf)
@@ -325,7 +326,22 @@ void LabelingTaskControl::updateSurface(Surface *sf)
 
 void LabelingTaskControl::clearResult()
 {
-	this->_outPutImg.fill(QColor(0, 0, 0));
+	QMessageBox::StandardButton button = 
+	QMessageBox::warning(NULL, "Reset Result", "Do you really want to reset the result?", QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No);
+	if (QMessageBox::StandardButton::Yes == button)
+	{
+#ifdef CHECK_QIMAGE
+		qt_debug::showQImage(_outPutImg);
+#endif
+		_outPutImg.fill(0);
+		_painterPathImage.fill(0);
+		_labelImg.setTo(0);
+		_surfaceOutPut->setOriginalImage(_outPutImg);
+		updateAllSurfaces();
+#ifdef CHECK_QIMAGE
+		qt_debug::showQImage(_outPutImg);
+#endif
+	}
 }
 
 void LabelingTaskControl::loadResultFromDir()

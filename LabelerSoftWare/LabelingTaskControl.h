@@ -25,10 +25,11 @@ private:
 	void setupColorSelectionConnections();//set quick access to color selection panel
 	void setupScrollAreaConnections();
 	void setupSurfacePainterPathConnections();
+	void setupSurfaceHotKeyConnections();
 	void setupConnections();
-	void unsetConnections();
 
 	void updateSurface(Surface *sf);
+	void updateAllSurfaces();
 	void updateImgByTouchedSegments(QImage& Img);
 	void updateOutPutImg(QRect boundingRect, QImage& mask);
 	

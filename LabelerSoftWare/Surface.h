@@ -48,6 +48,7 @@ signals:
 	void closeClassSelection();
 	void painterPathCreated(int PenWidth,QPainterPath& painterPath);
 	void mousePositionShiftedByScale(QPoint mousePt, double oldScaleRatio, double newScaleRatio);
+	void clearResult();
 public slots:
 void changeClass(QString txt, QColor clr);
 void applyScaleRatio();
@@ -95,7 +96,7 @@ private:
 	bool _bLButtonDown;
 	bool _bSelectClass;
 	bool _bDrawCursor;
-	bool _bEdit;
+	bool _bEdit;//false if the image is in play mode, false if the image can be editted.
 
 	QScrollArea* _scrollArea;	
 	QPoint _lastPoint;

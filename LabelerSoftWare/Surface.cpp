@@ -5,6 +5,12 @@
 #include <QRect>
 #include <qmessagebox.h>
 //#define CHECK_QIMAGE
+
+#ifdef CHECK_QIMAGE
+#include <QtDebug.h>
+#endif // CHECK_QIMAGE
+
+
 QColor Surface::_myPenColor(0, 0, 0);
 int Surface::_myPenRadius = 10;
 
@@ -198,6 +204,8 @@ void Surface::keyPressEvent(QKeyEvent *ev)
 	case Qt::Key::Key_Tab:
 		//qDebug() << "showReferenceImg()";
 		this->showReferenceImg(); break;
+	case Qt::Key::Key_R:
+		emit clearResult(); break;
 	//case Qt::Key::Key_Space:qDebug() << "Key_Space" ; break;
 
 	default:break;
@@ -308,11 +316,11 @@ void Surface::mouseReleaseEvent(QMouseEvent *ev)
 			_paintPath = QPainterPath();
 			_tempDrawPath = QPainterPath();
 		}
-#ifdef CHECK_QIMAGE
-		Mat temp = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
-		cv::imshow("QImage", temp);
-		cv::waitKey(1);
-#endif
+//#ifdef CHECK_QIMAGE
+//		Mat temp = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
+//		cv::imshow("QImage", temp);
+//		cv::waitKey(1);
+//#endif
 	}
 	QLabel::mouseReleaseEvent(ev);
 }
@@ -424,6 +432,11 @@ void Surface::paintCursor()
 void Surface::updateImage()
 {
 	_ImageDraw = _oriImage.copy();
+
+#ifdef CHECK_QIMAGE
+	qt_debug::showQImage(_oriImage);
+#endif //CHECK_QIMAGE 
+
 	applyScaleRatio();
 }
 
