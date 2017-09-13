@@ -16,6 +16,7 @@
 #include <Surface.h>
 #include <QEvent>
 #include <QObject>
+#include <QCheckBox>
 #include <SmartScrollArea.h>
 
 class LVideoWidget : public QWidget
@@ -35,6 +36,9 @@ private:
 	void addEventFilters();
 	void setupConnections();
 	void setLineEditEnabled(bool e);
+	void ShrinkWindow();
+	void NormalWindow();
+	void showFullScreen();
 protected:
 	virtual bool eventFilter(QObject* obj, QEvent* ev);
 	void hideEvent(QHideEvent* ev);
@@ -57,6 +61,7 @@ private:
 	QPushButton* wSaveButton;
 	QPushButton* wOpenSaveDir;
 	QHBoxLayout *hBoxLayout0;//layout contain settings
+	QCheckBox* wCheckBoxAutoLoadResult;
 
     VideoThread* vthread;
     VideoControl* vcontrol;
@@ -72,6 +77,7 @@ signals:
 	void edittingStopped();
 	void signalClose();
 	void signalSave();
+	void signalAutoLoadResult(bool checked);
 	void signalOpenSaveDir();
 	void signalFrameIdx(int frameIdx);
 public slots:
@@ -80,6 +86,7 @@ public slots:
     void pause();
 	void edit();
 	void save();
+	void toggleAutoLoadResult(bool checked);
 	void openSaveDir();
 	void commitSetting();
 	void hasEditResult(QImage&);

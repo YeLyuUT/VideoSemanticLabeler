@@ -19,6 +19,7 @@ ProcessControl::ProcessControl(string filePath, string outputDir, int skipFrameN
 	_labelingTask = NULL;	
 	_isLabeling = false;
 	_skipFrameNum = skipFrameNum;
+	_autoLoadResult = false;//Please keep this the same as in the video widget.
 }
 
 
@@ -127,16 +128,17 @@ void ProcessControl::processVideo()
 {
 	qDebug() << "processVideo" << endl;
 	_w = new LabelerSoftWare(2, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
-	connect(_w->getVideoWidget(), SIGNAL(edittingStarted(VideoControl*)), this, SLOT(hasNewLabelingProcess(VideoControl*)));
-	connect(_w->getVideoWidget(), SIGNAL(edittingStopped()), this, SLOT(closeLabelingProcess()));
-	connect(_w->getVideoWidget(), SIGNAL(signalClose()), this, SLOT(labelerSoftWareQuit()));
+	QObject::connect(_w->getVideoWidget(), SIGNAL(edittingStarted(VideoControl*)), this, SLOT(hasNewLabelingProcess(VideoControl*)));
+	QObject::connect(_w->getVideoWidget(), SIGNAL(edittingStopped()), this, SLOT(closeLabelingProcess()));
+	QObject::connect(_w->getVideoWidget(), SIGNAL(signalClose()), this, SLOT(labelerSoftWareQuit()));
+	QObject::connect(_w->getVideoWidget(), SIGNAL(signalAutoLoadResult(bool)), this, SLOT(toggleAutoLoadResult(bool)));
 	_w->show();
 }
 
 void ProcessControl::hasNewLabelingProcess(VideoControl* pVidCtrl)
 {
 	_w->getVideoWidget()->setSkipFrameNum(_skipFrameNum);
-	_labelingTask = new LabelingTaskControl(this, pVidCtrl, _selection, QString::fromStdString(this->_outputDir), this);
+	_labelingTask = new LabelingTaskControl(this, pVidCtrl, _selection, QString::fromStdString(this->_outputDir), _autoLoadResult, this);
 	qDebug() << "LabelingTaskControl Created";
 	QObject::connect(_w->getVideoWidget(), SIGNAL(signalSave()), _labelingTask, SLOT(saveLabelResult()));
 	QObject::connect(_w->getVideoWidget(), SIGNAL(signalOpenSaveDir()), _labelingTask, SLOT(openSaveDir()));
@@ -225,4 +227,13 @@ bool ProcessControl::eventFilter(QObject* obj, QEvent* ev)
 		}
 	}
 	return QObject::eventFilter(obj,ev);
+}
+
+void ProcessControl::toggleAutoLoadResult(bool checked)
+{
+	_autoLoadResult = checked;
+	if (_isLabeling&&_labelingTask)
+	{
+		_labelingTask->setAutoLoadResult(_autoLoadResult);
+	}
 }

@@ -23,7 +23,7 @@ public slots:
 	void hasNewLabelingProcess(VideoControl* pVidCtrl);
 	void closeLabelingProcess();
 	void labelerSoftWareQuit();
-
+	void toggleAutoLoadResult(bool checked);
 	void switchToNextLabelFrame();
 	void switchToPreviousLabelFrame();
 	void switchToLabelFrame(int idx);
@@ -45,5 +45,6 @@ private:
 	LabelerSoftWare *_w;
 	bool _isLabeling;
 	int _skipFrameNum;
+	bool _autoLoadResult;
 };
 

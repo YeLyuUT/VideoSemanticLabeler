@@ -17,8 +17,11 @@ class LabelingTaskControl:public QObject
 {
 	Q_OBJECT
 public:
-	LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl* vidCtrl, ClassSelection* selection, QString outPutDir = QString(), QObject* parent = NULL);
+	LabelingTaskControl(ProcessControl* pProcCtrl, VideoControl* vidCtrl, ClassSelection* selection, QString outPutDir = QString(), bool autoLoadResult = false, QObject* parent = NULL);
 	virtual ~LabelingTaskControl();
+public:
+	void setAutoLoadResult(bool);
+	void reAttachOutPutImage();//reAttach the outputSurface with outPutImage
 private:
 	void closeAllSubWindows();
 	void doSegmentation();//TODO
@@ -38,8 +41,11 @@ private:
 	bool saveResult(QString filePath);
 	bool maySaveResult(QString filePath);
 	bool checkModified();
-	QString getResultSavingPath();
-
+	QString getResultSavingPathName();
+	void releaseAll();
+	void setupOtherImg();
+	
+	void resetSurfaceSource(Surface* surface,QImage* source);
 protected:
 
 public slots:
@@ -48,6 +54,7 @@ void saveLabelResult();//save directory is set by constructor
 void openSaveDir();//open the directory that will be used to hold saving files
 void clearResult();
 void loadResultFromDir();
+
 private:
 	/*Internal Images*/
 	/*QImage& _segImg();
@@ -58,9 +65,7 @@ private:
 	Mat _labelImg;
 	QImage _outPutImg;
 	QImage _painterPathImage;
-	void releaseAll();
 
-	void setupOtherImg();
 private:
 	Surface *_surfaceSegmentation;
 	Surface *_surfaceOriginal;
@@ -75,5 +80,6 @@ private:
 	QString _outPutDir;
 	int _frameIdx;
 	VideoControl* _pVidCtrl;
+	bool _autoLoadResult;
 };
 

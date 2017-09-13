@@ -16,13 +16,15 @@
 #endif // CHECK_QIMAGE
 
 
-LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl* pCtrl, ClassSelection* selection, QString outPutDir, QObject* parent) :QObject(parent)
+LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl* pCtrl, ClassSelection* selection, QString outPutDir,bool autoLoadResult, QObject* parent) :QObject(parent)
 {
+	_autoLoadResult = autoLoadResult;
 	_pVidCtrl = pCtrl;
 	int index = _pVidCtrl->getPosFrames();
 	cv::Mat matFrame;
 	if (!_pVidCtrl->getFrame(matFrame, index)) throw std::exception("cannot load Image to be labeled");
 	QImage Img = ImageConversion::cvMat_to_QImage(matFrame);
+	
 	_frameIdx = index;
 	_modified = false;
 	_outPutDir = outPutDir;
@@ -219,7 +221,7 @@ bool LabelingTaskControl::saveResult(QString filePath)
 
 void LabelingTaskControl::saveLabelResult()
 {
-	QString filePath = getResultSavingPath();
+	QString filePath = getResultSavingPathName();
 	if (maySaveResult(filePath))
 	{
 		qDebug() << "Save Successful";
@@ -230,7 +232,7 @@ void LabelingTaskControl::saveLabelResult()
 	}
 }
 
-QString LabelingTaskControl::getResultSavingPath()
+QString LabelingTaskControl::getResultSavingPathName()
 {
 	return QString(this->_outPutDir + QString("/%1.bmp")).arg(_frameIdx);
 }
@@ -290,13 +292,21 @@ void LabelingTaskControl::releaseAll()
 void LabelingTaskControl::setupOtherImg()
 {
 	_segImg = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_RGB888);
-	_outPutImg = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_RGB888);
 	_painterPathImage = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_Grayscale8);
 	_labelImg = Mat(_InputImg.height(), _InputImg.width(), CV_32S);
 	_segImg.fill(0);
-	_outPutImg.fill(0);
 	_painterPathImage.fill(0);
 	_labelImg.setTo(0);
+	
+	if (_autoLoadResult)
+	{
+		loadResultFromDir();//This has already set _outPutImg
+	}
+	else
+	{
+		_outPutImg = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_RGB888);
+		_outPutImg.fill(0);
+	}
 }
 
 void LabelingTaskControl::retrievePainterPath(int PenWidth, QPainterPath& paintPath)
@@ -378,9 +388,30 @@ void LabelingTaskControl::clearResult()
 
 void LabelingTaskControl::loadResultFromDir()
 {
-	QString filePath = getResultSavingPath();
+	QString filePath = getResultSavingPathName();
 	cv::Mat IMG = cv::imread(filePath.toStdString());
 	QImage qIMG = ImageConversion::cvMat_to_QImage(IMG);
 	this->_outPutImg = qIMG;
 }
 
+void LabelingTaskControl::setAutoLoadResult(bool b)
+{
+	_autoLoadResult = b;
+	if (_autoLoadResult)
+	{
+		loadResultFromDir();
+		reAttachOutPutImage();
+		_surfaceOutPut->update();
+	}
+	qDebug() << QString("setAutoLoadResult:%1").arg(b);
+}
+
+void LabelingTaskControl::resetSurfaceSource(Surface* surface, QImage* source)
+{
+	surface->setOriginalImage(*source);
+}
+
+void LabelingTaskControl::reAttachOutPutImage()
+{
+	resetSurfaceSource(_surfaceOutPut, &_outPutImg);
+}

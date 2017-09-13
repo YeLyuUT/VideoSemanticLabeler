@@ -30,6 +30,7 @@ LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
 	wCommitButton = nullptr;
 	wSaveButton = nullptr;
 	wOpenSaveDir = nullptr;
+	wCheckBoxAutoLoadResult = nullptr;
     constructInterface();
 	vcontrol = new VideoControl();
 	vthread = new VideoThread(vcontrol);
@@ -37,7 +38,7 @@ LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
 	setupConnections();
 	_skipFrameNum = 1;
 	isEditting = false;
-
+	NormalWindow();
 }
 
 LVideoWidget::~LVideoWidget()
@@ -49,6 +50,22 @@ LVideoWidget::~LVideoWidget()
 	}
 	if (vcontrol != nullptr) delete vcontrol;
     qDebug()<<"Video Widget Deleted."<<endl;
+}
+
+void LVideoWidget::ShrinkWindow()
+{
+	window()->showNormal();
+	window()->resize(1, 1);
+}
+
+void LVideoWidget::NormalWindow()
+{
+	window()->showNormal();
+}
+
+void LVideoWidget::showFullScreen()
+{
+	window()->showFullScreen();
 }
 
 void LVideoWidget::hideEvent(QHideEvent* ev)
@@ -75,6 +92,7 @@ void LVideoWidget::setupConnections()
 	connect(wStopButton, SIGNAL(clicked()), this, SLOT(stop()));
 	connect(wEditButton, SIGNAL(clicked()), this, SLOT(edit()));
 	connect(wSaveButton, SIGNAL(clicked()), this, SLOT(save()));
+	connect(wCheckBoxAutoLoadResult, SIGNAL(toggled(bool)), this, SLOT(toggleAutoLoadResult(bool)));
 	connect(wOpenSaveDir, SIGNAL(clicked()), this, SLOT(openSaveDir()));
 	connect(wCommitButton, SIGNAL(clicked()), this, SLOT(commitSetting()));
 	connect(vthread, SIGNAL(updateVideoInfo(double, double, double)), this, SLOT(updateInfos(double, double, double)));
@@ -115,6 +133,10 @@ void LVideoWidget::constructInterface()
 	wOpenSaveDir = new QPushButton("Open Saving Directory");
 	hBoxLayout0->addWidget(wOpenSaveDir);
 	wOpenSaveDir->hide();
+	wCheckBoxAutoLoadResult = new QCheckBox("Auto Load Result");
+	hBoxLayout0->addWidget(wCheckBoxAutoLoadResult);
+	wCheckBoxAutoLoadResult->hide();
+	wCheckBoxAutoLoadResult->setChecked(false);//keep same as process control
 	wSkipFrameNumEdit = new QLineEdit(this);
 	wSkipFrameNumEdit->setMaximumWidth(50);
 	wSkipFrameNumEdit->setText("1");
@@ -313,6 +335,12 @@ void LVideoWidget::save()
 	emit signalSave();
 }
 
+void LVideoWidget::toggleAutoLoadResult(bool checked)
+{
+	qDebug() << "emit toggleAutoLoadResult";
+	emit signalAutoLoadResult(checked);
+}
+
 void LVideoWidget::openSaveDir()
 {
 	qDebug() << "emit signal OpenSaveDir";
@@ -336,17 +364,20 @@ void LVideoWidget::edit()
 		wPauseButton->hide();
 		wStopButton->hide();
 		wSaveButton->show();
+		wCheckBoxAutoLoadResult->show();
 		wOpenSaveDir->show();
 		wEditButton->setText("Stop Labeling");
 		wStatus->setText(QString("Editting..."));
 		wStatus->setStyleSheet("QLabel {  color : blue; }");
-		window()->showNormal();
 		//window()->setWindowFlags(window()->windowFlags()& ~Qt::WindowTitleHint);
-		window()->resize(1, 1);
-
+		/*window()->showNormal();
+		window()->resize(1, 1);*/
+		
+		this->ShrinkWindow();
 		QWidget* pa = (QWidget*)this->parent();
 		LabelerSoftWare* ppa = (LabelerSoftWare*)pa->parent();
 		ppa->moveToTopCenter();
+
 		//qDebug() << window()->windowFlags();
 		//window()->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
 		emit edittingStarted(this->vcontrol);
@@ -365,6 +396,7 @@ void LVideoWidget::edit()
 		wPauseButton->show();
 		wStopButton->show();
 		wSaveButton->hide();
+		wCheckBoxAutoLoadResult->hide();
 		wOpenSaveDir->hide();
 		wEditButton->setText("Start Labeling");
 		wStatus->setText(QString("Stopped"));
@@ -372,6 +404,9 @@ void LVideoWidget::edit()
 		//window()->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 		emit edittingStopped();
 		isEditting = false;
+		/*window()->showNormal();
+		window()->resize(1, 1);*/
+		this->NormalWindow();
 	}
 }
 
