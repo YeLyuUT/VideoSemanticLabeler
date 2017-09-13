@@ -37,10 +37,6 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_SA2 = new SmartScrollArea();
 	_SA3 = new SmartScrollArea();
 
-	/*install event filters for scroll area*/
-	_SA1->installEventFilter(pProcCtrl);
-	_SA2->installEventFilter(pProcCtrl);
-	_SA3->installEventFilter(pProcCtrl);
 	/*set up relation between scrollarea and surface*/
 	_SA1->setWidget(_surfaceOriginal);
 	_SA2->setWidget(_surfaceSegmentation);
@@ -49,6 +45,11 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_surfaceOriginal->setScrollArea(_SA1);
 	_surfaceSegmentation->setScrollArea(_SA2);
 	_surfaceOutPut->setScrollArea(_SA3);	
+
+	/*install event filters for scroll area*/
+	_SA1->installEventFilter(pProcCtrl);
+	_SA2->installEventFilter(pProcCtrl);
+	_SA3->installEventFilter(pProcCtrl);
 
 	_SA1->installEventFilter(_surfaceOriginal);
 	_SA2->installEventFilter(_surfaceSegmentation);
@@ -60,6 +61,7 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_SA1->setWindowTitle("Original");
 	_SA2->setWindowTitle("Segmentation");
 	_SA3->setWindowTitle("OutPut");
+
 	/************************************************/
 	_surfaceOriginal->setEditable(true);
 	_surfaceSegmentation->setEditable(true);
@@ -89,6 +91,14 @@ void LabelingTaskControl::setupConnections()
 	setupScrollAreaConnections();
 	setupSurfacePainterPathConnections();
 	setupSurfaceHotKeyConnections();
+	setupSurfaceWindowCloseConnections();
+}
+
+void LabelingTaskControl::setupSurfaceWindowCloseConnections()
+{
+	QObject::connect(_SA1, SIGNAL(hide()), this, SLOT(deleteLater()));
+	QObject::connect(_SA2, SIGNAL(hide()), this, SLOT(deleteLater()));
+	QObject::connect(_SA3, SIGNAL(hide()), this, SLOT(deleteLater()));
 }
 
 void LabelingTaskControl::setupSurfaceHotKeyConnections()
@@ -138,20 +148,42 @@ void LabelingTaskControl::setupSurfacePainterPathConnections()
 
 LabelingTaskControl::~LabelingTaskControl()
 {
-	
-	_surfaceSegmentation->deleteLater();
-	_surfaceOriginal->deleteLater();
-	_surfaceOutPut->deleteLater();
-	_SA1->deleteLater();
-	_SA2->deleteLater();
-	_SA3->deleteLater();
-	_surfaceSegmentation = NULL;
-	_surfaceOriginal = NULL;
-	_surfaceOutPut = NULL;
-	_SA1=NULL;
-	_SA2=NULL;
-	_SA3=NULL;
+	closeAllSubWindows();
 	releaseAll();
+}
+
+void LabelingTaskControl::closeAllSubWindows()
+{
+	if(_surfaceSegmentation)
+	{
+		_surfaceSegmentation->deleteLater();
+		_surfaceSegmentation = NULL;
+	}
+	if(_surfaceOriginal)
+	{
+		_surfaceOriginal->deleteLater();
+		_surfaceOriginal = NULL;
+	}
+	if (_surfaceOutPut)
+	{
+		_surfaceOutPut->deleteLater();
+		_surfaceOutPut = NULL;
+	}
+	if (_SA1)
+	{
+		_SA1->deleteLater();
+		_SA1 = NULL;
+	}
+	if (_SA2)
+	{
+		_SA2->deleteLater();
+		_SA2 = NULL;
+	}
+	if (_SA3)
+	{
+		_SA3->deleteLater();
+		_SA3 = NULL;
+	}
 }
 
 bool LabelingTaskControl::maySaveResult(QString filePath)

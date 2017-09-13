@@ -216,9 +216,13 @@ bool ProcessControl::eventFilter(QObject* obj, QEvent* ev)
 				default:
 					break;
 				}
-
+			}
+			if (ev->type() == QEvent::Close)
+			{
+				qDebug() << "SA close event";
+				this->_w->getVideoWidget()->edit();
 			}
 		}
 	}
-	return false;
+	return QObject::eventFilter(obj,ev);
 }

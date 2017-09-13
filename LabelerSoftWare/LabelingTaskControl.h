@@ -20,12 +20,14 @@ public:
 	LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl* vidCtrl, ClassSelection* selection, QString outPutDir = QString(), QObject* parent = NULL);
 	virtual ~LabelingTaskControl();
 private:
+	void closeAllSubWindows();
 	void doSegmentation();//TODO
 
 	void setupColorSelectionConnections();//set quick access to color selection panel
 	void setupScrollAreaConnections();
 	void setupSurfacePainterPathConnections();
 	void setupSurfaceHotKeyConnections();
+	void setupSurfaceWindowCloseConnections();
 	void setupConnections();
 
 	void updateSurface(Surface *sf);
@@ -39,7 +41,6 @@ private:
 	QString getResultSavingPath();
 
 protected:
-	
 
 public slots:
 void retrievePainterPath(int PenWidth, QPainterPath& paintPath);
