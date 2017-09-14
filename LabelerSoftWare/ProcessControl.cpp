@@ -128,22 +128,26 @@ void ProcessControl::processVideo()
 {
 	qDebug() << "processVideo" << endl;
 	_w = new LabelerSoftWare(2, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
+	_w->getVideoWidget()->getInternalVideoControl()->setSavedSkipFrameNum(_skipFrameNum);
+	_w->getVideoWidget()->setSkipFrameNum(1);
 	QObject::connect(_w->getVideoWidget(), SIGNAL(edittingStarted(VideoControl*)), this, SLOT(hasNewLabelingProcess(VideoControl*)));
 	QObject::connect(_w->getVideoWidget(), SIGNAL(edittingStopped()), this, SLOT(closeLabelingProcess()));
 	QObject::connect(_w->getVideoWidget(), SIGNAL(signalClose()), this, SLOT(labelerSoftWareQuit()));
 	QObject::connect(_w->getVideoWidget(), SIGNAL(signalAutoLoadResult(bool)), this, SLOT(toggleAutoLoadResult(bool)));
 	_w->show();
+	
 }
 
 void ProcessControl::hasNewLabelingProcess(VideoControl* pVidCtrl)
 {
-	_w->getVideoWidget()->setSkipFrameNum(_skipFrameNum);
 	_labelingTask = new LabelingTaskControl(this, pVidCtrl, _selection, QString::fromStdString(this->_outputDir), _autoLoadResult, this);
 	qDebug() << "LabelingTaskControl Created";
 	QObject::connect(_w->getVideoWidget(), SIGNAL(signalSave()), _labelingTask, SLOT(saveLabelResult()));
 	QObject::connect(_w->getVideoWidget(), SIGNAL(signalOpenSaveDir()), _labelingTask, SLOT(openSaveDir()));
 	QObject::connect(_w->getVideoWidget(), SIGNAL(signalFrameIdx(int)), this, SLOT(switchToLabelFrame(int)));
+	_w->getVideoWidget()->setSkipFrameNum(pVidCtrl->getSkipFrameNum());
 	_isLabeling = true;
+	
 }
 
 void ProcessControl::closeLabelingProcess()
@@ -155,7 +159,6 @@ void ProcessControl::closeLabelingProcess()
 		qDebug() << "LabelingTaskControl Closed";
 	}
 	_isLabeling = false;
-	_w->getVideoWidget()->setSkipFrameNum(1);
 }
 
 void ProcessControl::switchToNextLabelFrame()
@@ -164,7 +167,7 @@ void ProcessControl::switchToNextLabelFrame()
 	{
 		closeLabelingProcess();
 		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
-		pVidCtrl->setPosFrames(pVidCtrl->getPosFrames() + pVidCtrl->getSkipFrameNum());
+		pVidCtrl->setToNextFrame();
 		hasNewLabelingProcess(pVidCtrl);
 	}
 }
@@ -175,7 +178,7 @@ void ProcessControl::switchToPreviousLabelFrame()
 	{
 		closeLabelingProcess();
 		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
-		pVidCtrl->setPosFrames(pVidCtrl->getPosFrames() - pVidCtrl->getSkipFrameNum());
+		pVidCtrl->setToPreviousFrame();
 		hasNewLabelingProcess(pVidCtrl);
 	}
 }

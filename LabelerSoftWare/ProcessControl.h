@@ -44,7 +44,7 @@ private:
 	LabelingTaskControl* _labelingTask;
 	LabelerSoftWare *_w;
 	bool _isLabeling;
-	int _skipFrameNum;
+	int _skipFrameNum;//used to store parameter from metaData(xml file)
 	bool _autoLoadResult;
 };
 

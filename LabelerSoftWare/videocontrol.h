@@ -19,6 +19,8 @@ public:
     void retrievePalyInfos();
     bool getFrame(cv::Mat& img);
     bool getFrame(cv::Mat& img,double frameNum);
+	void setToNextFrame();//set the next frame to be read 
+	void setToPreviousFrame();//set the previous frame to be read
 	void forwardFrames(int n);
     void reset(int frameNumber=0);
     double getWidth();
@@ -33,6 +35,10 @@ public:
     double getMode();
 	unsigned int getSkipFrameNum();
 	void setSkipFrameNum(unsigned int num = 1);
+	void setToMinSkipFrameNum();
+	void setToSavedSkipFrameNum();
+	void saveSkipFrameNum();
+	void setSavedSkipFrameNum(unsigned int num = 1);
 	void setPosFrames(int idx);
 public:
     struct PROPS
@@ -52,6 +58,7 @@ private:
     cv::VideoCapture _videoCap;
 
 	unsigned int _skipFrameNum;
+	unsigned int _savedSkipFrameNum;
     QString _filePath;
     mutable QReadWriteLock _lock;
 };

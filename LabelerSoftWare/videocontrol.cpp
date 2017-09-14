@@ -1,10 +1,11 @@
-#include "videocontrol.h"
+﻿#include "videocontrol.h"
 #include <QDebug>
 #include <QReadWriteLock>
 using namespace cv;
 VideoControl::VideoControl():_lock(QReadWriteLock::Recursive)
 {
 	_skipFrameNum = 1;
+	_savedSkipFrameNum = 1;
 }
 
 VideoControl::~VideoControl()
@@ -185,4 +186,36 @@ void VideoControl::forwardFrames(int n)
 	{
 		_videoCap.grab();
 	}
+}
+
+void VideoControl::setToNextFrame()
+{
+	int idx = this->getPosFrames() + this->getSkipFrameNum();
+	this->setPosFrames(idx);
+}
+
+void VideoControl::setToPreviousFrame()
+{
+	int idx = this->getPosFrames() - this->getSkipFrameNum();
+	this->setPosFrames(idx);
+}
+
+void VideoControl::saveSkipFrameNum()
+{
+	_savedSkipFrameNum = _skipFrameNum;
+}
+
+void VideoControl::setToMinSkipFrameNum()
+{
+	this->setSkipFrameNum(1);
+}
+
+void VideoControl::setToSavedSkipFrameNum()
+{
+	this->setSkipFrameNum(_savedSkipFrameNum);
+}
+
+void VideoControl::setSavedSkipFrameNum(unsigned int num)
+{
+	_savedSkipFrameNum = num;
 }

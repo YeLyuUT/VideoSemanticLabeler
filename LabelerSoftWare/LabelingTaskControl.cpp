@@ -20,9 +20,10 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 {
 	_autoLoadResult = autoLoadResult;
 	_pVidCtrl = pCtrl;
+	_pVidCtrl->setToSavedSkipFrameNum();
 	int index = _pVidCtrl->getPosFrames();
 	cv::Mat matFrame;
-	if (!_pVidCtrl->getFrame(matFrame, index)) throw std::exception("cannot load Image to be labeled");
+	if (!_pVidCtrl->getFrame(matFrame, index + 1)) throw std::exception("cannot load Image to be labeled");
 	QImage Img = ImageConversion::cvMat_to_QImage(matFrame);
 	
 	_frameIdx = index;
@@ -87,6 +88,14 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_SA3->show();
 }
 
+LabelingTaskControl::~LabelingTaskControl()
+{
+	_pVidCtrl->saveSkipFrameNum();
+	_pVidCtrl->setToMinSkipFrameNum();
+	closeAllSubWindows();
+	releaseAll();
+}
+
 void LabelingTaskControl::setupConnections()
 {
 	setupColorSelectionConnections();
@@ -148,11 +157,7 @@ void LabelingTaskControl::setupSurfacePainterPathConnections()
 //	return pCtrl.get();
 //}
 
-LabelingTaskControl::~LabelingTaskControl()
-{
-	closeAllSubWindows();
-	releaseAll();
-}
+
 
 void LabelingTaskControl::closeAllSubWindows()
 {
