@@ -79,7 +79,7 @@ signals:
 	void signalSave();
 	void signalAutoLoadResult(bool checked);
 	void signalOpenSaveDir();
-	void signalFrameIdx(int frameIdx);
+	void signalNewFrame();
 public slots:
     void play();
     void stop();

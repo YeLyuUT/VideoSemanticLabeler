@@ -30,7 +30,7 @@ public:
     double getFourcc();
     double getFormat();
     double getPosMsec();
-    double getPosFrames();
+    double getPosFrames();//current frame pos(last read)
     double getPosAviRatio();
     double getMode();
 	unsigned int getSkipFrameNum();
@@ -40,6 +40,8 @@ public:
 	void saveSkipFrameNum();
 	void setSavedSkipFrameNum(unsigned int num = 1);
 	void setPosFrames(int idx);
+private:
+	void increaseFrameIdxBy1();
 public:
     struct PROPS
     {
@@ -56,7 +58,7 @@ public:
     }props;
 private:
     cv::VideoCapture _videoCap;
-
+	long int _frameIdx;
 	unsigned int _skipFrameNum;
 	unsigned int _savedSkipFrameNum;
     QString _filePath;

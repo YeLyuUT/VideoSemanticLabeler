@@ -188,7 +188,7 @@ void LVideoWidget::setLineEditEnabled(bool e)
 void LVideoWidget::changeVideoPos(double framePosRatio)
 {
     int total_count = vcontrol->getFrameCount();
-    int framePos = qMin<int>(total_count,qMax<int>(0,(int)(total_count-1)*framePosRatio));
+	int framePos = qMin<int>(total_count, qMax<int>(0, (int)(total_count*framePosRatio - 1.0)));
     vthread->setNextFrame(framePos);
 	vthread->emitNextImageAndInfos();
 }
@@ -446,6 +446,7 @@ void LVideoWidget::skipFrameNumChanged(const QString& str)
 		wSkipFrameNumEdit->setText(QString("1"));
 		_skipFrameNum = 1;
 	}
+	vcontrol->setSavedSkipFrameNum(_skipFrameNum);
 	vcontrol->setSkipFrameNum(_skipFrameNum);
 	qDebug() << _skipFrameNum << endl;
 }
@@ -460,8 +461,13 @@ void LVideoWidget::currentFrameNumChanged(const QString& str)
 		if (!isEditting)
 		{
 			vthread->emitNextImage();
+			double ratio = vcontrol->getPosFrames() / (vcontrol->getFrameCount() - 1.0);
+			this->updateProgressBar(ratio);
 		}
-		emit signalFrameIdx(num);
+		else
+		{
+			emit signalNewFrame();
+		}
 	}
 	else
 	{

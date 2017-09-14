@@ -140,13 +140,19 @@ void ProcessControl::processVideo()
 
 void ProcessControl::hasNewLabelingProcess(VideoControl* pVidCtrl)
 {
-	_labelingTask = new LabelingTaskControl(this, pVidCtrl, _selection, QString::fromStdString(this->_outputDir), _autoLoadResult, this);
-	qDebug() << "LabelingTaskControl Created";
-	QObject::connect(_w->getVideoWidget(), SIGNAL(signalSave()), _labelingTask, SLOT(saveLabelResult()));
-	QObject::connect(_w->getVideoWidget(), SIGNAL(signalOpenSaveDir()), _labelingTask, SLOT(openSaveDir()));
-	QObject::connect(_w->getVideoWidget(), SIGNAL(signalFrameIdx(int)), this, SLOT(switchToLabelFrame(int)));
-	_w->getVideoWidget()->setSkipFrameNum(pVidCtrl->getSkipFrameNum());
-	_isLabeling = true;
+	if (_labelingTask == NULL)
+	{
+		_labelingTask = new LabelingTaskControl(this, pVidCtrl, _selection, QString::fromStdString(this->_outputDir), _autoLoadResult, this);
+		qDebug() << "LabelingTaskControl Created";
+		QObject::connect(_w->getVideoWidget(), SIGNAL(signalSave()), _labelingTask, SLOT(saveLabelResult()));
+		QObject::connect(_w->getVideoWidget(), SIGNAL(signalOpenSaveDir()), _labelingTask, SLOT(openSaveDir()));
+		QObject::connect(_w->getVideoWidget(), SIGNAL(signalNewFrame()), this, SLOT(updateFrameToBeLabeled()));
+		_w->getVideoWidget()->setSkipFrameNum(pVidCtrl->getSkipFrameNum());
+		double ratio = pVidCtrl->getPosFrames() / (pVidCtrl->getFrameCount() - 1.0);
+		_w->getVideoWidget()->updateProgressBar(ratio);
+		//_w->getVideoWidget()->updateInfoPanel
+		_isLabeling = true;
+	}
 	
 }
 
@@ -154,11 +160,16 @@ void ProcessControl::closeLabelingProcess()
 {
 	if (_labelingTask != NULL)
 	{
+		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
+		pVidCtrl->setToMinSkipFrameNum();
+		QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalSave()), _labelingTask, SLOT(saveLabelResult()));
+		QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalOpenSaveDir()), _labelingTask, SLOT(openSaveDir()));
+		QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalNewFrame()), this, SLOT(updateFrameToBeLabeled()));
 		_labelingTask->deleteLater();
 		_labelingTask = NULL;
 		qDebug() << "LabelingTaskControl Closed";
+		_isLabeling = false;
 	}
-	_isLabeling = false;
 }
 
 void ProcessControl::switchToNextLabelFrame()
@@ -167,6 +178,7 @@ void ProcessControl::switchToNextLabelFrame()
 	{
 		closeLabelingProcess();
 		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
+		pVidCtrl->setToSavedSkipFrameNum();
 		pVidCtrl->setToNextFrame();
 		hasNewLabelingProcess(pVidCtrl);
 	}
@@ -178,6 +190,7 @@ void ProcessControl::switchToPreviousLabelFrame()
 	{
 		closeLabelingProcess();
 		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
+		pVidCtrl->setToSavedSkipFrameNum();
 		pVidCtrl->setToPreviousFrame();
 		hasNewLabelingProcess(pVidCtrl);
 	}
@@ -190,6 +203,16 @@ void ProcessControl::switchToLabelFrame(int idx)
 		closeLabelingProcess();
 		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
 		pVidCtrl->setPosFrames(idx);
+		hasNewLabelingProcess(pVidCtrl);
+	}
+}
+
+void ProcessControl::updateFrameToBeLabeled()
+{
+	if (_isLabeling)
+	{
+		closeLabelingProcess();
+		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
 		hasNewLabelingProcess(pVidCtrl);
 	}
 }

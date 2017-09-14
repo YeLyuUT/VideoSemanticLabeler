@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <exception>
+#include <QFileInfo>
 
 //#define CHECK_RETRIEVE_PAINTERPATH
 //#define CHECK_MASK_OUTPUTIMAGE
@@ -20,13 +21,15 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 {
 	_autoLoadResult = autoLoadResult;
 	_pVidCtrl = pCtrl;
-	_pVidCtrl->setToSavedSkipFrameNum();
 	int index = _pVidCtrl->getPosFrames();
-	cv::Mat matFrame;
-	if (!_pVidCtrl->getFrame(matFrame, index + 1)) throw std::exception("cannot load Image to be labeled");
-	QImage Img = ImageConversion::cvMat_to_QImage(matFrame);
-	
 	_frameIdx = index;
+	cv::Mat matFrame;
+	if (!_pVidCtrl->getFrame(matFrame, index))
+	{ 
+		QMessageBox::critical(NULL, "Frame Cannot Read", "This frame cannot be read", QMessageBox::Cancel);
+		//throw std::exception("cannot load Image to be labeled"); 
+	};
+	QImage Img = ImageConversion::cvMat_to_QImage(matFrame);
 	_modified = false;
 	_outPutDir = outPutDir;
 	_InputImg = Img.copy();
@@ -90,8 +93,6 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 
 LabelingTaskControl::~LabelingTaskControl()
 {
-	_pVidCtrl->saveSkipFrameNum();
-	_pVidCtrl->setToMinSkipFrameNum();
 	closeAllSubWindows();
 	releaseAll();
 }
@@ -107,9 +108,9 @@ void LabelingTaskControl::setupConnections()
 
 void LabelingTaskControl::setupSurfaceWindowCloseConnections()
 {
-	QObject::connect(_SA1, SIGNAL(hide()), this, SLOT(deleteLater()));
-	QObject::connect(_SA2, SIGNAL(hide()), this, SLOT(deleteLater()));
-	QObject::connect(_SA3, SIGNAL(hide()), this, SLOT(deleteLater()));
+	//QObject::connect(_SA1, SIGNAL(hide()), this, SLOT(deleteLater()));
+	//QObject::connect(_SA2, SIGNAL(hide()), this, SLOT(deleteLater()));
+	//QObject::connect(_SA3, SIGNAL(hide()), this, SLOT(deleteLater()));
 }
 
 void LabelingTaskControl::setupSurfaceHotKeyConnections()
@@ -404,9 +405,13 @@ void LabelingTaskControl::setAutoLoadResult(bool b)
 	_autoLoadResult = b;
 	if (_autoLoadResult)
 	{
-		loadResultFromDir();
-		reAttachOutPutImage();
-		_surfaceOutPut->update();
+		QFileInfo info(getResultSavingPathName());
+		if(info.exists())
+		{ 
+			loadResultFromDir();
+			reAttachOutPutImage();
+			_surfaceOutPut->update();
+		}
 	}
 	qDebug() << QString("setAutoLoadResult:%1").arg(b);
 }

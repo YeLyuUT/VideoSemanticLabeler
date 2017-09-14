@@ -6,6 +6,7 @@ VideoControl::VideoControl():_lock(QReadWriteLock::Recursive)
 {
 	_skipFrameNum = 1;
 	_savedSkipFrameNum = 1;
+	_frameIdx = -1;
 }
 
 VideoControl::~VideoControl()
@@ -28,6 +29,7 @@ void VideoControl::setSkipFrameNum(unsigned int num)
 
 void VideoControl::setPosFrames(int idx)
 {
+	_frameIdx = idx - 1;
 	_videoCap.set(CAP_PROP_POS_FRAMES, idx);
 }
 
@@ -41,6 +43,7 @@ bool VideoControl::open(QString filePath)
     {
         //locker.unlock();
         retrievePalyInfos();
+		_frameIdx = -1;
         return true;
     }
     else return false;
@@ -100,21 +103,40 @@ void VideoControl::retrievePalyInfos()
 void VideoControl::reset(int frameNumber)
 {
     QWriteLocker locker(&_lock);
-	_videoCap.set(CAP_PROP_POS_FRAMES, frameNumber);
-
+	bool success = _videoCap.set(CAP_PROP_POS_FRAMES, frameNumber);
+	_frameIdx = frameNumber - 1;
 }
 
 bool VideoControl::getFrame(Mat& img)
 {
     QWriteLocker locker(&_lock);
-    return _videoCap.read(img);
+	if (_videoCap.read(img))
+	{
+		locker.unlock();
+		increaseFrameIdxBy1();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool VideoControl::getFrame(Mat& img,double frameNum)
 {
     QWriteLocker locker(&_lock);
-    _videoCap.set(CAP_PROP_POS_FRAMES,frameNum);
-    return _videoCap.read(img);
+	_videoCap.set(CAP_PROP_POS_FRAMES, frameNum);
+	_frameIdx = frameNum - 1;
+	if (_videoCap.read(img))
+	{
+		locker.unlock();
+		increaseFrameIdxBy1();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 double VideoControl::getWidth()
@@ -164,8 +186,12 @@ double VideoControl::getPosMsec()
 double VideoControl::getPosFrames()
 {
     QReadLocker locker(&_lock);
-    props._pos_frames = _videoCap.get(CAP_PROP_POS_FRAMES)-1.0;
-    return props._pos_frames;
+	props._pos_frames = _videoCap.get(CAP_PROP_POS_FRAMES) - 1;
+	if (_frameIdx>props._pos_frames)
+	{
+		props._pos_frames = _frameIdx;
+	}
+	return props._pos_frames;
 }
 double VideoControl::getPosAviRatio()
 {
@@ -192,12 +218,14 @@ void VideoControl::setToNextFrame()
 {
 	int idx = this->getPosFrames() + this->getSkipFrameNum();
 	this->setPosFrames(idx);
+	_videoCap.grab();
 }
 
 void VideoControl::setToPreviousFrame()
 {
 	int idx = this->getPosFrames() - this->getSkipFrameNum();
 	this->setPosFrames(idx);
+	_videoCap.grab();
 }
 
 void VideoControl::saveSkipFrameNum()
@@ -218,4 +246,17 @@ void VideoControl::setToSavedSkipFrameNum()
 void VideoControl::setSavedSkipFrameNum(unsigned int num)
 {
 	_savedSkipFrameNum = num;
+}
+
+void VideoControl::increaseFrameIdxBy1()
+{
+	QWriteLocker locker(&_lock);
+	_frameIdx++;
+	locker.unlock();
+	int frameCount = (int)getFrameCount();
+	locker.relock();
+	if (_frameIdx >= frameCount)
+	{
+		_frameIdx = frameCount - 1;
+	}
 }

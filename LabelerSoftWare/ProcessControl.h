@@ -26,7 +26,8 @@ public slots:
 	void toggleAutoLoadResult(bool checked);
 	void switchToNextLabelFrame();
 	void switchToPreviousLabelFrame();
-	void switchToLabelFrame(int idx);
+	void updateFrameToBeLabeled();
+	
 protected:
 	bool eventFilter(QObject* obj, QEvent* ev);
 private:
@@ -34,7 +35,7 @@ private:
 	int checkForProcessType();
 	void processImages();
 	void processVideo();
-
+	void switchToLabelFrame(int idx);
 private:
 	int _type;
 	string _filePath;
