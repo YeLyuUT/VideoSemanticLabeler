@@ -29,6 +29,8 @@ public:
     bool openVideo(QString fileName);
 	VideoControl* getInternalVideoControl();
 	void setSkipFrameNum(int num);
+	void setSkipFrameNumToLabelingMode();
+	void setSkipFrameNumToPlayingMode();
 private:
 	bool isOpenned();
 	void closeVideo();
@@ -39,6 +41,7 @@ private:
 	void ShrinkWindow();
 	void NormalWindow();
 	void showFullScreen();
+	
 protected:
 	virtual bool eventFilter(QObject* obj, QEvent* ev);
 	void hideEvent(QHideEvent* ev);

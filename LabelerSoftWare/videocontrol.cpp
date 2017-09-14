@@ -214,14 +214,20 @@ void VideoControl::forwardFrames(int n)
 	}
 }
 
-void VideoControl::setToNextFrame()
+void VideoControl::setToFrameAndGrab(int idx)
+{
+	this->setPosFrames(idx);
+	_videoCap.grab();
+}
+
+void VideoControl::setToNextFrameAndGrab()
 {
 	int idx = this->getPosFrames() + this->getSkipFrameNum();
 	this->setPosFrames(idx);
 	_videoCap.grab();
 }
 
-void VideoControl::setToPreviousFrame()
+void VideoControl::setToPreviousFrameAndGrab()
 {
 	int idx = this->getPosFrames() - this->getSkipFrameNum();
 	this->setPosFrames(idx);

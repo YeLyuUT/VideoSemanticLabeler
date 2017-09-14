@@ -372,7 +372,7 @@ void LVideoWidget::edit()
 		//window()->setWindowFlags(window()->windowFlags()& ~Qt::WindowTitleHint);
 		/*window()->showNormal();
 		window()->resize(1, 1);*/
-		
+		setSkipFrameNumToLabelingMode();
 		this->ShrinkWindow();
 		QWidget* pa = (QWidget*)this->parent();
 		LabelerSoftWare* ppa = (LabelerSoftWare*)pa->parent();
@@ -401,6 +401,7 @@ void LVideoWidget::edit()
 		wEditButton->setText("Start Labeling");
 		wStatus->setText(QString("Stopped"));
 		wStatus->setStyleSheet("QLabel {  color : red; }");
+		setSkipFrameNumToPlayingMode();
 		//window()->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
 		emit edittingStopped();
 		isEditting = false;
@@ -457,15 +458,16 @@ void LVideoWidget::currentFrameNumChanged(const QString& str)
 	int num = str.toInt(&ok);
 	if (ok&&num >= 0&&num<=vcontrol->getFrameCount())
 	{
-		vthread->setNextFrame(num);
 		if (!isEditting)
 		{
+			vthread->setNextFrame(num);
 			vthread->emitNextImage();
 			double ratio = vcontrol->getPosFrames() / (vcontrol->getFrameCount() - 1.0);
 			this->updateProgressBar(ratio);
 		}
 		else
 		{
+			vcontrol->setToFrameAndGrab(num);
 			emit signalNewFrame();
 		}
 	}
@@ -522,4 +524,15 @@ void LVideoWidget::setSkipFrameNum(int num)
 	wSkipFrameNumEdit->setText(QString("%1").arg(num));
 	_skipFrameNum = num;
 	vcontrol->setSkipFrameNum(num);
+}
+
+void LVideoWidget::setSkipFrameNumToLabelingMode()
+{
+	vcontrol->setToSavedSkipFrameNum();
+	setSkipFrameNum(vcontrol->getSkipFrameNum());
+}
+void LVideoWidget::setSkipFrameNumToPlayingMode()
+{
+	vcontrol->setToMinSkipFrameNum();
+	setSkipFrameNum(vcontrol->getSkipFrameNum());
 }

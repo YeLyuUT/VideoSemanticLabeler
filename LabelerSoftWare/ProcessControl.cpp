@@ -180,7 +180,7 @@ void ProcessControl::switchToNextLabelFrame()
 		closeLabelingProcess();
 		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
 		pVidCtrl->setToSavedSkipFrameNum();
-		pVidCtrl->setToNextFrame();
+		pVidCtrl->setToNextFrameAndGrab();
 		hasNewLabelingProcess(pVidCtrl);
 	}
 }
@@ -192,7 +192,7 @@ void ProcessControl::switchToPreviousLabelFrame()
 		closeLabelingProcess();
 		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
 		pVidCtrl->setToSavedSkipFrameNum();
-		pVidCtrl->setToPreviousFrame();
+		pVidCtrl->setToPreviousFrameAndGrab();
 		hasNewLabelingProcess(pVidCtrl);
 	}
 }

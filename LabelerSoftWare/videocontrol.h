@@ -19,8 +19,9 @@ public:
     void retrievePalyInfos();
     bool getFrame(cv::Mat& img);
     bool getFrame(cv::Mat& img,double frameNum);
-	void setToNextFrame();//set the next frame to be read 
-	void setToPreviousFrame();//set the previous frame to be read
+	void setToNextFrameAndGrab();//set the next frame to be read 
+	void setToPreviousFrameAndGrab();//set the previous frame to be read
+	void setToFrameAndGrab(int idx);
 	void forwardFrames(int n);
     void reset(int frameNumber=0);
     double getWidth();
