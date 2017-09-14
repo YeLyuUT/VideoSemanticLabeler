@@ -148,9 +148,10 @@ void ProcessControl::hasNewLabelingProcess(VideoControl* pVidCtrl)
 		QObject::connect(_w->getVideoWidget(), SIGNAL(signalOpenSaveDir()), _labelingTask, SLOT(openSaveDir()));
 		QObject::connect(_w->getVideoWidget(), SIGNAL(signalNewFrame()), this, SLOT(updateFrameToBeLabeled()));
 		_w->getVideoWidget()->setSkipFrameNum(pVidCtrl->getSkipFrameNum());
-		double ratio = pVidCtrl->getPosFrames() / (pVidCtrl->getFrameCount() - 1.0);
+		double posFrame = pVidCtrl->getPosFrames();
+		double ratio = posFrame / (pVidCtrl->getFrameCount() - 1.0);
 		_w->getVideoWidget()->updateProgressBar(ratio);
-		//_w->getVideoWidget()->updateInfoPanel
+		_w->getVideoWidget()->updateCurrentFrameNum(posFrame);
 		_isLabeling = true;
 	}
 	
