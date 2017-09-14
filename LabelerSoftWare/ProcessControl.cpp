@@ -214,6 +214,7 @@ void ProcessControl::updateFrameToBeLabeled()
 	{
 		closeLabelingProcess();
 		VideoControl* pVidCtrl = _w->getVideoWidget()->getInternalVideoControl();
+		pVidCtrl->setToSavedSkipFrameNum();
 		hasNewLabelingProcess(pVidCtrl);
 	}
 }

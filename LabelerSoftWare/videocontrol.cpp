@@ -112,6 +112,7 @@ bool VideoControl::getFrame(Mat& img)
     QWriteLocker locker(&_lock);
 	if (_videoCap.read(img))
 	{
+		_curMat = img;
 		locker.unlock();
 		increaseFrameIdxBy1();
 		return true;
@@ -129,6 +130,7 @@ bool VideoControl::getFrame(Mat& img,double frameNum)
 	_frameIdx = frameNum - 1;
 	if (_videoCap.read(img))
 	{
+		_curMat = img;
 		locker.unlock();
 		increaseFrameIdxBy1();
 		return true;
@@ -137,6 +139,11 @@ bool VideoControl::getFrame(Mat& img,double frameNum)
 	{
 		return false;
 	}
+}
+
+Mat VideoControl::getCurMat()
+{
+	return _curMat;
 }
 
 double VideoControl::getWidth()

@@ -8,7 +8,7 @@
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QApplication>
-
+#include <ImageConversion.h>
 #include <labelersoftware.h>
 
 using namespace cv;
@@ -403,6 +403,7 @@ void LVideoWidget::edit()
 		wStatus->setStyleSheet("QLabel {  color : red; }");
 		setSkipFrameNumToPlayingMode();
 		//window()->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+		this->showImage(ImageConversion::cvMat_to_QImage(vcontrol->getCurMat()));
 		emit edittingStopped();
 		isEditting = false;
 		/*window()->showNormal();
@@ -440,6 +441,7 @@ void LVideoWidget::skipFrameNumChanged(const QString& str)
 	if (ok&&num > 0)
 	{
 		_skipFrameNum = num;
+
 	}
 	else
 	{
@@ -447,8 +449,11 @@ void LVideoWidget::skipFrameNumChanged(const QString& str)
 		wSkipFrameNumEdit->setText(QString("1"));
 		_skipFrameNum = 1;
 	}
-	vcontrol->setSavedSkipFrameNum(_skipFrameNum);
-	vcontrol->setSkipFrameNum(_skipFrameNum);
+	if (isEditting)
+	{
+		vcontrol->setSavedSkipFrameNum(_skipFrameNum);
+		vcontrol->setSkipFrameNum(_skipFrameNum);
+	}
 	qDebug() << _skipFrameNum << endl;
 }
 

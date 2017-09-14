@@ -19,6 +19,7 @@ public:
     void retrievePalyInfos();
     bool getFrame(cv::Mat& img);
     bool getFrame(cv::Mat& img,double frameNum);
+	cv::Mat getCurMat();
 	void setToNextFrameAndGrab();//set the next frame to be read 
 	void setToPreviousFrameAndGrab();//set the previous frame to be read
 	void setToFrameAndGrab(int idx);
@@ -64,6 +65,7 @@ private:
 	unsigned int _savedSkipFrameNum;
     QString _filePath;
     mutable QReadWriteLock _lock;
+	cv::Mat _curMat;
 };
 
 #endif // VIDEOCONTROL_H

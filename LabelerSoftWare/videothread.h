@@ -17,6 +17,7 @@ public:
 public:
     VideoControl* getVideoControl();
     cv::Mat getNextMat();
+	cv::Mat getCurentMat();
     QImage convertToQImage(cv::Mat&img);
 	QImage& getCurrentImage();
 protected:

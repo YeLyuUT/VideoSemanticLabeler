@@ -51,6 +51,11 @@ VideoThread::~VideoThread()
     closeVideo();
 }
 
+Mat VideoThread::getCurentMat()
+{
+	return _curFrame;
+}
+
 Mat VideoThread::getNextMat()
 {
     if (!getVideoControl()->getFrame(_curFrame))
