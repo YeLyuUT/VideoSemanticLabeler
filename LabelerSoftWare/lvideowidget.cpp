@@ -441,7 +441,6 @@ void LVideoWidget::skipFrameNumChanged(const QString& str)
 	if (ok&&num > 0)
 	{
 		_skipFrameNum = num;
-
 	}
 	else
 	{

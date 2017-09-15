@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QRect>
 #include <qmessagebox.h>
+
 //#define CHECK_QIMAGE
 
 #ifdef CHECK_QIMAGE
@@ -14,7 +15,7 @@
 QColor Surface::_myPenColor(0, 0, 0);
 int Surface::_myPenRadius = 10;
 
-Surface::Surface(QImage Img, QWidget*parent) :QLabel(parent)
+Surface::Surface(QImage Img, QWidget*parent) :QLabel(parent), _blendImage(Img.height(), Img.width(), CV_8UC3)
 {
 	//labelImg() = Mat(400, 400, CV_8UC3);//TODO labelImg should be replace
 	//_ImageDraw = ImageConversion::cvMat_to_QImage(labelImg());
@@ -154,7 +155,10 @@ void Surface::showReferenceImg()
 {
 	if (_referenceImage)
 	{
-		showScaledRefImg(_referenceImage);
+		QImage img;
+		img = blendImage(_oriImage, 0.5, *_referenceImage, 0.5);
+		showScaledRefImg(&img);
+		//showScaledRefImg(_referenceImage); ??please uncomment this to restore
 	}
 	else
 	{
@@ -551,4 +555,27 @@ void Surface::zoom(int step, QPoint pt)
 double Surface::getZoomRatio()
 {
 	return this->_scaleRatio;
+}
+
+QImage Surface::blendImage(QImage& img1, double ratio1, QImage& img2, double ratio2)
+{
+	assert(img1.height() == img2.height() && img1.width() == img2.width());
+	Mat m1 = ImageConversion::QImage_to_cvMat(img1, false);
+	Mat m2 = ImageConversion::QImage_to_cvMat(img2, false);
+	assert(m1.type() == m2.type() && m1.type() == CV_8UC3);
+	
+#pragma omp parallel for
+	for (int i = 0; i < m1.rows; i++)
+	{
+		Vec3b*p_m1_row = m1.ptr<Vec3b>(i);
+		Vec3b*p_m2_row = m2.ptr<Vec3b>(i);
+		Vec3b*p_m3_row = _blendImage.ptr<Vec3b>(i);
+		for (int j = 0; j < m1.cols; j++)
+		{
+			p_m3_row[j] = p_m1_row[j] * ratio1 + p_m2_row[j] * ratio2;
+		}
+	}
+	//cv::cvtColor(_blendImage, _blendImage, CV_BGR2RGB);
+	QImage rvt = ImageConversion::cvMat_to_QImage(_blendImage, false);
+	return rvt;
 }

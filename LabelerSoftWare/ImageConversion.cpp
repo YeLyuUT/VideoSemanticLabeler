@@ -37,7 +37,7 @@ namespace ImageConversion
 
 
 	//##### cv::Mat ---> QImage #####
-	QImage cvMat_to_QImage(const cv::Mat &mat) {
+	QImage cvMat_to_QImage(const cv::Mat &mat, bool revertRGB) {
 		switch (mat.type())
 		{
 			// 8-bit, 4 channel
@@ -51,9 +51,17 @@ namespace ImageConversion
 		case CV_8UC3:
 		{			
 			Mat& temp = StaticCVMatPool::MatCV_8UC3();
-			cv::cvtColor(mat, temp, CV_BGR2RGB);
-			QImage image(temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
-			return image;
+			if (revertRGB)
+			{
+				cv::cvtColor(mat, temp, CV_BGR2RGB);
+				QImage image(temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+				return image;
+			}
+			else
+			{
+				QImage image(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
+				return image;
+			}
 		}
 
 		// 8-bit, 1 channel

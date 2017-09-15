@@ -74,8 +74,9 @@ private:
 	void updateRectArea(QRect rect, int rad, bool drawCursor);
 
 	QPoint getPointAfterNewScale(QPoint pt,double scaleOld,double scaleNew);
-
 	QPoint FilterScalePoint(QPoint pt);
+
+	QImage blendImage(QImage& img1, double ratio1, QImage& img2, double ratio2);
 protected:
 	void keyPressEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
 	void keyReleaseEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
@@ -93,6 +94,7 @@ private:
 	QImage _oriImage;//This image will not be changed
 	QImage _ImageDraw;
 	QImage* _referenceImage;
+	Mat _blendImage;
 	bool _bLButtonDown;
 	bool _bSelectClass;
 	bool _bDrawCursor;
