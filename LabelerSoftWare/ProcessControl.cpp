@@ -147,6 +147,7 @@ void ProcessControl::hasNewLabelingProcess(VideoControl* pVidCtrl)
 		QObject::connect(_w->getVideoWidget(), SIGNAL(signalSave()), _labelingTask, SLOT(saveLabelResult()));
 		QObject::connect(_w->getVideoWidget(), SIGNAL(signalOpenSaveDir()), _labelingTask, SLOT(openSaveDir()));
 		QObject::connect(_w->getVideoWidget(), SIGNAL(signalNewFrame()), this, SLOT(updateFrameToBeLabeled()));
+		QObject::connect(_w->getVideoWidget(), SIGNAL(signalTransparencyChanged(int)), _labelingTask, SLOT(changeTransparency(int)));
 		_w->getVideoWidget()->setSkipFrameNum(pVidCtrl->getSkipFrameNum());
 		double posFrame = pVidCtrl->getPosFrames();
 		double ratio = posFrame / (pVidCtrl->getFrameCount() - 1.0);
@@ -166,6 +167,7 @@ void ProcessControl::closeLabelingProcess()
 		QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalSave()), _labelingTask, SLOT(saveLabelResult()));
 		QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalOpenSaveDir()), _labelingTask, SLOT(openSaveDir()));
 		QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalNewFrame()), this, SLOT(updateFrameToBeLabeled()));
+		QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalTransparencyChanged(int)), _labelingTask, SLOT(changeTransparency(int)));
 		_labelingTask->deleteLater();
 		_labelingTask = NULL;
 		qDebug() << "LabelingTaskControl Closed";

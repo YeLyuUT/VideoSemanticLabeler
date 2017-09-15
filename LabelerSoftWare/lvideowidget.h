@@ -5,12 +5,14 @@
 #include <QWidget>
 #include <QLabel>
 #include <QProgressBar>
+#include <QSlider>
 #include <QScrollArea>
 #include <QDockWidget>
 #include <QPushButton>
 #include "opencv.hpp"
 #include "videothread.h"
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include "clickableprogressbar.h"
 #include <QLineEdit>
 #include <Surface.h>
@@ -63,6 +65,8 @@ private:
 	QPushButton* wCommitButton;
 	QPushButton* wSaveButton;
 	QPushButton* wOpenSaveDir;
+	QSlider* wSliderTransparency;
+	QLabel* wSliderText;
 	QHBoxLayout *hBoxLayout0;//layout contain settings
 	QCheckBox* wCheckBoxAutoLoadResult;
 
@@ -83,12 +87,14 @@ signals:
 	void signalAutoLoadResult(bool checked);
 	void signalOpenSaveDir();
 	void signalNewFrame();
+	void signalTransparencyChanged(int);
 public slots:
     void play();
     void stop();
     void pause();
 	void edit();
 	void save();
+	void transparencyValueChanged(int value);
 	void toggleAutoLoadResult(bool checked);
 	void openSaveDir();
 	void commitSetting();

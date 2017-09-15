@@ -54,6 +54,7 @@ void saveLabelResult();//save directory is set by constructor
 void openSaveDir();//open the directory that will be used to hold saving files
 void clearResult();
 void loadResultFromDir();
+void changeTransparency(int value);
 
 private:
 	/*Internal Images*/

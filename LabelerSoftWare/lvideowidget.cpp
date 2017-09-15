@@ -30,6 +30,8 @@ LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
 	wCommitButton = nullptr;
 	wSaveButton = nullptr;
 	wOpenSaveDir = nullptr;
+	wSliderText = nullptr;
+	wSliderTransparency = nullptr;
 	wCheckBoxAutoLoadResult = nullptr;
     constructInterface();
 	vcontrol = new VideoControl();
@@ -83,7 +85,7 @@ void LVideoWidget::setupConnections()
 	connect(this, SIGNAL(hasOpennedVideo()), this, SLOT(constructInfoPanel()));
 	connect(this, SIGNAL(hasClosedVideo()), this, SLOT(deleteInfoPanel()));
 	connect(wProgressBar, SIGNAL(sendPosRatio(double)), this, SLOT(changeVideoPos(double)));
-	
+	connect(wSliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(transparencyValueChanged(int)));
 	//connect(wSkipFrameNumEdit, SIGNAL(textEdited(const QString&)), this, SLOT(skipFrameNumChanged(const QString&)));
 	//connect(wCurrentFrameNumEdit, SIGNAL(textEdited(const QString&)), this, SLOT(currentFrameNumChanged(const QString&)));
 
@@ -158,6 +160,17 @@ void LVideoWidget::constructInterface()
 	setLineEditEnabled(true);
     MainLayout->addWidget(tW0);
 
+	QHBoxLayout* hLayoutTransparencySetting = new QHBoxLayout();
+	wSliderText = new QLabel("Transparency Setting");
+	wSliderTransparency = new QSlider(Qt::Orientation::Horizontal,this);
+	wSliderTransparency->setMinimum(0);
+	wSliderTransparency->setMaximum(100);
+	wSliderTransparency->setValue(100);
+	hLayoutTransparencySetting->addWidget(wSliderText);
+	hLayoutTransparencySetting->addWidget(wSliderTransparency);
+	wSliderText->hide();
+	wSliderTransparency->hide();
+	MainLayout->addLayout(hLayoutTransparencySetting);
     /*3rd level create progress bar*/
     wProgressBar = new ClickableProgressBar(this);
     wProgressBar->setAlignment(Qt::AlignCenter | Qt::AlignVCenter);  // 对齐方式
@@ -365,6 +378,8 @@ void LVideoWidget::edit()
 		wStopButton->hide();
 		wSaveButton->show();
 		wCheckBoxAutoLoadResult->show();
+		wSliderText->show();
+		wSliderTransparency->show();
 		wOpenSaveDir->show();
 		wEditButton->setText("Stop Labeling");
 		wStatus->setText(QString("Editting..."));
@@ -397,6 +412,8 @@ void LVideoWidget::edit()
 		wStopButton->show();
 		wSaveButton->hide();
 		wCheckBoxAutoLoadResult->hide();
+		wSliderText->hide();
+		wSliderTransparency->hide();
 		wOpenSaveDir->hide();
 		wEditButton->setText("Start Labeling");
 		wStatus->setText(QString("Stopped"));
@@ -535,8 +552,15 @@ void LVideoWidget::setSkipFrameNumToLabelingMode()
 	vcontrol->setToSavedSkipFrameNum();
 	setSkipFrameNum(vcontrol->getSkipFrameNum());
 }
+
 void LVideoWidget::setSkipFrameNumToPlayingMode()
 {
 	vcontrol->setToMinSkipFrameNum();
 	setSkipFrameNum(vcontrol->getSkipFrameNum());
+}
+
+void LVideoWidget::transparencyValueChanged(int value)
+{
+	//qDebug() << "LVideoWidget::transparencyValueChanged" << endl;
+	emit signalTransparencyChanged(value);
 }

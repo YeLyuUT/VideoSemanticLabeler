@@ -425,3 +425,11 @@ void LabelingTaskControl::reAttachOutPutImage()
 {
 	resetSurfaceSource(_surfaceOutPut, &_outPutImg);
 }
+
+void LabelingTaskControl::changeTransparency(int value)
+{
+	double v = value / 100.0;
+	_surfaceOriginal->setBlendAlpha(v, 1.0 - v);
+	_surfaceOutPut->setBlendAlpha(v, 1.0 - v);
+	_surfaceSegmentation->setBlendAlpha(v, 1.0 - v);
+}
