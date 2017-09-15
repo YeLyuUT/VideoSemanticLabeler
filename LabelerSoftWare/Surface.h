@@ -25,6 +25,7 @@ public:
 	void setReferenceImage(QImage* pReference = NULL);
 	void setScrollArea(QScrollArea* pScrollArea=NULL);
 public:
+	void setBlendAlpha(double source = 0.5, double reference = 0.5);
 	void zoom(int step, QPoint pt = QPoint(0, 0));//step is the relative scale ratio rank, pt is the focus point.
 	void setEditable(bool b = true);
 	void startLabel();
@@ -105,7 +106,8 @@ private:
 	QPainterPath _tempDrawPath;//for temp draw stroke display
 	QPainterPath _paintPath;//the real path matched with the original scale image
 	const int _cursorEdgeWidth = 2;
-
+	double blendAlphaSource;
+	double blendAlphaReference;
 	QPoint _mousePos;
 	static int _myPenRadius;
 	static QColor _myPenColor;

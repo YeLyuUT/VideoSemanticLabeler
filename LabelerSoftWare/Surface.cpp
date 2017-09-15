@@ -32,6 +32,8 @@ Surface::Surface(QImage Img, QWidget*parent) :QLabel(parent), _blendImage(Img.he
 	_scaleRatio = 1.0;
 	_bEdit = false;
 	_scrollArea = nullptr;
+	blendAlphaSource = 0.5;
+	blendAlphaReference = 0.5;
 	fitSizeToImage();
 }
 
@@ -156,7 +158,7 @@ void Surface::showReferenceImg()
 	if (_referenceImage)
 	{
 		QImage img;
-		img = blendImage(_oriImage, 0.5, *_referenceImage, 0.5);
+		img = blendImage(_oriImage, blendAlphaSource, *_referenceImage, blendAlphaReference);
 		showScaledRefImg(&img);
 		//showScaledRefImg(_referenceImage); ??please uncomment this to restore
 	}
@@ -578,4 +580,10 @@ QImage Surface::blendImage(QImage& img1, double ratio1, QImage& img2, double rat
 	//cv::cvtColor(_blendImage, _blendImage, CV_BGR2RGB);
 	QImage rvt = ImageConversion::cvMat_to_QImage(_blendImage, false);
 	return rvt;
+}
+
+void Surface::setBlendAlpha(double source, double reference)
+{
+	blendAlphaSource = source;
+	blendAlphaReference = reference;
 }
