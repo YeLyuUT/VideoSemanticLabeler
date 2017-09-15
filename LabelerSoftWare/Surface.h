@@ -71,6 +71,7 @@ private:
 	void setCursorInvisible(bool);
 	void paintCursor();
 	void drawLineTo(const QPoint &endPoint);
+	void drawCircle(const QPoint &Point);
 	void updateCursorArea(bool drawCursor);//updateCursorArea(false) can clean cursor;updateCursorArea(true) can redraw cursor
 	void updateRectArea(QRect rect, int rad, bool drawCursor);
 

@@ -239,29 +239,6 @@ void Surface::keyReleaseEvent(QKeyEvent *ev)
 	QLabel::keyReleaseEvent(ev);
 }
 
-
-void Surface::mousePressEvent(QMouseEvent *ev)
-{
-	switch (ev->buttons())
-	{
-	case Qt::LeftButton: 
-		if (isEditable())
-		{
-			qDebug() << "Qt::LeftButton Press" ;
-			_bLButtonDown = true; _lastPoint = ev->pos(); _paintPath = QPainterPath(); _tempDrawPath = QPainterPath();
-		}
-		break;
-	case Qt::RightButton: qDebug() << "Qt::RightButton Press" ; 
-
-		break;
-	case Qt::MidButton://qDebug() << "Qt::MidButton Press" ; 
-		break;
-	default://qDebug() << "mousePress Default case." ; 
-		break;
-	}
-	QLabel::mousePressEvent(ev);
-}
-
 void Surface::paintEvent(QPaintEvent *ev)
 {
 	QPainter painter(this);
@@ -287,6 +264,40 @@ void Surface::paintEvent(QPaintEvent *ev)
 	//qDebug() << "paintEvent";
 	ev->accept();
 	QLabel::paintEvent(ev);
+}
+
+void Surface::mousePressEvent(QMouseEvent *ev)
+{
+	switch (ev->buttons())
+	{
+	case Qt::LeftButton:
+		if (isEditable())
+		{
+			qDebug() << "Qt::LeftButton Press";
+			_bLButtonDown = true; _lastPoint = ev->pos(); _paintPath = QPainterPath(); _tempDrawPath = QPainterPath();
+			if (_bLButtonDown)
+			{
+				qDebug() << "Draw first Pt: " << '(' << ev->x() << ':' << ev->y() << ')';
+				QPoint endPoint = ev->pos() + QPoint(0, 1);
+				drawLineTo(endPoint);
+				updateRectArea(QRect(_lastPoint, endPoint).normalized(), _myPenRadius, false);
+				//_lastPoint = endPoint;
+			}
+
+			updateCursorArea(false);
+			_mousePos = ev->pos();
+			updateCursorArea(true);
+		}
+		break;
+	case Qt::RightButton: qDebug() << "Qt::RightButton Press";
+
+		break;
+	case Qt::MidButton://qDebug() << "Qt::MidButton Press" ; 
+		break;
+	default://qDebug() << "mousePress Default case." ; 
+		break;
+	}
+	QLabel::mousePressEvent(ev);
 }
 
 void Surface::mouseMoveEvent(QMouseEvent *ev)
@@ -408,6 +419,13 @@ QPoint Surface::FilterScalePoint(QPoint pt)
 	rtv.setX(pt.x() / _scaleRatio);
 	rtv.setY(pt.y() / _scaleRatio);
 	return rtv;
+}
+
+void Surface::drawCircle(const QPoint &Point)
+{
+	double radius = _myPenRadius / _scaleRatio;
+	_paintPath.addEllipse(FilterScalePoint(Point), radius, radius);
+	_tempDrawPath.addEllipse(Point, _myPenRadius, _myPenRadius);
 }
 
 void Surface::drawLineTo(const QPoint &endPoint)
