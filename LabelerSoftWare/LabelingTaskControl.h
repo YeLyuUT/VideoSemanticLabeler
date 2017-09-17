@@ -10,6 +10,7 @@
 #include <SmartScrollArea.h>
 #include <videocontrol.h>
 #include <ProcessControl.h>
+#include <SegmentationControl.h>
 using cv::Mat;
 using std::shared_ptr;
 class ProcessControl;
@@ -32,6 +33,7 @@ private:
 	void setupSurfaceHotKeyConnections();
 	void setupSurfaceWindowCloseConnections();
 	void setupConnections();
+	QImage createQImageByMat(Mat& Img, bool revertRGB = true);
 
 	void updateSurface(Surface *sf);
 	void updateAllSurfaces();
@@ -44,7 +46,6 @@ private:
 	QString getResultSavingPathName();
 	void releaseAll();
 	void setupOtherImg();
-	
 	void resetSurfaceSource(Surface* surface,QImage* source);
 protected:
 
@@ -76,6 +77,7 @@ private:
 	SmartScrollArea* _SA3;//ScrollArea3	
 	QImage _InputImg;
 	ClassSelection *_selection;
+	SegmentationControl* _segmentation_control;
 	QRect _boundingRect;
 	bool _modified;
 	QString _outPutDir;

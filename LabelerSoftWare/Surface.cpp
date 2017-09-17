@@ -502,8 +502,23 @@ void Surface::setScaleRatio(double ratio, double maximum, double minimum)
 	else
 	{
 		_scaleRatio = ratio;
-		_scaleRatio = qMin(maximum, _scaleRatio);
-		_scaleRatio = qMax(minimum, _scaleRatio);
+		int temp_scaleRank = 0;
+		if (_scaleRatio > maximum)
+		{
+			_scaleRatio = qMin(maximum, _scaleRatio);
+			temp_scaleRank = int(log(_scaleRatio) / log(1.25)) + 1;
+			setScaleRatioRank(temp_scaleRank);
+			_scaleRatio = pow(1.25, temp_scaleRank);
+		}
+		else if (_scaleRatio < minimum)
+		{
+			_scaleRatio = qMax(minimum, _scaleRatio);
+			temp_scaleRank = int(log(_scaleRatio) / log(1.25));
+			setScaleRatioRank(temp_scaleRank);
+			_scaleRatio = pow(1.25, temp_scaleRank);
+		}
+		
+		
 		qDebug() << "_scaleRatio:" << _scaleRatio;
 	}
 }

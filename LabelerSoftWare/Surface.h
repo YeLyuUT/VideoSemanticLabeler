@@ -56,7 +56,7 @@ void applyScaleRatio();
 
 private:
 	/*These functions set showing image scale*/
-	void setScaleRatio(double ratio, double maximum = 8.0, double minimum = 0.125);
+	void setScaleRatio(double ratio, double maximum = 2.0, double minimum = 0.25);
 	double getScaleRatio();
 	void setScaleRatioRank(int rank, int maximum = 10.0, int minimum = -10);
 	int getScaleRatioRank();
@@ -114,6 +114,6 @@ private:
 	static QColor _myPenColor;
 private:
 	double _scaleRatio;
-	int _scaleRatioRank;
+	int _scaleRatioRank;//level of scale
 };
 

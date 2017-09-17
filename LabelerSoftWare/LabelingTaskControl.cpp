@@ -8,6 +8,7 @@
 #include <QDesktopServices>
 #include <exception>
 #include <QFileInfo>
+#include <thread>
 
 //#define CHECK_RETRIEVE_PAINTERPATH
 //#define CHECK_MASK_OUTPUTIMAGE
@@ -19,6 +20,7 @@
 
 LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl* pCtrl, ClassSelection* selection, QString outPutDir,bool autoLoadResult, QObject* parent) :QObject(parent)
 {
+	_segmentation_control = NULL;
 	_autoLoadResult = autoLoadResult;
 	_pVidCtrl = pCtrl;
 	int index = _pVidCtrl->getPosFrames();
@@ -34,6 +36,10 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_outPutDir = outPutDir;
 	_InputImg = Img.copy();
 	_selection = selection;
+	_segmentation_control = new SegmentationControl(matFrame);
+
+	//_segmentation_control->doSlicSegmentation();
+	std::thread t(&SegmentationControl::doSlicSegmentation, _segmentation_control);
 	setupOtherImg();
 	_surfaceSegmentation = new Surface(_segImg);
 	_surfaceOriginal = new Surface(_InputImg);
@@ -74,7 +80,7 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_surfaceOutPut->setEditable(true);
 
 	_surfaceOriginal->setReferenceImage(&_outPutImg);
-	_surfaceSegmentation->setReferenceImage(&_InputImg);
+	_surfaceSegmentation->setReferenceImage(&_outPutImg);
 	_surfaceOutPut->setReferenceImage(&_InputImg);
 
 	setupConnections();
@@ -86,15 +92,27 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_SA1->move(QPoint(600,300));	
 	_SA2->move(QPoint(1200,300));	
 
+	
+
 	_SA1->show();
-	_SA2->show();
 	_SA3->show();
+	t.join();
+	QImage segImg = createQImageByMat(_segmentation_control->getSlicSegResultRef(), true);
+	resetSurfaceSource(_surfaceSegmentation, &segImg);
+	_SA2->show();
 }
 
 LabelingTaskControl::~LabelingTaskControl()
 {
+	if (_segmentation_control) { delete _segmentation_control; _segmentation_control = NULL; }
+
 	closeAllSubWindows();
 	releaseAll();
+}
+
+QImage LabelingTaskControl::createQImageByMat(Mat& Img,bool revertRGB)
+{
+	return ImageConversion::cvMat_to_QImage(Img, revertRGB);
 }
 
 void LabelingTaskControl::setupConnections()

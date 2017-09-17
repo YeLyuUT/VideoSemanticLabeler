@@ -57,6 +57,15 @@
     <Filter Include="Utility\QtDebug">
       <UniqueIdentifier>{0db330d1-709b-4d62-9267-dec61d312666}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SegmentControl">
+      <UniqueIdentifier>{d91aa1d3-7634-4b26-b310-e29d582f8157}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\Device">
+      <UniqueIdentifier>{f2047fe1-0d30-4421-a0a7-a79ef141c9bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SegmentControl\SegmentationMethod">
+      <UniqueIdentifier>{d40d1dd0-f8f5-4a77-9a82-a653d51087ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -161,6 +170,15 @@
     <ClCompile Include="QtDebug.cpp">
       <Filter>Utility\QtDebug</Filter>
     </ClCompile>
+    <ClCompile Include="SegmentationControl.cpp">
+      <Filter>SegmentControl</Filter>
+    </ClCompile>
+    <ClCompile Include="DeviceTest.cpp">
+      <Filter>Utility\Device</Filter>
+    </ClCompile>
+    <ClCompile Include="SLIC.cpp">
+      <Filter>SegmentControl\SegmentationMethod</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="labelersoftware.h">
@@ -218,6 +236,15 @@
     </ClInclude>
     <ClInclude Include="QtDebug.h">
       <Filter>Utility\QtDebug</Filter>
+    </ClInclude>
+    <ClInclude Include="SegmentationControl.h">
+      <Filter>SegmentControl</Filter>
+    </ClInclude>
+    <ClInclude Include="DeviceTest.h">
+      <Filter>Utility\Device</Filter>
+    </ClInclude>
+    <ClInclude Include="SLIC.h">
+      <Filter>SegmentControl\SegmentationMethod</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
