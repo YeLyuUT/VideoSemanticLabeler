@@ -45,8 +45,8 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_surfaceOriginal = new Surface(_InputImg);
 	_surfaceOutPut = new Surface(_outPutImg);
 	_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
-	QObject::connect(_segmentation_control, SIGNAL(signalSendPts(vector<Point>)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<Point>)));
-	QObject::connect(_surfaceSegmentation, SIGNAL(signalPixelCovered(vector<Point>)), _segmentation_control, SLOT(slotReceivePts(vector<Point>)));
+	QObject::connect(_segmentation_control, SIGNAL(signalSendPts(vector<Point>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<Point>*)));
+	QObject::connect(_surfaceSegmentation, SIGNAL(signalPixelCovered(vector<Point>*)), _segmentation_control, SLOT(slotReceivePts(vector<Point>*)));
 	
 	_SA1 = new SmartScrollArea();
 	_SA2 = new SmartScrollArea();

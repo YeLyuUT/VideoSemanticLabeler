@@ -298,7 +298,7 @@ void SegmentationControl::updateSegmentsStorageWithLabelImage(segmentationType t
 //#endif//COMPILE_TEST	
 //}
 
-void SegmentationControl::slotReceivePts(vector<Point> vecPts)
+void SegmentationControl::slotReceivePts(vector<Point>* vecPts)
 {
 	_tempVecPts.clear();
 	vector<int> labelCache;
@@ -306,9 +306,9 @@ void SegmentationControl::slotReceivePts(vector<Point> vecPts)
 	segmentationType type = getSegmentationType();
 	int idx = getSegmentationType0basedIdx(type);
 	PtrSegments pSegs = _vecAllSegmentationTypeSegments[idx];
-	for (size_t i = 0; i < vecPts.size(); i++)
+	for (size_t i = 0; i < vecPts->size(); i++)
 	{
-		Point pt = (vecPts)[i];
+		Point pt = (*vecPts)[i];
 		int label = _labelImg.at<int>(pt.y, pt.x);
 		if (std::find(labelCache.begin(), labelCache.end(), label) != labelCache.end())
 		{
@@ -321,5 +321,5 @@ void SegmentationControl::slotReceivePts(vector<Point> vecPts)
 			_tempVecPts.push_back((*pSegPts)[j]);
 		}
 	}
-	emit signalSendPts(_tempVecPts);
+	emit signalSendPts(&_tempVecPts);
 }

@@ -56,11 +56,11 @@ signals:
 	void painterPathCreated(int PenWidth,QPainterPath& painterPath);
 	void mousePositionShiftedByScale(QPoint mousePt, double oldScaleRatio, double newScaleRatio);
 	void clearResult();
-	void signalPixelCovered(vector<Point> vecPts);//send out pixel covereded by cursor	
+	void signalPixelCovered(vector<Point>* vecPts);//send out pixel covereded by cursor	
 public slots:
 void changeClass(QString txt, QColor clr);
 void applyScaleRatio();
-void slotPixelCovered(vector<Point> vecPts);//retrieve pixel need to draw	
+void slotPixelCovered(vector<Point>* vecPts);//retrieve pixel need to draw	
 
 private:
 	/*These functions set showing image scale*/

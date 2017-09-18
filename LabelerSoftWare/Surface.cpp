@@ -354,7 +354,7 @@ void Surface::mouseMoveEvent(QMouseEvent *ev)
 			this->update(r.x, r.y, r.width, r.height);
 			QPoint center = ev->pos();
 			setVecPointsWithinRadiusOfPoint(_tempVecPoint, _circleInnerPoint, Point(center.x(), center.y()), _oriImage.width(), _oriImage.height());
-			emit signalPixelCovered(_tempVecPoint);
+			emit signalPixelCovered(&_tempVecPoint);
 			
 		}
 		updateCursorArea(false);
@@ -716,7 +716,7 @@ void Surface::clearSavedPixels()
 	std::get<1>(_savedPixels).clear();
 }
 
-void Surface::slotPixelCovered(vector<Point> vecPts)
+void Surface::slotPixelCovered(vector<Point>* vecPts)
 {
 	//flip color
 	/*_tempVecPoint.assign(vecPts.begin(), vecPts.end());
@@ -724,9 +724,9 @@ void Surface::slotPixelCovered(vector<Point> vecPts)
 	_bColorFlipped = true;*/
 	clearSavedPixels();
 	Mat drawIMG = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
-	for (size_t i = 0; i < vecPts.size(); i++)
+	for (size_t i = 0; i < vecPts->size(); i++)
 	{
-		Point p = vecPts[i];
+		Point p = (*vecPts)[i];
 		Vec3b& clr = drawIMG.at<Vec3b>(p.y, p.x);
 		QColor qclr(clr[0], clr[1], clr[2]);
 		pushToSavedPixels(qclr, p);

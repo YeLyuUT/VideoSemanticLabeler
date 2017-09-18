@@ -50,9 +50,9 @@ public:
 	void processSegmentations();
 
 signals:
-	void signalSendPts(vector<Point> vecPts);
+	void signalSendPts(vector<Point>* vecPts);
 public slots:
-void slotReceivePts(vector<Point> vecPts);
+void slotReceivePts(vector<Point>* vecPts);
 
 private:
 	bool init();
