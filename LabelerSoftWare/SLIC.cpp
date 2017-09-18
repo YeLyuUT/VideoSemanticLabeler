@@ -285,7 +285,7 @@ void SLIC::DrawContoursAroundSegmentsTwoColors(
 				{
 					int index = y*width + x;
 
-					//if( false == istaken[index] )//comment this to obtain internal contours
+					if( false == istaken[index] )//comment this to obtain internal contours
 					{
 						if( labels[mainindex] != labels[index] ) np++;
 					}

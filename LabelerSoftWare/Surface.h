@@ -7,10 +7,16 @@
 #include <ClassSelection.h>
 #include <QPainterPath>
 #include <QScrollArea>
+#include <tuple>
 using cv::Mat;
 using cv::Vec3b;
+using cv::Point;
+using std::tuple;
+typedef tuple<vector<QColor>, vector<Point> >  SavedPixels;
 class Surface :	public QLabel
 {
+public:
+	enum DRAW_TYPE { PIXEL_WISE, SUPER_PIXEL_WISE }_drawType;
 	Q_OBJECT
 public:
 	Surface(QImage Img, QWidget*parent = NULL);
@@ -30,7 +36,7 @@ public:
 	void setEditable(bool b = true);
 	void startLabel();
 	void endLabel();
-
+	void setDrawType(DRAW_TYPE type);
 	double getZoomRatio();
 	/*when image is editable, _ImageDraw is a copy of _oriImage;
 	otherwise,  _ImageDraw and _oriImage are the same.
@@ -50,9 +56,11 @@ signals:
 	void painterPathCreated(int PenWidth,QPainterPath& painterPath);
 	void mousePositionShiftedByScale(QPoint mousePt, double oldScaleRatio, double newScaleRatio);
 	void clearResult();
+	void signalPixelCovered(vector<Point> vecPts);//send out pixel covereded by cursor	
 public slots:
 void changeClass(QString txt, QColor clr);
 void applyScaleRatio();
+void slotPixelCovered(vector<Point> vecPts);//retrieve pixel need to draw	
 
 private:
 	/*These functions set showing image scale*/
@@ -61,13 +69,14 @@ private:
 	void setScaleRatioRank(int rank, int maximum = 10.0, int minimum = -10);
 	int getScaleRatioRank();
 	void updateScaleRatioByRank();
-
 	void showNormal();
 	void showScaled();
 	void showReferenceImg();
 	void showInternalImg();
 	void showScaledRefImg(QImage* Img);
 
+	int getMyPenRadius();
+	void setMyPenRadius(int val);
 	void setCursorInvisible(bool);
 	void paintCursor();
 	void drawLineTo(const QPoint &endPoint);
@@ -75,6 +84,15 @@ private:
 	void updateCursorArea(bool drawCursor);//updateCursorArea(false) can clean cursor;updateCursorArea(true) can redraw cursor
 	void updateRectArea(QRect rect, int rad, bool drawCursor);
 
+	void setVecPointsWithinRadiusOfPoint(vector<Point>&vecPts, vector<Point>&circleInnerPoint, Point center, int width, int height);
+	void getCircleInnerPoints(vector<Point>&circleInnerPoint, int radius);
+
+	void flipColor(QImage& IMG, vector<Point>& vecPts);
+	void pushToSavedPixels(QColor& color, Point& Pt);
+	void restoreSavedPixels(QImage&IMG, SavedPixels& savedPixels);
+	QColor getSavedPixelsColor(int idx);
+	Point getSavedPixelPosVec(int idx);
+	void clearSavedPixels();
 	QPoint getPointAfterNewScale(QPoint pt,double scaleOld,double scaleNew);
 	QPoint FilterScalePoint(QPoint pt);
 
@@ -101,8 +119,9 @@ private:
 	bool _bSelectClass;
 	bool _bDrawCursor;
 	bool _bEdit;//false if the image is in play mode, false if the image can be editted.
-
-	QScrollArea* _scrollArea;	
+	bool _bColorFlipped;
+	SavedPixels _savedPixels;
+	QScrollArea* _scrollArea;
 	QPoint _lastPoint;
 	QPainterPath _tempDrawPath;//for temp draw stroke display
 	QPainterPath _paintPath;//the real path matched with the original scale image
@@ -110,8 +129,10 @@ private:
 	double blendAlphaSource;
 	double blendAlphaReference;
 	QPoint _mousePos;
+	vector<Point> _circleInnerPoint;
+	vector<Point> _tempVecPoint;
 	static int _myPenRadius;
-	static QColor _myPenColor;
+	static QColor _myPenColor; 
 private:
 	double _scaleRatio;
 	int _scaleRatioRank;//level of scale

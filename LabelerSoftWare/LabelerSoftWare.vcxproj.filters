@@ -179,6 +179,12 @@
     <ClCompile Include="SLIC.cpp">
       <Filter>SegmentControl\SegmentationMethod</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\Moc\moc_SegmentationControl.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\Moc\moc_SegmentationControl.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="labelersoftware.h">
@@ -214,6 +220,9 @@
     <CustomBuild Include="SmartScrollArea.h">
       <Filter>EditableSurface</Filter>
     </CustomBuild>
+    <CustomBuild Include="SegmentationControl.h">
+      <Filter>SegmentControl</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\Uic\ui_labelersoftware.h">
@@ -236,9 +245,6 @@
     </ClInclude>
     <ClInclude Include="QtDebug.h">
       <Filter>Utility\QtDebug</Filter>
-    </ClInclude>
-    <ClInclude Include="SegmentationControl.h">
-      <Filter>SegmentControl</Filter>
     </ClInclude>
     <ClInclude Include="DeviceTest.h">
       <Filter>Utility\Device</Filter>
