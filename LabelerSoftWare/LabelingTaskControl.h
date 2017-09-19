@@ -40,10 +40,12 @@ private:
 	void updateImgByTouchedSegments(QImage& Img);
 	void updateOutPutImg(QRect boundingRect, QImage& mask);
 	
-	bool saveResult(QString filePath);
+	bool saveResult(QString filePath, bool saveOriginalImg = true);
+	bool saveOriginalIMG(QString filePath);
 	bool maySaveResult(QString filePath);
 	bool checkModified();
 	QString getResultSavingPathName();
+	QString getOriginalIMGSavingPathName();
 	void releaseAll();
 	void setupOtherImg();
 	void resetSurfaceSource(Surface* surface,QImage* source);
@@ -51,6 +53,7 @@ protected:
 
 public slots:
 void retrievePainterPath(int PenWidth, QPainterPath& paintPath);
+void retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, QColor color);
 void saveLabelResult();//save directory is set by constructor
 void openSaveDir();//open the directory that will be used to hold saving files
 void clearResult();

@@ -18,7 +18,7 @@ namespace ImageConversion
 		static void releaseAll();
 	};
 
-	QImage cvMat_to_QImage(const cv::Mat &mat, bool revertRGB = true);
+	QImage cvMat_to_QImage(const cv::Mat &mat, bool bCopy, bool revertRGB);
 	cv::Mat QImage_to_cvMat(const QImage &image, bool inCloneImageData = true);
 }
 

@@ -420,7 +420,7 @@ void LVideoWidget::edit()
 		wStatus->setStyleSheet("QLabel {  color : red; }");
 		setSkipFrameNumToPlayingMode();
 		//window()->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-		this->showImage(ImageConversion::cvMat_to_QImage(vcontrol->getCurMat()));
+		this->showImage(ImageConversion::cvMat_to_QImage(vcontrol->getCurMat(), true, true));
 		emit edittingStopped();
 		isEditting = false;
 		/*window()->showNormal();

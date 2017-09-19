@@ -50,7 +50,7 @@ public:
 	void processSegmentations();
 
 signals:
-	void signalSendPts(vector<Point>* vecPts);
+	void signalSendPts(vector<PtrSegmentPoints>* vecPts);
 public slots:
 void slotReceivePts(vector<Point>* vecPts);
 
@@ -67,6 +67,6 @@ private:
 	vector<Mat> _vecAllSegmentationTypeMats;
 	vector<PtrSegments> _vecAllSegmentationTypeSegments;
 	vector<int> _vecSegmentationSegmentsNum;
-	vector<Point> _tempVecPts;
+	vector<PtrSegmentPoints> _tempVecPts;
 };
 

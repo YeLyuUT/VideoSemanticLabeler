@@ -37,31 +37,45 @@ namespace ImageConversion
 
 
 	//##### cv::Mat ---> QImage #####
-	QImage cvMat_to_QImage(const cv::Mat &mat, bool revertRGB) {
+	QImage cvMat_to_QImage(const cv::Mat &mat, bool bCopy, bool revertRGB) {
+		QImage image;
 		switch (mat.type())
 		{
 			// 8-bit, 4 channel
 		case CV_8UC4:
 		{
-			QImage image(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB32);
+			if(!bCopy)
+				image = QImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB32);
+			else
+				image = QImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB32).copy();
 			return image;
 		}
 
 		// 8-bit, 3 channel
 		case CV_8UC3:
 		{			
-			Mat& temp = StaticCVMatPool::MatCV_8UC3();
+			
 			if (revertRGB)
 			{
+				Mat temp;
+				if (!bCopy) temp = StaticCVMatPool::MatCV_8UC3();
 				cv::cvtColor(mat, temp, CV_BGR2RGB);
-				QImage image(temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+				if (!bCopy)
+					image = QImage(temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+				else
+					image = QImage(temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888).copy();
+
 				return image;
 			}
 			else
 			{
-				QImage image(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
+				if (!bCopy)
+					image = QImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
+				else
+					image = QImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888).copy();
 				return image;
 			}
+			
 		}
 
 		// 8-bit, 1 channel
@@ -74,8 +88,11 @@ namespace ImageConversion
 				for (int i = 0; i < 256; ++i)
 					sColorTable.push_back(qRgb(i, i, i));
 			}
-			QImage image(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8);
 			image.setColorTable(sColorTable);
+			if (!bCopy)
+				image = QImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8);
+			else
+				image = QImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8).copy();
 			return image;
 		}
 

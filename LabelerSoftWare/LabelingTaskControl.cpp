@@ -9,6 +9,7 @@
 #include <exception>
 #include <QFileInfo>
 #include <thread>
+#include <QtUtils.h>
 
 //#define CHECK_RETRIEVE_PAINTERPATH
 //#define CHECK_MASK_OUTPUTIMAGE
@@ -31,7 +32,7 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 		QMessageBox::critical(NULL, "Frame Cannot Read", "This frame cannot be read", QMessageBox::Cancel);
 		//throw std::exception("cannot load Image to be labeled"); 
 	};
-	QImage Img = ImageConversion::cvMat_to_QImage(matFrame);
+	QImage Img = ImageConversion::cvMat_to_QImage(matFrame,true, true);
 	_modified = false;
 	_outPutDir = outPutDir;
 	_InputImg = Img.copy();
@@ -41,12 +42,32 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	std::thread t(&SegmentationControl::doSlicSegmentation, _segmentation_control);
 	_segmentation_control->setSegmentationType(SegmentationControl::SLIC_);
 	setupOtherImg();
+
+	t.join();
+	_segImg = createQImageByMat(_segmentation_control->getSlicSegResultRef(), true);//set segImg
 	_surfaceSegmentation = new Surface(_segImg);
 	_surfaceOriginal = new Surface(_InputImg);
 	_surfaceOutPut = new Surface(_outPutImg);
+
+	if (_autoLoadResult)
+	{
+		QFileInfo info(getResultSavingPathName());
+		if (info.exists())
+		{
+			loadResultFromDir();//This has already set _outPutImg
+			reAttachOutPutImage();
+			_surfaceOutPut->update();
+		}
+	}
+	_surfaceOriginal->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
+	_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
+	_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
+	_surfaceOutPut->setReferenceImage(&_surfaceOriginal->getOriImage());//_InputImg
+
 	_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
-	QObject::connect(_segmentation_control, SIGNAL(signalSendPts(vector<Point>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<Point>*)));
+	QObject::connect(_segmentation_control, SIGNAL(signalSendPts(vector<PtrSegmentPoints>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<PtrSegmentPoints>*)));
 	QObject::connect(_surfaceSegmentation, SIGNAL(signalPixelCovered(vector<Point>*)), _segmentation_control, SLOT(slotReceivePts(vector<Point>*)));
+	QObject::connect(_surfaceSegmentation, SIGNAL(signalDrawPixelsToResult(vector<PtrSegmentPoints>*, QColor)), this, SLOT(retrieveSegmentsDraw(vector<PtrSegmentPoints>*, QColor)));
 	
 	_SA1 = new SmartScrollArea();
 	_SA2 = new SmartScrollArea();
@@ -82,10 +103,6 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_surfaceSegmentation->setEditable(true);
 	_surfaceOutPut->setEditable(true);
 
-	_surfaceOriginal->setReferenceImage(&_outPutImg);
-	_surfaceSegmentation->setReferenceImage(&_outPutImg);
-	_surfaceOutPut->setReferenceImage(&_InputImg);
-
 	setupConnections();
 
 	//_surfaceSegmentation->show();
@@ -95,13 +112,8 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_SA1->move(QPoint(600,300));	
 	_SA2->move(QPoint(1200,300));	
 
-	
-
 	_SA1->show();
 	_SA3->show();
-	t.join();
-	QImage segImg = createQImageByMat(_segmentation_control->getSlicSegResultRef(), true);
-	resetSurfaceSource(_surfaceSegmentation, &segImg);
 	_SA2->show();
 }
 
@@ -115,7 +127,7 @@ LabelingTaskControl::~LabelingTaskControl()
 
 QImage LabelingTaskControl::createQImageByMat(Mat& Img,bool revertRGB)
 {
-	return ImageConversion::cvMat_to_QImage(Img, revertRGB);
+	return ImageConversion::cvMat_to_QImage(Img, true, revertRGB);
 }
 
 void LabelingTaskControl::setupConnections()
@@ -171,15 +183,6 @@ void LabelingTaskControl::setupSurfacePainterPathConnections()
 	QObject::connect(_surfaceOutPut, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
 }
 
-//LabelingTaskControl* LabelingTaskControl::getDrawControl(QImage& Img, ClassSelection* selection, bool newDraw)
-//{
-//	static shared_ptr<LabelingTaskControl> pCtrl;
-//	if(newDraw)
-//		pCtrl.reset(new LabelingTaskControl(Img, _selection));
-//	return pCtrl.get();
-//}
-
-
 
 void LabelingTaskControl::closeAllSubWindows()
 {
@@ -233,7 +236,7 @@ bool LabelingTaskControl::maySaveResult(QString filePath)
 	return saveResult(filePath);
 }
 
-bool LabelingTaskControl::saveResult(QString filePath)
+bool LabelingTaskControl::saveResult(QString filePath, bool saveOriginalImg)
 {
 	QImage pImg = _surfaceOutPut->getImage();
 	Mat Img = ImageConversion::QImage_to_cvMat(pImg, false);
@@ -241,7 +244,34 @@ bool LabelingTaskControl::saveResult(QString filePath)
 	Mat ImgRvt;
 	cv::cvtColor(Img, ImgRvt, CV_RGB2BGR);
 	bool bsave = cv::imwrite(filePath.toStdString(), ImgRvt);
-	if(!bsave)
+	qDebug() << "File Saved To: " << filePath;
+	if (!bsave)
+	{
+		QMessageBox::warning(NULL, "Fail to Save", "Cannot save the result!!", QMessageBox::StandardButton::Close);
+		return bsave;
+	}
+	if(saveOriginalImg)
+	{
+		QString oriIMG = getOriginalIMGSavingPathName();
+		bsave = saveOriginalIMG(oriIMG);
+		if (!bsave)
+		{
+			QMessageBox::warning(NULL, "Fail to Save", "Cannot save the Original Image!!", QMessageBox::StandardButton::Close);
+		}
+		return bsave;
+	}
+}
+
+bool LabelingTaskControl::saveOriginalIMG(QString filePath)
+{
+	QImage pImg = _surfaceOriginal->getOriImage();
+	Mat Img = ImageConversion::QImage_to_cvMat(pImg, false);
+	/*The RGB color order is different, need to switch R and B*/
+	Mat ImgRvt;
+	cv::cvtColor(Img, ImgRvt, CV_RGB2BGR);
+	bool bsave = cv::imwrite(filePath.toStdString(), ImgRvt);
+	qDebug() << "File Saved To: " << filePath;
+	if (!bsave)
 		QMessageBox::warning(NULL, "Fail to Save", "Cannot save the result!!", QMessageBox::StandardButton::Close);
 	return bsave;
 }
@@ -261,7 +291,13 @@ void LabelingTaskControl::saveLabelResult()
 
 QString LabelingTaskControl::getResultSavingPathName()
 {
+	qDebug() << "_frameIdx:" << _frameIdx;
 	return QString(this->_outPutDir + QString("/%1.bmp")).arg(_frameIdx);
+}
+
+QString LabelingTaskControl::getOriginalIMGSavingPathName()
+{
+	return QString(this->_outPutDir + QString("/%1_ori.bmp")).arg(_frameIdx);
 }
 
 void LabelingTaskControl::openSaveDir()
@@ -288,26 +324,6 @@ bool LabelingTaskControl::checkModified()
 	return false;
 }
 
-//QImage& LabelingTaskControl::_segImg()
-//{
-//	static QImage img;
-//	return img;
-//}
-//Mat& LabelingTaskControl::_labelImg()
-//{
-//	static Mat img;
-//	return img;
-//}
-//QImage& LabelingTaskControl::_outPutImg()
-//{
-//	static QImage img;
-//	return img;
-//}
-//QImage& LabelingTaskControl::_painterPathImage()
-//{
-//	static QImage img;
-//	return img;
-//}
 void LabelingTaskControl::releaseAll()
 {
 	_segImg = QImage();
@@ -318,22 +334,18 @@ void LabelingTaskControl::releaseAll()
 
 void LabelingTaskControl::setupOtherImg()
 {
-	_segImg = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_RGB888);
+	//_segImg = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_RGB888);
 	_painterPathImage = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_Grayscale8);
 	_labelImg = Mat(_InputImg.height(), _InputImg.width(), CV_32S);
-	_segImg.fill(0);
+	//_segImg.fill(0);
 	_painterPathImage.fill(0);
 	_labelImg.setTo(0);
 	
-	if (_autoLoadResult)
-	{
-		loadResultFromDir();//This has already set _outPutImg
-	}
-	else
-	{
-		_outPutImg = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_RGB888);
-		_outPutImg.fill(0);
-	}
+
+
+	_outPutImg = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_RGB888);
+	_outPutImg.fill(0);
+
 }
 
 void LabelingTaskControl::retrievePainterPath(int PenWidth, QPainterPath& paintPath)
@@ -417,7 +429,8 @@ void LabelingTaskControl::loadResultFromDir()
 {
 	QString filePath = getResultSavingPathName();
 	cv::Mat IMG = cv::imread(filePath.toStdString());
-	QImage qIMG = ImageConversion::cvMat_to_QImage(IMG);
+	QImage qIMG = ImageConversion::cvMat_to_QImage(IMG, true, true);
+	copyQImageToQImage(qIMG, _outPutImg, false);
 	this->_outPutImg = qIMG;
 }
 
@@ -454,3 +467,19 @@ void LabelingTaskControl::changeTransparency(int value)
 	_surfaceOutPut->setBlendAlpha(v, 1.0 - v);
 	_surfaceSegmentation->setBlendAlpha(v, 1.0 - v);
 }
+
+void LabelingTaskControl::retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, QColor color)
+{
+	Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg, false);
+	for (size_t i = 0; i < vecPts->size(); i++)
+	{
+		PtrSegmentPoints pSegPts = (*vecPts)[i];
+		for (size_t j = 0; j < pSegPts->size(); j++)
+		{
+			Point pt = (*pSegPts)[j];
+			outPutImg.at<cv::Vec3b>(pt.y, pt.x) = Vec3b(color.red(), color.green(), color.blue());
+		}
+	}
+	updateSurface(_surfaceOutPut);
+}
+

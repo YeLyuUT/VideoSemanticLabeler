@@ -316,10 +316,8 @@ void SegmentationControl::slotReceivePts(vector<Point>* vecPts)
 		}
 		labelCache.push_back(label);
 		PtrSegmentPoints pSegPts = (*pSegs)[label];
-		for (size_t j = 0; j < pSegPts->size(); j++)
-		{
-			_tempVecPts.push_back((*pSegPts)[j]);
-		}
+		_tempVecPts.push_back(pSegPts);
 	}
 	emit signalSendPts(&_tempVecPts);
+
 }

@@ -67,7 +67,7 @@ Mat VideoThread::getNextMat()
 }
 QImage VideoThread::convertToQImage(Mat&img)
 {
-	_img = ImageConversion::cvMat_to_QImage(img);
+	_img = ImageConversion::cvMat_to_QImage(img, true, true);
     return _img;
 }
 

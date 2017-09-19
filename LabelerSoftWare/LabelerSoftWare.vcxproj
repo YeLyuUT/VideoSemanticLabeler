@@ -245,6 +245,7 @@
     <ClCompile Include="ProcessSettingReader.cpp" />
     <ClCompile Include="ImageConversion.cpp" />
     <ClCompile Include="QtDebug.cpp" />
+    <ClCompile Include="QtUtils.cpp" />
     <ClCompile Include="SegmentationControl.cpp" />
     <ClCompile Include="SLIC.cpp" />
     <ClCompile Include="SmartScrollArea.cpp" />
@@ -407,6 +408,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\Moc\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\Moc\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles\Uic" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\Moc" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-IC:\Work\OpenSource\opencv\build\include" "-IC:\Work\OpenSource\opencv\build\include\opencv" "-IC:\Work\OpenSource\opencv\build\include\opencv2"</Command>
     </CustomBuild>
+    <ClInclude Include="QtUtils.h" />
     <ClInclude Include="SLIC.h" />
     <ClInclude Include="videocontrol.h" />
     <CustomBuild Include="videothread.h">

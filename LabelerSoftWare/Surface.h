@@ -8,27 +8,30 @@
 #include <QPainterPath>
 #include <QScrollArea>
 #include <tuple>
+#include <SegmentationControl.h>
 using cv::Mat;
 using cv::Vec3b;
 using cv::Point;
 using std::tuple;
 typedef tuple<vector<QColor>, vector<Point> >  SavedPixels;
+
 class Surface :	public QLabel
 {
 public:
 	enum DRAW_TYPE { PIXEL_WISE, SUPER_PIXEL_WISE }_drawType;
 	Q_OBJECT
 public:
-	Surface(QImage Img, QWidget*parent = NULL);
+	Surface(const QImage& Img, QWidget*parent = NULL);
 	virtual ~Surface();
 public:
 	QImage getImage();
-	QImage getOriImage();
+	const QImage& getOriImage();
 	QImage getImageCpy();
 	QImage getOriImageCpy();
 public:
-	void setOriginalImage(QImage pOriginal);
-	void setReferenceImage(QImage* pReference = NULL);
+	void setOriginalImage(const QImage& pOriginal);
+	void setReferenceImage(const QImage* pReference = NULL);
+	void setReferenceOriginalImage(const QImage* pReference = NULL);
 	void setScrollArea(QScrollArea* pScrollArea=NULL);
 public:
 	void setBlendAlpha(double source = 0.5, double reference = 0.5);
@@ -56,11 +59,12 @@ signals:
 	void painterPathCreated(int PenWidth,QPainterPath& painterPath);
 	void mousePositionShiftedByScale(QPoint mousePt, double oldScaleRatio, double newScaleRatio);
 	void clearResult();
-	void signalPixelCovered(vector<Point>* vecPts);//send out pixel covereded by cursor	
+	void signalPixelCovered(vector<Point>* vecPts);//send out pixel covereded by cursor
+	void signalDrawPixelsToResult(vector<PtrSegmentPoints>*vecPts, QColor color);
 public slots:
 void changeClass(QString txt, QColor clr);
 void applyScaleRatio();
-void slotPixelCovered(vector<Point>* vecPts);//retrieve pixel need to draw	
+void slotPixelCovered(vector<PtrSegmentPoints>* vecPts);//retrieve pixel need to draw
 
 private:
 	/*These functions set showing image scale*/
@@ -72,13 +76,15 @@ private:
 	void showNormal();
 	void showScaled();
 	void showReferenceImg();
+	void showReferenceOriginalImg();
 	void showInternalImg();
-	void showScaledRefImg(QImage* Img);
+	void showScaledRefImg(const QImage* Img);
 
 	int getMyPenRadius();
 	void setMyPenRadius(int val);
 	void setCursorInvisible(bool);
 	void paintCursor();
+	void drawClipedMatToRect(Mat&clipMat, cv::Rect rect);
 	void drawLineTo(const QPoint &endPoint);
 	void drawCircle(const QPoint &Point);
 	void updateCursorArea(bool drawCursor);//updateCursorArea(false) can clean cursor;updateCursorArea(true) can redraw cursor
@@ -90,13 +96,14 @@ private:
 	void flipColor(QImage& IMG, vector<Point>& vecPts);
 	void pushToSavedPixels(QColor& color, Point& Pt);
 	void restoreSavedPixels(QImage&IMG, SavedPixels& savedPixels);
-	QColor getSavedPixelsColor(int idx);
-	Point getSavedPixelPosVec(int idx);
+	void restoreSavedBoundingBoxImage(QImage&IMG, Mat&savedMat,cv::Rect&savedRect);
+	QColor getSavedPixelColor(int idx);
+	Point getSavedPixelPos(int idx);
 	void clearSavedPixels();
 	QPoint getPointAfterNewScale(QPoint pt,double scaleOld,double scaleNew);
 	QPoint FilterScalePoint(QPoint pt);
 
-	QImage blendImage(QImage& img1, double ratio1, QImage& img2, double ratio2);
+	QImage blendImage(const QImage& img1, double ratio1, const QImage& img2, double ratio2);
 protected:
 	void keyPressEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
 	void keyReleaseEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
@@ -111,9 +118,10 @@ protected:
 	bool eventFilter(QObject* obj,QEvent* evt) Q_DECL_OVERRIDE;
 
 private:
-	QImage _oriImage;//This image will not be changed
+	const QImage* _oriImage;//This image will not be changed
 	QImage _ImageDraw;
-	QImage* _referenceImage;
+	const QImage* _referenceImage;
+	const QImage* _referenceOriginalImage;
 	Mat _blendImage;
 	bool _bLButtonDown;
 	bool _bSelectClass;
@@ -121,6 +129,8 @@ private:
 	bool _bEdit;//false if the image is in play mode, false if the image can be editted.
 	bool _bColorFlipped;
 	SavedPixels _savedPixels;
+	Mat _savedClipMat;
+	cv::Rect _savedBoundingRect;
 	QScrollArea* _scrollArea;
 	QPoint _lastPoint;
 	QPainterPath _tempDrawPath;//for temp draw stroke display
@@ -137,4 +147,3 @@ private:
 	double _scaleRatio;
 	int _scaleRatioRank;//level of scale
 };
-

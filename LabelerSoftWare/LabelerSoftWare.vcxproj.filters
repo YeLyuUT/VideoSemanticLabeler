@@ -66,6 +66,9 @@
     <Filter Include="SegmentControl\SegmentationMethod">
       <UniqueIdentifier>{d40d1dd0-f8f5-4a77-9a82-a653d51087ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility\Qt">
+      <UniqueIdentifier>{2befdbf6-e7e0-4435-95ce-92d6c352f34c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -185,6 +188,9 @@
     <ClCompile Include="GeneratedFiles\Release\Moc\moc_SegmentationControl.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="QtUtils.cpp">
+      <Filter>Utility\Qt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="labelersoftware.h">
@@ -251,6 +257,9 @@
     </ClInclude>
     <ClInclude Include="SLIC.h">
       <Filter>SegmentControl\SegmentationMethod</Filter>
+    </ClInclude>
+    <ClInclude Include="QtUtils.h">
+      <Filter>Utility\Qt</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
