@@ -77,6 +77,7 @@ private:
 	void showScaled();
 	void showReferenceImg();
 	void showReferenceOriginalImg();
+	void updateShowReferenceImg(cv::Rect rect);
 	void showInternalImg();
 	void showScaledRefImg(const QImage* Img);
 
@@ -84,7 +85,7 @@ private:
 	void setMyPenRadius(int val);
 	void setCursorInvisible(bool);
 	void paintCursor();
-	void drawClipedMatToRect(Mat&clipMat, cv::Rect rect);
+	void drawClipedMatToRect(QPainter& painter, Mat&clipMat, cv::Rect rect);
 	void drawLineTo(const QPoint &endPoint);
 	void drawCircle(const QPoint &Point);
 	void updateCursorArea(bool drawCursor);//updateCursorArea(false) can clean cursor;updateCursorArea(true) can redraw cursor
@@ -103,7 +104,7 @@ private:
 	QPoint getPointAfterNewScale(QPoint pt,double scaleOld,double scaleNew);
 	QPoint FilterScalePoint(QPoint pt);
 
-	QImage blendImage(const QImage& img1, double ratio1, const QImage& img2, double ratio2);
+	QImage blendImage(const QImage& img1, double ratio1, const QImage& img2, double ratio2, cv::Rect rect = cv::Rect());
 protected:
 	void keyPressEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
 	void keyReleaseEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
@@ -119,17 +120,19 @@ protected:
 
 private:
 	const QImage* _oriImage;//This image will not be changed
+	QImage _scaledOriImage;
 	QImage _ImageDraw;
 	const QImage* _referenceImage;
 	const QImage* _referenceOriginalImage;
 	Mat _blendImage;
 	bool _bLButtonDown;
+	bool _bShowRef;
 	bool _bSelectClass;
 	bool _bDrawCursor;
 	bool _bEdit;//false if the image is in play mode, false if the image can be editted.
 	bool _bColorFlipped;
 	SavedPixels _savedPixels;
-	Mat _savedClipMat;
+	Mat _drawClipMat;
 	cv::Rect _savedBoundingRect;
 	QScrollArea* _scrollArea;
 	QPoint _lastPoint;
@@ -140,7 +143,8 @@ private:
 	double blendAlphaReference;
 	QPoint _mousePos;
 	vector<Point> _circleInnerPoint;
-	vector<Point> _tempVecPoint;
+	vector<Point> _tempVecPoint;//scaled version
+	vector<PtrSegmentPoints> _tempVecSegs;
 	static int _myPenRadius;
 	static QColor _myPenColor; 
 private:

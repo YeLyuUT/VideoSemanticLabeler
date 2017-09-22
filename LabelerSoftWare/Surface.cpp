@@ -29,6 +29,7 @@ Surface::Surface(const QImage& Img, QWidget*parent) :QLabel(parent), _blendImage
 	_bSelectClass = false;
 	setCursorInvisible(false);
 	_bDrawCursor = true;
+	_bShowRef = false;
 	_scaleRatioRank = 0;
 	_scaleRatio = 1.0;
 	_bEdit = false;
@@ -146,8 +147,9 @@ void Surface::showNormal()
 
 void Surface::showScaled()
 {
-	this->updateScaleRatioByRank();
+	//this->updateScaleRatioByRank();
 	this->applyScaleRatio();
+	_ImageDraw = _scaledOriImage.copy();
 	update();
 }
 
@@ -172,6 +174,22 @@ void Surface::showReferenceImg()
 	{
 		QImage img;
 		img = blendImage(*_oriImage, blendAlphaSource, *_referenceImage, blendAlphaReference);
+		showScaledRefImg(&img);
+		//showScaledRefImg(_referenceImage); ??please uncomment this to restore
+	}
+	else
+	{
+		_ImageDraw.fill(0);
+		update();
+	}
+}
+
+void Surface::updateShowReferenceImg(cv::Rect rect)
+{
+	if (_referenceImage)
+	{
+		QImage img;
+		img = blendImage(*_oriImage, blendAlphaSource, *_referenceImage, blendAlphaReference, rect);
 		showScaledRefImg(&img);
 		//showScaledRefImg(_referenceImage); ??please uncomment this to restore
 	}
@@ -236,7 +254,18 @@ void Surface::keyPressEvent(QKeyEvent *ev)
 		this->showNormal(); break;
 	case Qt::Key::Key_Tab:
 		//qDebug() << "showReferenceImg()";
-		this->showReferenceImg(); break;
+		if (!_bShowRef)
+		{
+			this->showReferenceImg();
+			_bShowRef = true;
+			//qDebug() << "_bTabKeyDown";
+		}
+		else
+		{
+			this->showInternalImg();
+			_bShowRef = false;
+		}
+		break;
 	case Qt::Key::Key_1:
 		this->showReferenceOriginalImg(); break;
 	case Qt::Key::Key_R:
@@ -261,7 +290,8 @@ void Surface::keyReleaseEvent(QKeyEvent *ev)
 	case Qt::Key::Key_V:
 		this->showScaled(); break;
 	case Qt::Key::Key_Tab:
-		this->showInternalImg(); break;
+
+		break;
 	case Qt::Key::Key_1:
 		this->showInternalImg(); break;
 		//case Qt::Key::Key_Space:qDebug() << "Key_Space" ; break;
@@ -273,6 +303,7 @@ void Surface::keyReleaseEvent(QKeyEvent *ev)
 void Surface::paintEvent(QPaintEvent *ev)
 {
 	QPainter painter(this);
+
 	/* draw background image */
 	QRect dirtyRect = ev->rect();
 	painter.drawImage(dirtyRect, _ImageDraw, dirtyRect);
@@ -293,7 +324,14 @@ void Surface::paintEvent(QPaintEvent *ev)
 		else if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
 		{
 			//TODO
-			drawClipedMatToRect(_savedClipMat, _savedBoundingRect);
+			drawClipedMatToRect(painter, _drawClipMat, _savedBoundingRect);
+			if (_bLButtonDown)
+			{
+				//QPainter painterImg(&_ImageDraw);
+				
+				//drawClipedMatToRect(painterImg, _drawClipMat, _savedBoundingRect);
+				qDebug() << "drawClipedMatToRect";
+			}
 		}
 		/*draw cursor*/
 		if (_bDrawCursor)
@@ -411,6 +449,8 @@ void Surface::mouseReleaseEvent(QMouseEvent *ev)
 			//TODO
 			if (_bLButtonDown)
 			{
+				if (_bShowRef)
+					updateShowReferenceImg(cv::Rect());
 				_bLButtonDown = false;
 			}
 		}
@@ -455,14 +495,16 @@ void Surface::wheelEvent(QWheelEvent*ev)
 			qDebug() << "myPenRadius" << _myPenRadius;
 		}
 		break;
+	case Qt::KeyboardModifier::AltModifier:
+		{
+			zoom(numSteps.x(), ev->pos());
+			qDebug() << "AltModifier";
+		}
+		break;
 	default:
 		break;
 	}
-	if (ev->modifiers() == Qt::KeyboardModifier::AltModifier)
-	{
-		zoom(numSteps.x(), ev->pos());
-		qDebug() << "AltModifier";
-	}
+	
 	ev->accept();
 }
 
@@ -509,13 +551,13 @@ void Surface::drawCircle(const QPoint &Point)
 	_tempDrawPath.addEllipse(Point, _myPenRadius, _myPenRadius);
 }
 
-void Surface::drawClipedMatToRect(Mat&clipMat, cv::Rect rect)
+void Surface::drawClipedMatToRect(QPainter& painter,Mat&clipMat, cv::Rect rect)
 {
-	QPainter painter(this);
 	QRect dirtyRect(rect.x, rect.y, rect.width, rect.height);
 	QImage qImg = ImageConversion::cvMat_to_QImage(clipMat, true, false);
 	painter.drawImage(dirtyRect, qImg);
 }
+
 
 void Surface::drawLineTo(const QPoint &endPoint)
 {
@@ -646,21 +688,20 @@ void Surface::updateScaleRatioByRank()
 
 void Surface::applyScaleRatio()
 {
-
 	if (!_oriImage->isNull() && _scaleRatio != 1.0)
 	{
 		int width = _oriImage->width()*_scaleRatio;
 		int height = _oriImage->height()*_scaleRatio;
 		width = width < 1 ? 1 : width;
 		height = height < 1 ? 1 : height;
-		_ImageDraw = _oriImage->scaled(QSize(width, height), Qt::AspectRatioMode::KeepAspectRatioByExpanding);
-		if (_drawType == SUPER_PIXEL_WISE)
-		{
-			getCircleInnerPoints(_circleInnerPoint, _myPenRadius / _scaleRatio);
-		}
+		_scaledOriImage = _oriImage->scaled(QSize(width, height), Qt::AspectRatioMode::KeepAspectRatioByExpanding);
 	}
 	else
-		_ImageDraw = _oriImage->copy();
+		_scaledOriImage = _oriImage->copy();
+	if (_bShowRef)
+		showReferenceImg();
+	else
+		_ImageDraw = _scaledOriImage.copy();
 	
 }
 
@@ -670,9 +711,14 @@ void Surface::zoom(int step, QPoint pt)
 	setScaleRatioRank(getScaleRatioRank() + step);
 	updateScaleRatioByRank();
 	double newScaleRatio = getScaleRatio();
+	if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
+	{
+		getCircleInnerPoints(_circleInnerPoint, _myPenRadius);
+	}
 	QPoint newPos = getPointAfterNewScale(pt, oldScaleRatio, newScaleRatio);
 	emit mousePositionShiftedByScale(pt, oldScaleRatio, newScaleRatio);
 	applyScaleRatio();
+
 	this->resize(_ImageDraw.width(), _ImageDraw.height());
 	update();
 }
@@ -682,26 +728,25 @@ double Surface::getZoomRatio()
 	return this->_scaleRatio;
 }
 
-QImage Surface::blendImage(const QImage& img1, double ratio1,const QImage& img2, double ratio2)
+QImage Surface::blendImage(const QImage& img1, double ratio1, const QImage& img2, double ratio2, cv::Rect rect)
 {
 	assert(img1.height() == img2.height() && img1.width() == img2.width());
 	Mat m1 = ImageConversion::QImage_to_cvMat(img1, false);
 	Mat m2 = ImageConversion::QImage_to_cvMat(img2, false);
 	assert(m1.type() == m2.type() && m1.type() == CV_8UC3);
 	
-#pragma omp parallel for
-	for (int i = 0; i < m1.rows; i++)
+	if (!rect.empty() && !_blendImage.empty())
 	{
-		Vec3b*p_m1_row = m1.ptr<Vec3b>(i);
-		Vec3b*p_m2_row = m2.ptr<Vec3b>(i);
-		Vec3b*p_m3_row = _blendImage.ptr<Vec3b>(i);
-		for (int j = 0; j < m1.cols; j++)
-		{
-			p_m3_row[j] = p_m1_row[j] * ratio1 + p_m2_row[j] * ratio2;
-		}
+		qDebug() << "Partial Change blend";
+		cv::addWeighted(Mat(m1, rect), ratio1, Mat(m2, rect), ratio2, 0, Mat(_blendImage, rect));
+	}
+	else
+	{
+		qDebug() << "Whole Change blend";
+		cv::addWeighted(m1, ratio1, m2, ratio2, 0, _blendImage);
 	}
 	//cv::cvtColor(_blendImage, _blendImage, CV_BGR2RGB);
-	QImage rvt = ImageConversion::cvMat_to_QImage(_blendImage,true, false);
+	QImage rvt = ImageConversion::cvMat_to_QImage(_blendImage, false, false);
 	return rvt;
 }
 
@@ -767,13 +812,21 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 	_bColorFlipped = true;*/
 	//clearSavedPixels();
 //	if (_bColorFlipped == false)
+	_tempVecSegs.clear();
+	_tempVecPoint.clear();
+	int cur_size = _tempVecSegs.size();
+	for (int i = 0; i < vecPts->size(); i++)
 	{
+		if (std::find(_tempVecSegs.begin(), _tempVecSegs.end(), (*vecPts)[i]) == _tempVecSegs.end())
+			_tempVecSegs.push_back((*vecPts)[i]);
+	}
+
+	
 		std::vector<Point>& refSavePixels = std::get<1>(_savedPixels);
-		_tempVecPoint.clear();
-		Mat drawIMG = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
-		for (size_t i = 0; i < vecPts->size(); i++)
+		Mat& drawIMG = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
+		for (size_t i = cur_size; i < _tempVecSegs.size(); i++)
 		{
-			PtrSegmentPoints pSegs = (*vecPts)[i];
+			PtrSegmentPoints pSegs = (_tempVecSegs)[i];
 			for (int j = 0; j < pSegs->size(); j++)
 			{
 				Point p = (*pSegs)[j];
@@ -794,28 +847,26 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 		if (r.x + r.width > drawIMG.cols) qDebug() << "r out of right";
 		if (r.y + r.height > drawIMG.rows) qDebug() << "r out of bottom";
 		r = cv::boundingRect(_tempVecPoint);
-		Mat(drawIMG, r).copyTo(_savedClipMat);	
-		//_savedClipMat.create(r.height, r.width, CV_8UC3); _savedClipMat.setTo(0);
+		Mat(drawIMG, r).copyTo(_drawClipMat);
+		//_drawClipMat.create(r.height, r.width, CV_8UC3); _drawClipMat.setTo(0);
 		for (size_t i = 0; i < _tempVecPoint.size(); i++)
 		{
 			Point pt = _tempVecPoint[i] - r.tl();
 
-			_savedClipMat.at<cv::Vec3b>(pt.y, pt.x) = Mat(drawIMG, r).at<cv::Vec3b>(pt.y, pt.x)*0.6
+			_drawClipMat.at<cv::Vec3b>(pt.y, pt.x) = Mat(drawIMG, r).at<cv::Vec3b>(pt.y, pt.x)*0.6
 				+ cv::Vec3b(_myPenColor.red(), _myPenColor.green(), _myPenColor.blue())*0.4;
 			/*cv::rectangle(temp, cv::Rect(pt - Point(_scaleRatio + 0.5, _scaleRatio + 0.5), pt + Point(_scaleRatio + 0.5, _scaleRatio + 0.5))
 			, cv::Scalar(_myPenColor.red(), _myPenColor.green(), _myPenColor.blue()), -1);*/
 		}
-		//Mat output;
-		//cv::addWeighted(Mat(drawIMG, r), 0.6, temp, 0.4, 0, output);
-		//output.copyTo(Mat(drawIMG, r));
-		//_bColorFlipped = true;
 		this->update(r.x, r.y, r.width, r.height);
 		qDebug() << "slotPixelCovered";
-	}
+	
+	
 	if (_bLButtonDown&&_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
 	{
-		emit signalDrawPixelsToResult(vecPts, _myPenColor);
+		emit signalDrawPixelsToResult(&_tempVecSegs, _myPenColor);
 	}
+	
 }
 
 void Surface::restoreSavedPixels(QImage&IMG, SavedPixels& savedPixels)
@@ -847,8 +898,8 @@ void Surface::setVecPointsWithinRadiusOfPoint(vector<Point>&vecPts, vector<Point
 	//center.y = center.y;
 	Point tempPt;
 	cv::Rect rect(0, 0, width, height);
-	
-	for (size_t i = 0; i < circleInnerPoint.size(); i++)
+//#pragma omp parallel for
+	for (int i = 0; i < circleInnerPoint.size(); i++)
 	{
 		tempPt = circleInnerPoint[i] + center;
 		if (rect.contains(tempPt))

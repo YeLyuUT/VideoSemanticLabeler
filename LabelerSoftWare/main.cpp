@@ -17,7 +17,8 @@ int main(int argc, char *argv[])
 	do 
 	{
 		//string xmlPath = "E:\\WorkingDirectory\\MY\\ProjectDataCollection\\UAVBenchMark\\Encapsulator\\LabelerSoftWare\\LabelerSoftWare\\processSetting.xml";
-		string xmlPath = "C:\\Work\\VSSolutions\\labelersoftware\\example\\processSetting.xml";
+		//string xmlPath = "C:\\Work\\VSSolutions\\labelersoftware\\example\\processSetting.xml";
+		string xmlPath = "D:\\UAVDataCapturing\\German\\Gronau\\processSetting.xml";
 		try
 		{
 			ProcessSettingReader r(xmlPath);

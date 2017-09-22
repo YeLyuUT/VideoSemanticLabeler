@@ -118,7 +118,7 @@ namespace ImageConversion
 		// 8-bit, 3 channel
 		case QImage::Format_RGB888:
 		{
-			qWarning() << "ASM::QImageToCvMat() - conversion color order may be different";		
+			//qWarning() << "ASM::QImageToCvMat() - conversion color order may be different";		
 			cv::Mat mat(image.height(), image.width(), CV_8UC3, const_cast<uchar*>(image.bits()), image.bytesPerLine());
 			return (inCloneImageData ? mat.clone() : mat);
 		}
