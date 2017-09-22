@@ -325,13 +325,31 @@ void Surface::paintEvent(QPaintEvent *ev)
 		{
 			//TODO
 			drawClipedMatToRect(painter, _drawClipMat, _savedBoundingRect);
+			/*_tempVecPoint.clear();
 			if (_bLButtonDown)
 			{
-				//QPainter painterImg(&_ImageDraw);
-				
-				//drawClipedMatToRect(painterImg, _drawClipMat, _savedBoundingRect);
-				qDebug() << "drawClipedMatToRect";
-			}
+				for (size_t i = 0; i < _tempVecSegs.size(); i++)
+				{
+					PtrSegmentPoints pSegPts = _tempVecSegs[i];
+					for (size_t j = 0; j < pSegPts->size(); j++)
+					{
+						Point p = (*pSegPts)[j];
+						p *= _scaleRatio;
+						if (p.x >= 0 && p.y >= 0 && p.x < _ImageDraw.width() && p.y < _ImageDraw.height())
+						{
+							_tempVecPoint.push_back(p);
+						}
+					}
+				}
+				Mat 
+				for (size_t i = 0; i < _tempVecPoint.size(); i++)
+				{
+					Point pt = _tempVecPoint[i] - r.tl();
+
+					_drawClipMat.at<cv::Vec3b>(pt.y, pt.x) = Mat(drawIMG, r).at<cv::Vec3b>(pt.y, pt.x)*0.6
+						+ cv::Vec3b(_myPenColor.red(), _myPenColor.green(), _myPenColor.blue())*0.4;
+				}
+			}*/
 		}
 		/*draw cursor*/
 		if (_bDrawCursor)
@@ -812,13 +830,23 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 	_bColorFlipped = true;*/
 	//clearSavedPixels();
 //	if (_bColorFlipped == false)
-	_tempVecSegs.clear();
+	if (!_bLButtonDown)
+	{
+		_tempVecSegs.clear();
+	}
 	_tempVecPoint.clear();
-	int cur_size = _tempVecSegs.size();
+
+	/*draw current points*/
+	//int cur_size = _tempVecSegs.size();	
+	int cur_size = 0;
 	for (int i = 0; i < vecPts->size(); i++)
 	{
 		if (std::find(_tempVecSegs.begin(), _tempVecSegs.end(), (*vecPts)[i]) == _tempVecSegs.end())
 			_tempVecSegs.push_back((*vecPts)[i]);
+		else
+		{
+			qDebug() << "Have Same Segs";
+		}
 	}
 
 	
@@ -838,14 +866,14 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 			}
 		}
 		cv::Rect& r = _savedBoundingRect;
-		if (r.x == 0) qDebug() << "r to the left ";
+		/*if (r.x == 0) qDebug() << "r to the left ";
 		if (r.y == 0) qDebug() << "r to the top ";
 		if (r.x +r.width== drawIMG.cols) qDebug() << "r to the right";
 		if (r.y + r.height == drawIMG.rows) qDebug() << "r to the bottom";
 		if (r.x < 0) qDebug() << "r out of left ";
 		if (r.y < 0) qDebug() << "r out of top ";
 		if (r.x + r.width > drawIMG.cols) qDebug() << "r out of right";
-		if (r.y + r.height > drawIMG.rows) qDebug() << "r out of bottom";
+		if (r.y + r.height > drawIMG.rows) qDebug() << "r out of bottom";*/
 		r = cv::boundingRect(_tempVecPoint);
 		Mat(drawIMG, r).copyTo(_drawClipMat);
 		//_drawClipMat.create(r.height, r.width, CV_8UC3); _drawClipMat.setTo(0);
