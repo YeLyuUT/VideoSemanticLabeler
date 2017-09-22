@@ -131,6 +131,7 @@ private:
 	bool _bDrawCursor;
 	bool _bEdit;//false if the image is in play mode, false if the image can be editted.
 	bool _bColorFlipped;
+	bool _bUpdateClipMat;
 	SavedPixels _savedPixels;
 	Mat _drawClipMat;
 	cv::Rect _savedBoundingRect;
@@ -144,10 +145,12 @@ private:
 	QPoint _mousePos;
 	vector<Point> _circleInnerPoint;
 	vector<Point> _tempVecPoint;//scaled version
+	vector<Point> _vecPtsToEmit;
 	vector<PtrSegmentPoints> _tempVecSegs;
 	static int _myPenRadius;
 	static QColor _myPenColor; 
 private:
 	double _scaleRatio;
 	int _scaleRatioRank;//level of scale
+	int _seg_drawn_num;
 };

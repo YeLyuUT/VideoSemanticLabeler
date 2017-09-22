@@ -24,6 +24,7 @@ Surface::Surface(const QImage& Img, QWidget*parent) :QLabel(parent), _blendImage
 	setOriginalImage(Img);
 	
 	this->setMouseTracking(true);
+	_bUpdateClipMat = false;
 	_bLButtonDown = false;
 	_bColorFlipped = false;
 	_bSelectClass = false;
@@ -37,6 +38,7 @@ Surface::Surface(const QImage& Img, QWidget*parent) :QLabel(parent), _blendImage
 	_referenceOriginalImage = nullptr;
 	blendAlphaSource = 0.5;
 	blendAlphaReference = 0.5;
+	_seg_drawn_num = 0;
 	fitSizeToImage();
 }
 
@@ -293,7 +295,17 @@ void Surface::keyReleaseEvent(QKeyEvent *ev)
 
 		break;
 	case Qt::Key::Key_1:
-		this->showInternalImg(); break;
+		if (_bShowRef)
+		{
+			this->showReferenceImg();
+
+			//qDebug() << "_bTabKeyDown";
+		}
+		else
+		{
+			this->showInternalImg();
+		}
+		break;
 		//case Qt::Key::Key_Space:qDebug() << "Key_Space" ; break;
 	default:break;
 	}
@@ -325,31 +337,7 @@ void Surface::paintEvent(QPaintEvent *ev)
 		{
 			//TODO
 			drawClipedMatToRect(painter, _drawClipMat, _savedBoundingRect);
-			/*_tempVecPoint.clear();
-			if (_bLButtonDown)
-			{
-				for (size_t i = 0; i < _tempVecSegs.size(); i++)
-				{
-					PtrSegmentPoints pSegPts = _tempVecSegs[i];
-					for (size_t j = 0; j < pSegPts->size(); j++)
-					{
-						Point p = (*pSegPts)[j];
-						p *= _scaleRatio;
-						if (p.x >= 0 && p.y >= 0 && p.x < _ImageDraw.width() && p.y < _ImageDraw.height())
-						{
-							_tempVecPoint.push_back(p);
-						}
-					}
-				}
-				Mat 
-				for (size_t i = 0; i < _tempVecPoint.size(); i++)
-				{
-					Point pt = _tempVecPoint[i] - r.tl();
-
-					_drawClipMat.at<cv::Vec3b>(pt.y, pt.x) = Mat(drawIMG, r).at<cv::Vec3b>(pt.y, pt.x)*0.6
-						+ cv::Vec3b(_myPenColor.red(), _myPenColor.green(), _myPenColor.blue())*0.4;
-				}
-			}*/
+			
 		}
 		/*draw cursor*/
 		if (_bDrawCursor)
@@ -368,7 +356,6 @@ void Surface::mousePressEvent(QMouseEvent *ev)
 	case Qt::LeftButton:
 		if (isEditable())
 		{
-			
 			qDebug() << "Qt::LeftButton Press";
 			if (_drawType == DRAW_TYPE::PIXEL_WISE)
 			{
@@ -392,8 +379,8 @@ void Surface::mousePressEvent(QMouseEvent *ev)
 					QPoint center = ev->pos();
 					center /= _scaleRatio;
 					//qDebug() << center;
-					setVecPointsWithinRadiusOfPoint(_tempVecPoint, _circleInnerPoint, Point(center.x(), center.y()), _oriImage->width(), _oriImage->height());
-					emit signalPixelCovered(&_tempVecPoint);
+					setVecPointsWithinRadiusOfPoint(_vecPtsToEmit, _circleInnerPoint, Point(center.x(), center.y()), _oriImage->width(), _oriImage->height());
+					emit signalPixelCovered(&_vecPtsToEmit);
 				}
 			}
 			updateCursorArea(false);//erase old cursor
@@ -435,8 +422,9 @@ void Surface::mouseMoveEvent(QMouseEvent *ev)
 			QPoint center = ev->pos();
 			center /= _scaleRatio;
 			//qDebug() << center;
-			setVecPointsWithinRadiusOfPoint(_tempVecPoint, _circleInnerPoint, Point(center.x(), center.y()), _oriImage->width(), _oriImage->height());
-			emit signalPixelCovered(&_tempVecPoint);
+			
+			setVecPointsWithinRadiusOfPoint(_vecPtsToEmit, _circleInnerPoint, Point(center.x(), center.y()), _oriImage->width(), _oriImage->height());
+			emit signalPixelCovered(&_vecPtsToEmit);
 			
 		}
 		updateCursorArea(false);
@@ -467,8 +455,18 @@ void Surface::mouseReleaseEvent(QMouseEvent *ev)
 			//TODO
 			if (_bLButtonDown)
 			{
+				if (_bLButtonDown/*&&_drawType == DRAW_TYPE::SUPER_PIXEL_WISE*/)
+				{
+					qDebug() << "emit signalDrawPixelsToResult";
+					emit signalDrawPixelsToResult(&_tempVecSegs, _myPenColor);
+				}
 				if (_bShowRef)
 					updateShowReferenceImg(cv::Rect());
+				_tempVecSegs.clear();
+				_tempVecPoint.clear();
+				_seg_drawn_num = 0;
+				_drawClipMat = Mat();
+				_bUpdateClipMat = false;
 				_bLButtonDown = false;
 			}
 		}
@@ -479,6 +477,7 @@ void Surface::mouseReleaseEvent(QMouseEvent *ev)
 //		cv::waitKey(1);
 //#endif
 	}
+	this->updateImage();
 	QLabel::mouseReleaseEvent(ev);
 }
 
@@ -830,15 +829,18 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 	_bColorFlipped = true;*/
 	//clearSavedPixels();
 //	if (_bColorFlipped == false)
+	_seg_drawn_num = 0;
 	if (!_bLButtonDown)
 	{
 		_tempVecSegs.clear();
+		_tempVecPoint.clear();
+		_seg_drawn_num = 0;
 	}
-	_tempVecPoint.clear();
-
+	else
+		_seg_drawn_num = _tempVecSegs.size();
 	/*draw current points*/
-	//int cur_size = _tempVecSegs.size();	
-	int cur_size = 0;
+	
+	
 	for (int i = 0; i < vecPts->size(); i++)
 	{
 		if (std::find(_tempVecSegs.begin(), _tempVecSegs.end(), (*vecPts)[i]) == _tempVecSegs.end())
@@ -848,11 +850,20 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 			qDebug() << "Have Same Segs";
 		}
 	}
-
-	
+	if (_seg_drawn_num < _tempVecSegs.size())
+	{
+		_bUpdateClipMat = true;
+	}
+	else
+	{
+		_bUpdateClipMat = false;
+	}
+	if(_bUpdateClipMat)
+	{
+		qDebug() << "Have Same Segs";
 		std::vector<Point>& refSavePixels = std::get<1>(_savedPixels);
 		Mat& drawIMG = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
-		for (size_t i = cur_size; i < _tempVecSegs.size(); i++)
+		for (size_t i = _seg_drawn_num; i < _tempVecSegs.size(); i++)
 		{
 			PtrSegmentPoints pSegs = (_tempVecSegs)[i];
 			for (int j = 0; j < pSegs->size(); j++)
@@ -875,6 +886,7 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 		if (r.x + r.width > drawIMG.cols) qDebug() << "r out of right";
 		if (r.y + r.height > drawIMG.rows) qDebug() << "r out of bottom";*/
 		r = cv::boundingRect(_tempVecPoint);
+
 		Mat(drawIMG, r).copyTo(_drawClipMat);
 		//_drawClipMat.create(r.height, r.width, CV_8UC3); _drawClipMat.setTo(0);
 		for (size_t i = 0; i < _tempVecPoint.size(); i++)
@@ -883,18 +895,17 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 
 			_drawClipMat.at<cv::Vec3b>(pt.y, pt.x) = Mat(drawIMG, r).at<cv::Vec3b>(pt.y, pt.x)*0.6
 				+ cv::Vec3b(_myPenColor.red(), _myPenColor.green(), _myPenColor.blue())*0.4;
-			/*cv::rectangle(temp, cv::Rect(pt - Point(_scaleRatio + 0.5, _scaleRatio + 0.5), pt + Point(_scaleRatio + 0.5, _scaleRatio + 0.5))
-			, cv::Scalar(_myPenColor.red(), _myPenColor.green(), _myPenColor.blue()), -1);*/
+
 		}
 		this->update(r.x, r.y, r.width, r.height);
+		
+		
 		qDebug() << "slotPixelCovered";
-	
-	
-	if (_bLButtonDown&&_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
-	{
-		emit signalDrawPixelsToResult(&_tempVecSegs, _myPenColor);
+
+
+
 	}
-	
+
 }
 
 void Surface::restoreSavedPixels(QImage&IMG, SavedPixels& savedPixels)
