@@ -35,8 +35,8 @@ private:
 	void setupConnections();
 	QImage createQImageByMat(Mat& Img, bool revertRGB = true);
 
-	void updateSurface(Surface *sf);
-	void updateAllSurfaces();
+	void updateSurface(Surface *sf,cv::Rect rect=cv::Rect());
+	void updateAllSurfaces(cv::Rect r = cv::Rect());
 	void updateImgByTouchedSegments(QImage& Img);
 	void updateOutPutImg(QRect boundingRect, QImage& mask);
 	

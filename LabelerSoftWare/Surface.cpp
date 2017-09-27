@@ -155,18 +155,34 @@ void Surface::showScaled()
 	update();
 }
 
-void Surface::showScaledRefImg(const QImage* Img)
+void Surface::showScaledRefImg(const QImage* Img, cv::Rect rect)
 {
-	if (!_oriImage->isNull() && _scaleRatio != 1.0)
+	if (!rect.empty())
 	{
-		int width = _oriImage->width()*_scaleRatio;
-		int height = _oriImage->height()*_scaleRatio;
-		width = width < 1 ? 1 : width;
-		height = height < 1 ? 1 : height;
-		_ImageDraw = Img->scaled(QSize(width, height), Qt::AspectRatioMode::KeepAspectRatioByExpanding);
+		cv::Rect scaledRect;
+		scaledRect.x = rect.x*_scaleRatio + 0.5;
+		scaledRect.y = rect.y*_scaleRatio + 0.5;
+		scaledRect.height = rect.height*_scaleRatio;
+		scaledRect.width = rect.width*_scaleRatio;
+		Mat mRectImage, mResize;
+		Mat(ImageConversion::QImage_to_cvMat(*Img, false), rect).copyTo(mRectImage);
+		Mat mDrawImage = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
+		cv::resize(mRectImage, mResize, cv::Size(scaledRect.width, scaledRect.height));
+		mResize.copyTo(Mat(mDrawImage, scaledRect));
 	}
 	else
-		_ImageDraw = Img->copy();
+	{
+		if (!_oriImage->isNull() && _scaleRatio != 1.0)
+		{
+			int width = _oriImage->width()*_scaleRatio;
+			int height = _oriImage->height()*_scaleRatio;
+			width = width < 1 ? 1 : width;
+			height = height < 1 ? 1 : height;
+			_ImageDraw = Img->scaled(QSize(width, height), Qt::AspectRatioMode::KeepAspectRatioByExpanding);
+		}
+		else
+			_ImageDraw = Img->copy();
+	}
 	update();
 }
 
@@ -193,7 +209,8 @@ void Surface::updateShowReferenceImg(cv::Rect rect)
 	{
 		QImage img;
 		img = blendImage(*_oriImage, blendAlphaSource, *_referenceImage, blendAlphaReference, rect);
-		showScaledRefImg(&img);
+		qDebug() << "To showScaledRefImg";
+		showScaledRefImg(&img,rect);
 		//showScaledRefImg(_referenceImage); ??please uncomment this to restore
 	}
 	else
@@ -201,6 +218,7 @@ void Surface::updateShowReferenceImg(cv::Rect rect)
 		_ImageDraw.fill(0);
 		update();
 	}
+	qDebug() << "updateShowReferenceImg";
 }
 
 void Surface::showReferenceOriginalImg()
@@ -320,6 +338,7 @@ void Surface::paintEvent(QPaintEvent *ev)
 	/* draw background image */
 	QRect dirtyRect = ev->rect();
 	painter.drawImage(dirtyRect, _ImageDraw, dirtyRect);
+	//qDebug() << "dirtyRect:" << dirtyRect;
 
 	if (isEditable())
 	{
@@ -478,7 +497,6 @@ void Surface::mouseReleaseEvent(QMouseEvent *ev)
 //		cv::waitKey(1);
 //#endif
 	}
-	this->updateImage();
 	QLabel::mouseReleaseEvent(ev);
 }
 
@@ -602,15 +620,18 @@ void Surface::paintCursor()
 	painter.drawEllipse(_mousePos, _myPenRadius, _myPenRadius);
 }
 
-void Surface::updateImage()
+void Surface::updateImage(cv::Rect rect)
 {
 	//_ImageDraw = _oriImage.copy();
-
+	qDebug() << "To updateImage";
 #ifdef CHECK_QIMAGE
 	qt_debug::showQImage(_oriImage);
 #endif //CHECK_QIMAGE 
-
-	applyScaleRatio();
+	if (!rect.empty() && !_scaledOriImage.isNull() && _scaledOriImage.size() == _ImageDraw.size())
+		updateRectOfImg(rect);
+	else
+		applyScaleRatio();
+			
 }
 
 void Surface::updateCursorArea(bool drawCursor)
@@ -720,7 +741,30 @@ void Surface::applyScaleRatio()
 		showReferenceImg();
 	else
 		_ImageDraw = _scaledOriImage.copy();
-	
+	qDebug() << "applyScaleRatio";
+}
+
+void Surface::updateRectOfImg(cv::Rect rect)
+{
+	qDebug() << "To updateRectOfImg";
+	cv::Rect scaledRect;
+	scaledRect.x = rect.x*_scaleRatio + 0.5;
+	scaledRect.y = rect.y*_scaleRatio + 0.5;
+	scaledRect.height = rect.height*_scaleRatio;
+	scaledRect.width = rect.width*_scaleRatio;
+	Mat mRectOriImage, mResizeOri;
+	Mat(ImageConversion::QImage_to_cvMat(*_oriImage, false), rect).copyTo(mRectOriImage);
+	Mat mScaledOriImage = ImageConversion::QImage_to_cvMat(_scaledOriImage, false);
+	cv::resize(mRectOriImage, mResizeOri, cv::Size(scaledRect.width, scaledRect.height));
+	mResizeOri.copyTo(Mat(mScaledOriImage, scaledRect));
+	if (_bShowRef)
+		updateShowReferenceImg(rect);
+	else
+	{
+		Mat mImageDraw = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
+		Mat(mScaledOriImage, scaledRect).copyTo(Mat(mImageDraw, scaledRect));
+	}
+	qDebug() << "updateRectOfImg ed";
 }
 
 void Surface::zoom(int step, QPoint pt)
@@ -753,7 +797,7 @@ QImage Surface::blendImage(const QImage& img1, double ratio1, const QImage& img2
 	Mat m2 = ImageConversion::QImage_to_cvMat(img2, false);
 	assert(m1.type() == m2.type() && m1.type() == CV_8UC3);
 	
-	if (!rect.empty() && !_blendImage.empty())
+	if (!rect.empty() && !_blendImage.empty() && _blendImage.size == m1.size&& _blendImage.size == m2.size)
 	{
 		qDebug() << "Partial Change blend";
 		cv::addWeighted(Mat(m1, rect), ratio1, Mat(m2, rect), ratio2, 0, Mat(_blendImage, rect));

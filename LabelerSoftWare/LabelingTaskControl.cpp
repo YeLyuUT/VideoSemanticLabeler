@@ -342,8 +342,6 @@ void LabelingTaskControl::setupOtherImg()
 	_painterPathImage.fill(0);
 	_labelImg.setTo(0);
 	
-
-
 	_outPutImg = QImage(_InputImg.width(), _InputImg.height(), QImage::Format::Format_RGB888);
 	_outPutImg.fill(0);
 
@@ -351,6 +349,7 @@ void LabelingTaskControl::setupOtherImg()
 
 void LabelingTaskControl::retrievePainterPath(int PenWidth, QPainterPath& paintPath)
 {
+	qDebug() << "To retrievePainterPath";
 	_painterPathImage.fill(0);
 	QPainter painter(&_painterPathImage);
 	painter.setPen(QPen(QColor(255,255,255), PenWidth, Qt::SolidLine, Qt::RoundCap,
@@ -371,7 +370,8 @@ void LabelingTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
 {
 	Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg, false);
 	Mat maskImg = ImageConversion::QImage_to_cvMat(mask, false);
-
+	assert(maskImg.type() == CV_8UC3);
+	qDebug() << CV_8UC3 << "==" << maskImg.type();
 	QColor clr = _selection->getCurrentColor();
 	outPutImg.setTo(Vec3b(clr.red(), clr.green(), clr.blue()), maskImg);
 #ifdef CHECK_MASK_OUTPUTIMAGE
@@ -379,7 +379,39 @@ void LabelingTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
 	cv::imshow("CHECK_MASK_OUTPUTIMAGE maskImg", maskImg);
 	cv::waitKey(500);
 #endif
-	updateSurface(_surfaceOutPut);
+	qDebug() << "To get Rect";
+	qDebug() << "maskImg.rows:" << maskImg.rows;
+	qDebug() << "maskImg.cols:" << maskImg.cols;
+	qDebug() << "mask.rows:" << mask.height();
+	qDebug() << "mask.cols:" << mask.width();
+	int min_x = maskImg.cols, min_y = maskImg.rows, max_x = 0, max_y = 0;
+	for (int i = 0; i < maskImg.rows; i++)
+	{
+		uchar* ptr = maskImg.ptr<uchar>(i);
+		for (int j = 0; j < maskImg.cols; j++)
+		{
+			if (ptr[j] > 0)
+			{
+				if (min_x > j) min_x = j;
+				if (min_y > i) min_y = i;
+				if (max_x < j) max_x = j;
+				if (max_y < i) max_y = i;
+			}
+		}
+		
+	}
+	
+	cv::Rect r;
+	if (min_x >= max_x || min_y >= max_y)
+	{
+		r = cv::Rect();
+	}
+	else
+		r = cv::Rect(cv::Point(min_x, min_y), cv::Point(max_x + 1, max_y + 1));
+	qDebug() << outPutImg.cols << ',' << outPutImg.rows;
+	qDebug() <<"Rect:"<< r.x << ',' << r.y << ';' << r.width << ',' << r.height;
+	//updateSurface(_surfaceOutPut, r);
+	updateAllSurfaces(r);
 }
 
 void LabelingTaskControl::updateImgByTouchedSegments(QImage& Img)
@@ -387,21 +419,21 @@ void LabelingTaskControl::updateImgByTouchedSegments(QImage& Img)
 	//TODO how to floodfill with segmentation
 }
 
-void LabelingTaskControl::updateAllSurfaces()
+void LabelingTaskControl::updateAllSurfaces(cv::Rect r)
 {
 	/*if (_surfaceSegmentation) _surfaceSegmentation->update();
 	if (_surfaceOriginal) _surfaceOriginal->update();
 	if (_surfaceOutPut) _surfaceOutPut->update();*/
-	updateSurface(_surfaceSegmentation);
-	updateSurface(_surfaceOriginal);
-	updateSurface(_surfaceOutPut);
+	updateSurface(_surfaceSegmentation, r);
+	updateSurface(_surfaceOriginal, r);
+	updateSurface(_surfaceOutPut, r);
 }
 
-void LabelingTaskControl::updateSurface(Surface *sf)
+void LabelingTaskControl::updateSurface(Surface *sf, cv::Rect rect)
 {
 	if (sf)
 	{
-		sf->updateImage();
+		sf->updateImage(rect);
 		sf->update();
 	}
 }
@@ -474,15 +506,28 @@ void LabelingTaskControl::changeTransparency(int value)
 void LabelingTaskControl::retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, QColor color)
 {
 	Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg, false);
+	int min_x = outPutImg.cols, min_y = outPutImg.rows, max_x = 0, max_y = 0;
 	for (size_t i = 0; i < vecPts->size(); i++)
 	{
 		PtrSegmentPoints pSegPts = (*vecPts)[i];
 		for (size_t j = 0; j < pSegPts->size(); j++)
 		{
 			Point pt = (*pSegPts)[j];
+			if (min_x > pt.x) min_x = pt.x;
+			if (min_y > pt.y) min_y = pt.y;
+			if (max_x < pt.x) max_x = pt.x;
+			if (max_y < pt.y) max_y = pt.y;
 			outPutImg.at<cv::Vec3b>(pt.y, pt.x) = Vec3b(color.red(), color.green(), color.blue());
 		}
 	}
-	updateSurface(_surfaceOutPut);
+	cv::Rect r;
+	if (min_x >= max_x || min_y >= max_y)
+	{
+		r = cv::Rect();
+	}
+	else
+		r = cv::Rect(cv::Point(min_x, min_y), cv::Point(max_x + 1, max_y + 1));
+	//updateSurface(_surfaceOutPut, r);
+	updateAllSurfaces(r);
 }
 

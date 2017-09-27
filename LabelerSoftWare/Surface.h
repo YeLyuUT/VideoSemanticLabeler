@@ -48,7 +48,7 @@ public:
 	void fitSizeToImage();
 	/*when original image is modified, this should
 	be called to update qimage for drawing*/
-	void updateImage();
+	void updateImage(cv::Rect rect=cv::Rect());
 public:
 	Vec3b getLabelColor();
 	int getSegmentIdx();
@@ -77,9 +77,10 @@ private:
 	void showScaled();
 	void showReferenceImg();
 	void showReferenceOriginalImg();
-	void updateShowReferenceImg(cv::Rect rect);
+	void updateShowReferenceImg(cv::Rect rect);//rect none scaled original
+	void updateRectOfImg(cv::Rect rect);//rect of true size,correspond to none scaled image
 	void showInternalImg();
-	void showScaledRefImg(const QImage* Img);
+	void showScaledRefImg(const QImage* Img,cv::Rect rect=cv::Rect());
 
 	int getMyPenRadius();
 	void setMyPenRadius(int val);
