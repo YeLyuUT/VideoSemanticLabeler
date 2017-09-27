@@ -56,13 +56,14 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 		{
 			loadResultFromDir();//This has already set _outPutImg
 			reAttachOutPutImage();
-			_surfaceOutPut->update();
+			updateAllSurfaces();
 		}
 	}
 	_surfaceOriginal->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
 	_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
-	_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
 	_surfaceOutPut->setReferenceImage(&_surfaceOriginal->getOriImage());//_InputImg
+	_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
+	//_surfaceOutPut->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
 
 	_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
 	QObject::connect(_segmentation_control, SIGNAL(signalSendPts(vector<PtrSegmentPoints>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<PtrSegmentPoints>*)));
@@ -238,7 +239,7 @@ bool LabelingTaskControl::maySaveResult(QString filePath)
 
 bool LabelingTaskControl::saveResult(QString filePath, bool saveOriginalImg)
 {
-	QImage pImg = _surfaceOutPut->getImage();
+	const QImage& pImg = _surfaceOutPut->getOriImage();
 	Mat Img = ImageConversion::QImage_to_cvMat(pImg, false);
 	/*The RGB color order is different, need to switch R and B*/
 	Mat ImgRvt;
@@ -430,7 +431,7 @@ void LabelingTaskControl::loadResultFromDir()
 	QString filePath = getResultSavingPathName();
 	cv::Mat IMG = cv::imread(filePath.toStdString());
 	QImage qIMG = ImageConversion::cvMat_to_QImage(IMG, true, true);
-	copyQImageToQImage(qIMG, _outPutImg, false);
+	//copyQImageToQImage(qIMG, _outPutImg, false);
 	this->_outPutImg = qIMG;
 }
 
@@ -443,8 +444,8 @@ void LabelingTaskControl::setAutoLoadResult(bool b)
 		if(info.exists())
 		{ 
 			loadResultFromDir();
-			reAttachOutPutImage();
-			_surfaceOutPut->update();
+			//reAttachOutPutImage();
+			updateAllSurfaces();
 		}
 	}
 	qDebug() << QString("setAutoLoadResult:%1").arg(b);
@@ -458,6 +459,8 @@ void LabelingTaskControl::resetSurfaceSource(Surface* surface, QImage* source)
 void LabelingTaskControl::reAttachOutPutImage()
 {
 	resetSurfaceSource(_surfaceOutPut, &_outPutImg);
+	_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());
+	_surfaceOriginal->setReferenceImage(&_surfaceOutPut->getOriImage());
 }
 
 void LabelingTaskControl::changeTransparency(int value)

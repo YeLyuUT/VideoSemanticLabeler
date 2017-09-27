@@ -174,6 +174,7 @@ void Surface::showReferenceImg()
 {
 	if (_referenceImage)
 	{
+		qDebug() << "showReferenceImg";
 		QImage img;
 		img = blendImage(*_oriImage, blendAlphaSource, *_referenceImage, blendAlphaReference);
 		showScaledRefImg(&img);

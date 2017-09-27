@@ -82,7 +82,7 @@ void SegmentationControl::doSlicSegmentation()
 	SLIC slic;
 	int numlabels(0);
 	double dummyM(0);
-	slic.PerformSLICO_ForGivenStepSize(IMG, width, height, labels, numlabels, 20, dummyM);
+	slic.PerformSLICO_ForGivenStepSize(IMG, width, height, labels, numlabels, 10, dummyM);
 	slic.DrawContoursAroundSegmentsTwoColors(IMG, labels, width, height);
 	//updateSegmentsStorageWithLabelImage(segmentationType::SLIC_, labels, width, height);
 	updateSegmentsStorageWithLabelImage(segmentationType::SLIC_, _labelImg);
