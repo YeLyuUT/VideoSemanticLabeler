@@ -15,8 +15,10 @@ ClickableProgressBar::~ClickableProgressBar()
 
 void ClickableProgressBar::mousePressEvent(QMouseEvent*event)
 {
+	qDebug() << "mousePressEvent:clicked";
 	if(clickable)
 	{
+		qDebug() << "in mousePressEvent:clicked";
 		if (event->button() == Qt::LeftButton&&event->type() == QMouseEvent::MouseButtonPress)
 		{
 			pos = event->pos();

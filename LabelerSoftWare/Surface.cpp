@@ -741,7 +741,7 @@ void Surface::applyScaleRatio()
 		showReferenceImg();
 	else
 		_ImageDraw = _scaledOriImage.copy();
-	qDebug() << "applyScaleRatio";
+	//qDebug() << "applyScaleRatio";
 }
 
 void Surface::updateRectOfImg(cv::Rect rect)

@@ -174,7 +174,7 @@ void LVideoWidget::constructInterface()
     /*3rd level create progress bar*/
     wProgressBar = new ClickableProgressBar(this);
     wProgressBar->setAlignment(Qt::AlignCenter | Qt::AlignVCenter);  // 对齐方式
-
+	wProgressBar->setClickable(true);
     MainLayout->addWidget(wProgressBar);
 
     /*4th level create button*/
@@ -372,7 +372,7 @@ void LVideoWidget::edit()
 
 		wScrollArea->hide();
 		//wProgressBar->hide();
-		wProgressBar->setClickable(false);
+		wProgressBar->setClickable(true);
 		wPlayButton->hide();
 		wPauseButton->hide();
 		wStopButton->hide();
@@ -406,7 +406,7 @@ void LVideoWidget::edit()
 
 		wScrollArea->show();
 		//wProgressBar->show();
-		wProgressBar->setClickable(true);
+		wProgressBar->setClickable(false);
 		wPlayButton->show();
 		wPauseButton->show();
 		wStopButton->show();
