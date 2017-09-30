@@ -82,6 +82,7 @@ private:
 	void showInternalImg();
 	void showScaledRefImg(const QImage* Img,cv::Rect rect=cv::Rect());
 
+	
 	int getMyPenRadius();
 	void setMyPenRadius(int val);
 	void setCursorInvisible(bool);
@@ -133,6 +134,7 @@ private:
 	bool _bEdit;//false if the image is in play mode, false if the image can be editted.
 	bool _bColorFlipped;
 	bool _bUpdateClipMat;
+	bool _startPolygonMode;
 	SavedPixels _savedPixels;
 	Mat _drawClipMat;
 	cv::Rect _savedBoundingRect;
@@ -148,6 +150,7 @@ private:
 	vector<Point> _tempVecPoint;//scaled version
 	vector<Point> _vecPtsToEmit;
 	vector<PtrSegmentPoints> _tempVecSegs;
+	vector<Point> _rightClickCache;
 	static int _myPenRadius;
 	static QColor _myPenColor; 
 private:

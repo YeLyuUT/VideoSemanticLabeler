@@ -69,6 +69,9 @@
     <Filter Include="Utility\Qt">
       <UniqueIdentifier>{2befdbf6-e7e0-4435-95ce-92d6c352f34c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility\OpenCV">
+      <UniqueIdentifier>{a8e5ee66-8ddf-475c-9210-dcdc20fb248f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -191,6 +194,9 @@
     <ClCompile Include="QtUtils.cpp">
       <Filter>Utility\Qt</Filter>
     </ClCompile>
+    <ClCompile Include="OpencvUtils.cpp">
+      <Filter>Utility\OpenCV</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="labelersoftware.h">
@@ -260,6 +266,9 @@
     </ClInclude>
     <ClInclude Include="QtUtils.h">
       <Filter>Utility\Qt</Filter>
+    </ClInclude>
+    <ClInclude Include="OpencvUtils.h">
+      <Filter>Utility\OpenCV</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

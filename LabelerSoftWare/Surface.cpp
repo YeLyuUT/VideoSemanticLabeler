@@ -4,9 +4,10 @@
 #include <QPainter>
 #include <QRect>
 #include <qmessagebox.h>
+#include <OpencvUtils.h>
 
 //#define CHECK_QIMAGE
-
+using CV_Utils::trimRect;
 #ifdef CHECK_QIMAGE
 #include <QtDebug.h>
 #endif // CHECK_QIMAGE
@@ -20,7 +21,6 @@ Surface::Surface(const QImage& Img, QWidget*parent) :QLabel(parent), _blendImage
 	//labelImg() = Mat(400, 400, CV_8UC3);//TODO labelImg should be replace
 	//_ImageDraw = ImageConversion::cvMat_to_QImage(labelImg());
 	_drawType = PIXEL_WISE;
-	
 	setOriginalImage(Img);
 	
 	this->setMouseTracking(true);
@@ -34,6 +34,7 @@ Surface::Surface(const QImage& Img, QWidget*parent) :QLabel(parent), _blendImage
 	_scaleRatioRank = 0;
 	_scaleRatio = 1.0;
 	_bEdit = false;
+	_startPolygonMode = false;
 	_scrollArea = nullptr;
 	_referenceOriginalImage = nullptr;
 	blendAlphaSource = 0.5;
@@ -164,6 +165,7 @@ void Surface::showScaledRefImg(const QImage* Img, cv::Rect rect)
 		scaledRect.y = rect.y*_scaleRatio + 0.5;
 		scaledRect.height = rect.height*_scaleRatio;
 		scaledRect.width = rect.width*_scaleRatio;
+		scaledRect = trimRect(scaledRect, 0, 0, _ImageDraw.width(), _ImageDraw.height());
 		Mat mRectImage, mResize;
 		Mat(ImageConversion::QImage_to_cvMat(*Img, false), rect).copyTo(mRectImage);
 		Mat mDrawImage = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
@@ -409,7 +411,21 @@ void Surface::mousePressEvent(QMouseEvent *ev)
 		}
 		break;
 	case Qt::RightButton: qDebug() << "Qt::RightButton Press";
-
+		if (isEditable())
+		{
+			if (_startPolygonMode == false)
+			{
+				qDebug() << "Start Polygon Mode";
+				_rightClickCache.clear();
+				_startPolygonMode = true;
+			}
+			else if (_startPolygonMode == true)
+			{
+				qDebug() << "Stop Polygon Mode";
+				//TODO
+				_startPolygonMode = false;
+			}
+		}
 		break;
 	case Qt::MidButton://qDebug() << "Qt::MidButton Press" ; 
 		break;
@@ -752,6 +768,7 @@ void Surface::updateRectOfImg(cv::Rect rect)
 	scaledRect.y = rect.y*_scaleRatio + 0.5;
 	scaledRect.height = rect.height*_scaleRatio;
 	scaledRect.width = rect.width*_scaleRatio;
+	scaledRect = trimRect(scaledRect, 0, 0, _scaledOriImage.width(), _scaledOriImage.height());
 	Mat mRectOriImage, mResizeOri;
 	Mat(ImageConversion::QImage_to_cvMat(*_oriImage, false), rect).copyTo(mRectOriImage);
 	Mat mScaledOriImage = ImageConversion::QImage_to_cvMat(_scaledOriImage, false);

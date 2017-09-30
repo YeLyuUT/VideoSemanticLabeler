@@ -363,6 +363,7 @@ void LabelingTaskControl::retrievePainterPath(int PenWidth, QPainterPath& paintP
 #endif
 	updateImgByTouchedSegments(_painterPathImage);
 	_boundingRect = paintPath.boundingRect().toRect().adjusted(-1, -1, 1, 1);
+	
 	updateOutPutImg(_boundingRect, _painterPathImage);
 }
 
@@ -370,7 +371,7 @@ void LabelingTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
 {
 	Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg, false);
 	Mat maskImg = ImageConversion::QImage_to_cvMat(mask, false);
-	assert(maskImg.type() == CV_8UC3);
+
 	qDebug() << CV_8UC3 << "==" << maskImg.type();
 	QColor clr = _selection->getCurrentColor();
 	outPutImg.setTo(Vec3b(clr.red(), clr.green(), clr.blue()), maskImg);
