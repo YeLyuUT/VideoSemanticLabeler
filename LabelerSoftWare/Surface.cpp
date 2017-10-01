@@ -304,6 +304,31 @@ void Surface::keyPressEvent(QKeyEvent *ev)
 		this->showReferenceOriginalImg(); break;
 	case Qt::Key::Key_R:
 		emit clearResult(); break;
+	case Qt::Key::Key_Z:
+		if (ev->modifiers() == Qt::KeyboardModifier::ControlModifier)
+		{
+			qDebug() << "Ctrl+Z";
+			if (_rightClickCache.size() > 0)
+			{
+				_rightClickCache.pop_back();
+
+				cv::Rect& r = _savedBoundingRect;
+				_drawClipMat = Mat();
+				this->update(r.x, r.y, r.width, r.height);
+				QPoint endPoint = _mousePos;
+				vector<Point> vecPts = transformVecPtsByScaleAndPos(_rightClickCache, _scaleRatio, Point(0, 0));
+				vecPts.push_back(cv::Point(endPoint.x(), endPoint.y()));
+
+				r = cv::boundingRect(vecPts);
+				vecPts = transformVecPtsByScaleAndPos(vecPts, 1.0, -r.tl());
+				Mat& drawIMG = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
+				Mat(drawIMG, r).copyTo(_drawClipMat);
+				drawPolytonToMat(vecPts, _drawClipMat);
+				this->update(r.x, r.y, r.width, r.height);
+			}
+				
+		}
+		break;
 	//case Qt::Key::Key_Space:qDebug() << "Key_Space" ; break;
 
 	default:break;
@@ -518,11 +543,6 @@ void Surface::mouseMoveEvent(QMouseEvent *ev)
 			vecPts.push_back(cv::Point(endPoint.x(), endPoint.y()));
 			
 			r = cv::boundingRect(vecPts);
-			/*r.x -= 5;
-			r.y -= 5;
-			r.width += 10;
-			r.height += 10;
-			r = trimRect(r, 0, 0, _ImageDraw.width(), _ImageDraw.height());*/
 			vecPts = transformVecPtsByScaleAndPos(vecPts, 1.0, -r.tl());
 			Mat& drawIMG = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
 			Mat(drawIMG, r).copyTo(_drawClipMat);
