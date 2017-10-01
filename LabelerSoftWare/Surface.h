@@ -9,10 +9,12 @@
 #include <QScrollArea>
 #include <tuple>
 #include <SegmentationControl.h>
+#include <chrono>
 using cv::Mat;
 using cv::Vec3b;
 using cv::Point;
 using std::tuple;
+using std::chrono::steady_clock;
 typedef tuple<vector<QColor>, vector<Point> >  SavedPixels;
 
 class Surface :	public QLabel
@@ -53,6 +55,9 @@ public:
 	Vec3b getLabelColor();
 	int getSegmentIdx();
 
+	void setAllowPolyMode(bool bAllow);
+	bool getAllowPolyMode();
+
 signals:
 	void openClassSelection();
 	void closeClassSelection();
@@ -61,6 +66,7 @@ signals:
 	void clearResult();
 	void signalPixelCovered(vector<Point>* vecPts);//send out pixel covereded by cursor
 	void signalDrawPixelsToResult(vector<PtrSegmentPoints>*vecPts, QColor color);
+	void signalSendPolygonDraw(vector<Point> vecPts, QColor clr);
 public slots:
 void changeClass(QString txt, QColor clr);
 void applyScaleRatio();
@@ -83,6 +89,7 @@ private:
 	void showScaledRefImg(const QImage* Img,cv::Rect rect=cv::Rect());
 
 	
+	vector<QPolygon> getMouseCursorTriangles(int penWidth,double angle=5.0);//angle in degree
 	int getMyPenRadius();
 	void setMyPenRadius(int val);
 	void setCursorInvisible(bool);
@@ -121,6 +128,7 @@ protected:
 	bool eventFilter(QObject* obj,QEvent* evt) Q_DECL_OVERRIDE;
 
 private:
+	std::chrono::time_point<steady_clock> _timePoint;
 	const QImage* _oriImage;//This image will not be changed
 	QImage _scaledOriImage;
 	QImage _ImageDraw;
@@ -135,6 +143,7 @@ private:
 	bool _bColorFlipped;
 	bool _bUpdateClipMat;
 	bool _startPolygonMode;
+	bool _allowPolygonMode;
 	SavedPixels _savedPixels;
 	Mat _drawClipMat;
 	cv::Rect _savedBoundingRect;
@@ -151,6 +160,7 @@ private:
 	vector<Point> _vecPtsToEmit;
 	vector<PtrSegmentPoints> _tempVecSegs;
 	vector<Point> _rightClickCache;
+	vector<QPolygon> _mouseCursorTriangles;
 	static int _myPenRadius;
 	static QColor _myPenColor; 
 private:

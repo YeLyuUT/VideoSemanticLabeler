@@ -27,6 +27,7 @@ private:
 	void closeAllSubWindows();
 	void doSegmentation();//TODO
 
+	cv::Rect getBoundingRectOfVecPts(vector<cv::Point>& vecPts);
 	void setupColorSelectionConnections();//set quick access to color selection panel
 	void setupScrollAreaConnections();
 	void setupSurfacePainterPathConnections();
@@ -54,6 +55,7 @@ protected:
 public slots:
 void retrievePainterPath(int PenWidth, QPainterPath& paintPath);
 void retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, QColor color);
+void retrievePolygonDraw(vector<Point> vecPts, QColor clr);
 void saveLabelResult();//save directory is set by constructor
 void openSaveDir();//open the directory that will be used to hold saving files
 void clearResult();

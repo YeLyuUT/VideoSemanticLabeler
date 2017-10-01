@@ -10,7 +10,7 @@
 #include <QFileInfo>
 #include <thread>
 #include <QtUtils.h>
-
+#include <limits.h>
 //#define CHECK_RETRIEVE_PAINTERPATH
 //#define CHECK_MASK_OUTPUTIMAGE
 //#define CHECK_QIMAGE
@@ -65,10 +65,12 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
 	//_surfaceOutPut->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
 
+	_surfaceOriginal->setAllowPolyMode(true);
 	_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
 	QObject::connect(_segmentation_control, SIGNAL(signalSendPts(vector<PtrSegmentPoints>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<PtrSegmentPoints>*)));
 	QObject::connect(_surfaceSegmentation, SIGNAL(signalPixelCovered(vector<Point>*)), _segmentation_control, SLOT(slotReceivePts(vector<Point>*)));
 	QObject::connect(_surfaceSegmentation, SIGNAL(signalDrawPixelsToResult(vector<PtrSegmentPoints>*, QColor)), this, SLOT(retrieveSegmentsDraw(vector<PtrSegmentPoints>*, QColor)));
+	QObject::connect(_surfaceOriginal, SIGNAL(signalSendPolygonDraw(vector<Point>, QColor)), this, SLOT(retrievePolygonDraw(vector<Point>, QColor)));
 	
 	_SA1 = new SmartScrollArea();
 	_SA2 = new SmartScrollArea();
@@ -261,6 +263,7 @@ bool LabelingTaskControl::saveResult(QString filePath, bool saveOriginalImg)
 		}
 		return bsave;
 	}
+	return false;
 }
 
 bool LabelingTaskControl::saveOriginalIMG(QString filePath)
@@ -504,6 +507,21 @@ void LabelingTaskControl::changeTransparency(int value)
 	_surfaceSegmentation->setBlendAlpha(v, 1.0 - v);
 }
 
+cv::Rect LabelingTaskControl::getBoundingRectOfVecPts(vector<cv::Point>& vecPts)
+{
+	int min_x = INT_MAX, min_y = INT_MAX, max_x = 0, max_y = 0;
+	Point pt;
+	for (size_t i = 0; i < vecPts.size(); i++)
+	{
+		pt = vecPts[i];
+		if (min_x > pt.x) min_x = pt.x;
+		if (min_y > pt.y) min_y = pt.y;
+		if (max_x < pt.x) max_x = pt.x;
+		if (max_y < pt.y) max_y = pt.y;
+	}
+	return cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1);
+}
+
 void LabelingTaskControl::retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, QColor color)
 {
 	Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg, false);
@@ -532,3 +550,19 @@ void LabelingTaskControl::retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, 
 	updateAllSurfaces(r);
 }
 
+void LabelingTaskControl::retrievePolygonDraw(vector<Point> vecPts,QColor clr)
+{
+	if (vecPts.size() > 0)
+	{
+		Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg, false);
+		vector<vector<Point> > vecvecPts;
+		vecvecPts.push_back(vecPts);
+		cv::drawContours(outPutImg, vecvecPts, -1, cv::Scalar(clr.red(), clr.green(), clr.blue()), -1);
+		cv::Rect r = getBoundingRectOfVecPts(vecPts);
+		if (r.empty())
+		{
+			r = cv::Rect();
+		}
+		updateAllSurfaces(r);
+	}
+}

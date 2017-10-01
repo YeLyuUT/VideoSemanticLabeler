@@ -22,7 +22,6 @@ Surface::Surface(const QImage& Img, QWidget*parent) :QLabel(parent), _blendImage
 	//_ImageDraw = ImageConversion::cvMat_to_QImage(labelImg());
 	_drawType = PIXEL_WISE;
 	setOriginalImage(Img);
-	
 	this->setMouseTracking(true);
 	_bUpdateClipMat = false;
 	_bLButtonDown = false;
@@ -34,12 +33,14 @@ Surface::Surface(const QImage& Img, QWidget*parent) :QLabel(parent), _blendImage
 	_scaleRatioRank = 0;
 	_scaleRatio = 1.0;
 	_bEdit = false;
+	_allowPolygonMode = false;
 	_startPolygonMode = false;
 	_scrollArea = nullptr;
 	_referenceOriginalImage = nullptr;
 	blendAlphaSource = 0.5;
 	blendAlphaReference = 0.5;
 	_seg_drawn_num = 0;
+	_timePoint = steady_clock::now();
 	fitSizeToImage();
 }
 
@@ -75,6 +76,16 @@ void Surface::fitSizeToImage()
 	int width = _oriImage->width();
 	int height = _oriImage->height();
 	this->resize(width, height);
+}
+
+void Surface::setAllowPolyMode(bool bAllow)
+{
+	_allowPolygonMode = bAllow;
+}
+
+bool Surface::getAllowPolyMode()
+{
+	return _allowPolygonMode;
 }
 
 void Surface::setEditable(bool b)
@@ -378,32 +389,53 @@ void Surface::mousePressEvent(QMouseEvent *ev)
 	case Qt::LeftButton:
 		if (isEditable())
 		{
-			qDebug() << "Qt::LeftButton Press";
-			if (_drawType == DRAW_TYPE::PIXEL_WISE)
+			//qDebug() << "Qt::LeftButton Press";
+			if (!_startPolygonMode)
 			{
-				_bLButtonDown = true; _lastPoint = ev->pos(); _paintPath = QPainterPath(); _tempDrawPath = QPainterPath();
-				if (_bLButtonDown)
+				if (_drawType == DRAW_TYPE::PIXEL_WISE)
 				{
-					qDebug() << "Draw first Pt: " << '(' << ev->x() << ':' << ev->y() << ')';
-					QPoint endPoint = ev->pos() + QPoint(0, 1);
-					drawLineTo(endPoint);
-					updateRectArea(QRect(_lastPoint, endPoint).normalized(), _myPenRadius, false);
-					//_lastPoint = endPoint;
+					_bLButtonDown = true; _lastPoint = ev->pos(); _paintPath = QPainterPath(); _tempDrawPath = QPainterPath();
+					if (_bLButtonDown)
+					{
+						qDebug() << "Draw first Pt: " << '(' << ev->x() << ':' << ev->y() << ')';
+						QPoint endPoint = ev->pos() + QPoint(0, 1);
+						drawLineTo(endPoint);
+						updateRectArea(QRect(_lastPoint, endPoint).normalized(), _myPenRadius, false);
+						//_lastPoint = endPoint;
+					}
+				}
+				else if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
+				{
+					//TODO
+					_bLButtonDown = true;
+					if (_bLButtonDown)
+					{
+						this->update(_savedBoundingRect.x, _savedBoundingRect.y, _savedBoundingRect.width, _savedBoundingRect.height);
+						QPoint center = ev->pos();
+						center /= _scaleRatio;
+						//qDebug() << center;
+						setVecPointsWithinRadiusOfPoint(_vecPtsToEmit, _circleInnerPoint, Point(center.x(), center.y()), _oriImage->width(), _oriImage->height());
+						emit signalPixelCovered(&_vecPtsToEmit);
+					}
 				}
 			}
-			else if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
+			else if (_startPolygonMode)
 			{
-				//TODO
-				_bLButtonDown = true;
-				if (_bLButtonDown)
+				std::chrono::duration<double> duration(steady_clock::now() - _timePoint);
+				int ms = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+				if (ms < 200)
 				{
-					this->update(_savedBoundingRect.x, _savedBoundingRect.y, _savedBoundingRect.width, _savedBoundingRect.height);
-					QPoint center = ev->pos();
-					center /= _scaleRatio;
-					//qDebug() << center;
-					setVecPointsWithinRadiusOfPoint(_vecPtsToEmit, _circleInnerPoint, Point(center.x(), center.y()), _oriImage->width(), _oriImage->height());
-					emit signalPixelCovered(&_vecPtsToEmit);
+					qDebug() << "signalSendPolygonDraw";
+					emit signalSendPolygonDraw(_rightClickCache, _myPenColor);
+					_rightClickCache.clear();
 				}
+				else
+				{
+					QPoint endPoint = ev->pos();
+					qDebug() << "Push in Point:" << "(" << endPoint.x() << "," << endPoint.y() << ")";
+					_rightClickCache.push_back(cv::Point(endPoint.x() / _scaleRatio, endPoint.y() / _scaleRatio));
+				}
+				_timePoint = steady_clock::now();
 			}
 			updateCursorArea(false);//erase old cursor
 			_mousePos = ev->pos();
@@ -413,17 +445,22 @@ void Surface::mousePressEvent(QMouseEvent *ev)
 	case Qt::RightButton: qDebug() << "Qt::RightButton Press";
 		if (isEditable())
 		{
-			if (_startPolygonMode == false)
+			if (_allowPolygonMode)
 			{
-				qDebug() << "Start Polygon Mode";
-				_rightClickCache.clear();
-				_startPolygonMode = true;
-			}
-			else if (_startPolygonMode == true)
-			{
-				qDebug() << "Stop Polygon Mode";
-				//TODO
-				_startPolygonMode = false;
+				if (_startPolygonMode == false)
+				{
+					qDebug() << "Start Polygon Mode";
+					_rightClickCache.clear();
+					_startPolygonMode = true;
+					_mouseCursorTriangles = getMouseCursorTriangles(getMyPenRadius());
+				}
+				else if (_startPolygonMode == true)
+				{
+					qDebug() << "Stop Polygon Mode";
+					//TODO
+					_rightClickCache.clear();
+					_startPolygonMode = false;
+				}
 			}
 		}
 		break;
@@ -440,28 +477,29 @@ void Surface::mouseMoveEvent(QMouseEvent *ev)
 	//qDebug() << '(' << ev->x() << ':' << ev->y() << ')' ;
 	if (isEditable())
 	{
-		
-		if (_drawType == DRAW_TYPE::PIXEL_WISE)
+		if (!_startPolygonMode)
 		{
-			if (_bLButtonDown)
+			if (_drawType == DRAW_TYPE::PIXEL_WISE)
 			{
-				qDebug() << "Draw: " << '(' << ev->x() << ':' << ev->y() << ')';
-				QPoint endPoint = ev->pos();
-				drawLineTo(endPoint);
-				updateRectArea(QRect(_lastPoint, endPoint).normalized(), _myPenRadius, false);
-				_lastPoint = endPoint;
+				if (_bLButtonDown)
+				{
+					qDebug() << "Draw: " << '(' << ev->x() << ':' << ev->y() << ')';
+					QPoint endPoint = ev->pos();
+					drawLineTo(endPoint);
+					updateRectArea(QRect(_lastPoint, endPoint).normalized(), _myPenRadius, false);
+					_lastPoint = endPoint;
+				}
 			}
-		}
-		else if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
-		{
-			this->update(_savedBoundingRect.x, _savedBoundingRect.y, _savedBoundingRect.width, _savedBoundingRect.height);
-			QPoint center = ev->pos();
-			center /= _scaleRatio;
-			//qDebug() << center;
-			
-			setVecPointsWithinRadiusOfPoint(_vecPtsToEmit, _circleInnerPoint, Point(center.x(), center.y()), _oriImage->width(), _oriImage->height());
-			emit signalPixelCovered(&_vecPtsToEmit);
-			
+			else if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
+			{
+				this->update(_savedBoundingRect.x, _savedBoundingRect.y, _savedBoundingRect.width, _savedBoundingRect.height);
+				QPoint center = ev->pos();
+				center /= _scaleRatio;
+				//qDebug() << center;
+
+				setVecPointsWithinRadiusOfPoint(_vecPtsToEmit, _circleInnerPoint, Point(center.x(), center.y()), _oriImage->width(), _oriImage->height());
+				emit signalPixelCovered(&_vecPtsToEmit);
+			}
 		}
 		updateCursorArea(false);
 		_mousePos = ev->pos();
@@ -475,38 +513,40 @@ void Surface::mouseReleaseEvent(QMouseEvent *ev)
 {
 	if (isEditable())
 	{
-		if (_drawType == DRAW_TYPE::PIXEL_WISE)
+		if (!_startPolygonMode)
 		{
-			if (_bLButtonDown)
+			if (_drawType == DRAW_TYPE::PIXEL_WISE)
 			{
-				_bLButtonDown = false;
-				emit painterPathCreated((_myPenRadius * 2 + 1) / _scaleRatio, _paintPath);
-				updateRectArea(_tempDrawPath.boundingRect().toRect(), _myPenRadius, false);
-				_paintPath = QPainterPath();
-				_tempDrawPath = QPainterPath();
-			}
-		}
-		else if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
-		{
-			//TODO
-			if (_bLButtonDown)
-			{
-				if (_bLButtonDown/*&&_drawType == DRAW_TYPE::SUPER_PIXEL_WISE*/)
+				if (_bLButtonDown)
 				{
-					qDebug() << "emit signalDrawPixelsToResult";
-					emit signalDrawPixelsToResult(&_tempVecSegs, _myPenColor);
+					_bLButtonDown = false;
+					emit painterPathCreated((_myPenRadius * 2 + 1) / _scaleRatio, _paintPath);
+					updateRectArea(_tempDrawPath.boundingRect().toRect(), _myPenRadius, false);
+					_paintPath = QPainterPath();
+					_tempDrawPath = QPainterPath();
 				}
-				if (_bShowRef)
-					updateShowReferenceImg(cv::Rect());
-				_tempVecSegs.clear();
-				_tempVecPoint.clear();
-				_seg_drawn_num = 0;
-				_drawClipMat = Mat();
-				_bUpdateClipMat = false;
-				_bLButtonDown = false;
+			}
+			else if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
+			{
+				//TODO
+				if (_bLButtonDown)
+				{
+					if (_bLButtonDown/*&&_drawType == DRAW_TYPE::SUPER_PIXEL_WISE*/)
+					{
+						qDebug() << "emit signalDrawPixelsToResult";
+						emit signalDrawPixelsToResult(&_tempVecSegs, _myPenColor);
+					}
+					if (_bShowRef)
+						updateShowReferenceImg(cv::Rect());
+					_tempVecSegs.clear();
+					_tempVecPoint.clear();
+					_seg_drawn_num = 0;
+					_drawClipMat = Mat();
+					_bUpdateClipMat = false;
+					_bLButtonDown = false;
+				}
 			}
 		}
-
 //#ifdef CHECK_QIMAGE
 //		Mat temp = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
 //		cv::imshow("QImage", temp);
@@ -521,7 +561,9 @@ void Surface::mouseDoubleClickEvent(QMouseEvent* ev)
 	switch (ev->buttons())
 	{
 	case Qt::LeftButton:
-		qDebug() << "Left Double Clicked"; break;
+		qDebug() << "Left Double Clicked"; 
+	
+		break;
 	case Qt::RightButton:
 		qDebug() << "Right Double Clicked"; break;
 	default:
@@ -543,6 +585,7 @@ void Surface::wheelEvent(QWheelEvent*ev)
 		{
 			updateCursorArea(false);
 			setMyPenRadius(getMyPenRadius() + numSteps.y() * 2);//change pen radius	
+			_mouseCursorTriangles = getMouseCursorTriangles(getMyPenRadius());
 			updateCursorArea(true);
 			qDebug() << "myPenRadius" << _myPenRadius;
 		}
@@ -630,10 +673,24 @@ void Surface::drawLineTo(const QPoint &endPoint)
 void Surface::paintCursor()
 {
 	QPainter painter(this);
-	painter.setPen(QPen(_myPenColor, _cursorEdgeWidth, Qt::SolidLine, Qt::RoundCap,
-		Qt::RoundJoin));
-	painter.setBrush(QBrush(_myPenColor, Qt::DiagCrossPattern));
-	painter.drawEllipse(_mousePos, _myPenRadius, _myPenRadius);
+	if (!_startPolygonMode)
+	{
+		painter.setPen(QPen(_myPenColor, _cursorEdgeWidth, Qt::SolidLine, Qt::RoundCap,
+			Qt::RoundJoin));
+		painter.setBrush(QBrush(_myPenColor, Qt::DiagCrossPattern));
+		painter.drawEllipse(_mousePos, _myPenRadius, _myPenRadius);
+	}
+	else
+	{
+		painter.setPen(QPen(_myPenColor, _cursorEdgeWidth, Qt::SolidLine, Qt::FlatCap,
+			Qt::MiterJoin));
+		painter.setBrush(QBrush(_myPenColor, Qt::SolidPattern));
+		for (size_t i = 0; i < _mouseCursorTriangles.size(); i++)
+		{
+			QPolygon& vecPts = _mouseCursorTriangles[i];
+			painter.drawPolygon(vecPts.translated(_mousePos));
+		}
+	}
 }
 
 void Surface::updateImage(cv::Rect rect)
@@ -654,9 +711,49 @@ void Surface::updateCursorArea(bool drawCursor)
 {
 	bool beforeCursor = _bDrawCursor;
 	_bDrawCursor = drawCursor;
-	this->update(QRect(_mousePos.x() - (_myPenRadius + _cursorEdgeWidth), _mousePos.y() - (_myPenRadius + _cursorEdgeWidth), \
-		(_myPenRadius + _cursorEdgeWidth) * 2 + 3, (_myPenRadius + _cursorEdgeWidth) * 2 + 3));
+	this->update(QRect(_mousePos.x() - (_myPenRadius + _cursorEdgeWidth + 5), _mousePos.y() - (_myPenRadius + _cursorEdgeWidth + 5), \
+		(_myPenRadius + _cursorEdgeWidth + 5) * 2 + 3, (_myPenRadius + _cursorEdgeWidth + 5) * 2 + 3));
 	_bDrawCursor = beforeCursor;
+}
+
+vector<QPolygon> Surface::getMouseCursorTriangles(int penWidth, double angle)
+{
+	int r = penWidth;
+	vector<QPolygon> vecvecPt;
+	QPolygon vecPt;
+	QPoint pt1;
+	QPoint pt2;
+	QPoint pt3;
+
+	pt1 = QPoint(-r*sin(3.14159*angle / 180), r*cos(3.14159*angle / 180));
+	pt2 = QPoint(r*sin(3.14159*angle / 180), r*cos(3.14159*angle / 180));
+	pt3=QPoint(0, 0);
+	vecPt = QPolygon();
+	vecPt << pt1; vecPt << pt2; vecPt << pt3;
+	vecvecPt.push_back(vecPt);
+
+	pt1 = QPoint(-r*sin(3.14159*angle / 180), -r*cos(3.14159*angle / 180));
+	pt2 = QPoint(r*sin(3.14159*angle / 180), -r*cos(3.14159*angle / 180));
+	pt3 = QPoint(0, 0);
+	vecPt = QPolygon();
+	vecPt << pt1; vecPt << pt2; vecPt << pt3;
+	vecvecPt.push_back(vecPt);
+	   
+	pt1 = QPoint(-r*cos(3.14159*angle / 180), r*sin(3.14159*angle / 180));
+	pt2 = QPoint(-r*cos(3.14159*angle / 180), -r*sin(3.14159*angle / 180));
+	pt3 = QPoint(0, 0);
+	vecPt = QPolygon();
+	vecPt << pt1; vecPt << pt2; vecPt << pt3;
+	vecvecPt.push_back(vecPt);
+
+	pt1 = QPoint(r*cos(3.14159*angle / 180), r*sin(3.14159*angle / 180));
+	pt2 = QPoint(r*cos(3.14159*angle / 180), -r*sin(3.14159*angle / 180));
+	pt3 = QPoint(0, 0);
+	vecPt = QPolygon();
+	vecPt << pt1; vecPt << pt2; vecPt << pt3;
+	vecvecPt.push_back(vecPt);
+
+	return vecvecPt;
 }
 
 void Surface::setCursorInvisible(bool b)
