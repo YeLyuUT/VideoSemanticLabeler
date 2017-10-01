@@ -355,22 +355,29 @@ void Surface::paintEvent(QPaintEvent *ev)
 
 	if (isEditable())
 	{
-		if (_drawType == DRAW_TYPE::PIXEL_WISE)
+		if (!_startPolygonMode)
 		{
-			/* draw stroke trace */
-			if (_bLButtonDown)
+			if (_drawType == DRAW_TYPE::PIXEL_WISE)
 			{
-				painter.setPen(QPen(_myPenColor, (_myPenRadius * 2 + 1), Qt::SolidLine, Qt::RoundCap,
-					Qt::RoundJoin));
-				painter.drawPath(_tempDrawPath);
-				//qDebug() << "painter.drawPath";
+				/* draw stroke trace */
+				if (_bLButtonDown)
+				{
+					painter.setPen(QPen(_myPenColor, (_myPenRadius * 2 + 1), Qt::SolidLine, Qt::RoundCap,
+						Qt::RoundJoin));
+					painter.drawPath(_tempDrawPath);
+					//qDebug() << "painter.drawPath";
+				}
+			}
+			else if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
+			{
+				//TODO
+				drawClipedMatToRect(painter, _drawClipMat, _savedBoundingRect);
 			}
 		}
-		else if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
+		else
 		{
-			//TODO
-			drawClipedMatToRect(painter, _drawClipMat, _savedBoundingRect);
-			
+			if(!_drawClipMat.empty())
+				drawClipedMatToRect(painter, _drawClipMat, _savedBoundingRect);
 		}
 		/*draw cursor*/
 		if (_bDrawCursor)
@@ -428,6 +435,7 @@ void Surface::mousePressEvent(QMouseEvent *ev)
 					qDebug() << "signalSendPolygonDraw";
 					emit signalSendPolygonDraw(_rightClickCache, _myPenColor);
 					_rightClickCache.clear();
+					_drawClipMat = Mat();
 				}
 				else
 				{
@@ -496,10 +504,30 @@ void Surface::mouseMoveEvent(QMouseEvent *ev)
 				QPoint center = ev->pos();
 				center /= _scaleRatio;
 				//qDebug() << center;
-
 				setVecPointsWithinRadiusOfPoint(_vecPtsToEmit, _circleInnerPoint, Point(center.x(), center.y()), _oriImage->width(), _oriImage->height());
 				emit signalPixelCovered(&_vecPtsToEmit);
 			}
+		}
+		else
+		{
+			cv::Rect& r = _savedBoundingRect;
+			_drawClipMat = Mat();
+			this->update(r.x, r.y, r.width, r.height);
+			QPoint endPoint = ev->pos();
+			vector<Point> vecPts = transformVecPtsByScaleAndPos(_rightClickCache, _scaleRatio, Point(0, 0));
+			vecPts.push_back(cv::Point(endPoint.x(), endPoint.y()));
+			
+			r = cv::boundingRect(vecPts);
+			/*r.x -= 5;
+			r.y -= 5;
+			r.width += 10;
+			r.height += 10;
+			r = trimRect(r, 0, 0, _ImageDraw.width(), _ImageDraw.height());*/
+			vecPts = transformVecPtsByScaleAndPos(vecPts, 1.0, -r.tl());
+			Mat& drawIMG = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
+			Mat(drawIMG, r).copyTo(_drawClipMat);
+			drawPolytonToMat(vecPts, _drawClipMat);
+			this->update(r.x, r.y, r.width, r.height);
 		}
 		updateCursorArea(false);
 		_mousePos = ev->pos();
@@ -653,6 +681,28 @@ void Surface::drawClipedMatToRect(QPainter& painter,Mat&clipMat, cv::Rect rect)
 	painter.drawImage(dirtyRect, qImg);
 }
 
+void Surface::drawPolygonToQImage(vector<cv::Point>&vecPts, QImage& image)
+{
+	vector<vector<cv::Point> > vecvecPts;
+	vecvecPts.push_back(vecPts);
+	cv::Scalar clr(_myPenColor.red(), _myPenColor.green(), _myPenColor.blue());
+	Mat mImage = ImageConversion::QImage_to_cvMat(image, false);
+	cv::drawContours(mImage, vecvecPts, -1, clr, -1);
+}
+
+void Surface::drawPolytonToMat(vector<cv::Point>&vecPts, Mat& image)
+{
+	//qDebug() << "drawPolytonToMat pts size:"<< vecPts.size();
+	vector<vector<cv::Point> > vecvecPts;
+	vecvecPts.push_back(vecPts);
+	cv::Scalar clr(_myPenColor.red(), _myPenColor.green(), _myPenColor.blue());
+	Mat temp;
+	image.copyTo(temp);
+	cv::drawContours(temp, vecvecPts, -1, clr, -1);
+	cv::addWeighted(image, _alpha_src, temp, _alpha_dst, 0, image);
+	//cv::imshow("temp", image);
+	//cv::waitKey(1);
+}
 
 void Surface::drawLineTo(const QPoint &endPoint)
 {
@@ -1052,8 +1102,8 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 		{
 			Point pt = _tempVecPoint[i] - r.tl();
 
-			_drawClipMat.at<cv::Vec3b>(pt.y, pt.x) = Mat(drawIMG, r).at<cv::Vec3b>(pt.y, pt.x)*0.6
-				+ cv::Vec3b(_myPenColor.red(), _myPenColor.green(), _myPenColor.blue())*0.4;
+			_drawClipMat.at<cv::Vec3b>(pt.y, pt.x) = Mat(drawIMG, r).at<cv::Vec3b>(pt.y, pt.x)*_alpha_src
+				+ cv::Vec3b(_myPenColor.red(), _myPenColor.green(), _myPenColor.blue())*_alpha_dst;
 
 		}
 		this->update(r.x, r.y, r.width, r.height);
@@ -1137,4 +1187,15 @@ void Surface::getCircleInnerPoints(vector<Point>&circleInnerPoint, int radius)
 		}
 	}
 	qDebug() << "getCircleInnerPoints()";
+}
+
+vector<Point> Surface::transformVecPtsByScaleAndPos(vector<Point>& vecPts, double scale, Point offset)
+{
+	vector<Point> rvtVec;
+	rvtVec.reserve(vecPts.size());
+	for (size_t i = 0; i < vecPts.size(); i++)
+	{
+		rvtVec.push_back(vecPts[i] * scale + offset);
+	}
+	return rvtVec;
 }

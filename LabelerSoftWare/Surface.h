@@ -97,6 +97,8 @@ private:
 	void drawClipedMatToRect(QPainter& painter, Mat&clipMat, cv::Rect rect);
 	void drawLineTo(const QPoint &endPoint);
 	void drawCircle(const QPoint &Point);
+	void drawPolygonToQImage(vector<cv::Point>&vecPts, QImage& image);
+	void drawPolytonToMat(vector<cv::Point>&vecPts, Mat& image);
 	void updateCursorArea(bool drawCursor);//updateCursorArea(false) can clean cursor;updateCursorArea(true) can redraw cursor
 	void updateRectArea(QRect rect, int rad, bool drawCursor);
 
@@ -114,6 +116,8 @@ private:
 	QPoint FilterScalePoint(QPoint pt);
 
 	QImage blendImage(const QImage& img1, double ratio1, const QImage& img2, double ratio2, cv::Rect rect = cv::Rect());
+
+	vector<Point> transformVecPtsByScaleAndPos(vector<Point>& vecPts, double scale,Point offset);//scale first then offset
 protected:
 	void keyPressEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
 	void keyReleaseEvent(QKeyEvent *ev) Q_DECL_OVERRIDE;
@@ -145,7 +149,7 @@ private:
 	bool _startPolygonMode;
 	bool _allowPolygonMode;
 	SavedPixels _savedPixels;
-	Mat _drawClipMat;
+	Mat _drawClipMat;//temp clip mat for drawImage
 	cv::Rect _savedBoundingRect;
 	QScrollArea* _scrollArea;
 	QPoint _lastPoint;
@@ -167,4 +171,8 @@ private:
 	double _scaleRatio;
 	int _scaleRatioRank;//level of scale
 	int _seg_drawn_num;
+
+private:
+	const double _alpha_src = 0.6;
+	const double _alpha_dst = 0.4;
 };
