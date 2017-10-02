@@ -142,6 +142,8 @@ void ProcessControl::hasNewLabelingProcess(VideoControl* pVidCtrl)
 {
 	if (_labelingTask == NULL)
 	{
+		double posFrame = pVidCtrl->getPosFrames();
+		double ratio = pVidCtrl->getFrameCount() == 1 ? 1.0 : posFrame / (pVidCtrl->getFrameCount() - 1.0);
 		_labelingTask = new LabelingTaskControl(this, pVidCtrl, _selection, QString::fromStdString(this->_outputDir), _autoLoadResult, this);
 		qDebug() << "LabelingTaskControl Created";
 		QObject::connect(_w->getVideoWidget(), SIGNAL(signalSave()), _labelingTask, SLOT(saveLabelResult()));
@@ -149,8 +151,7 @@ void ProcessControl::hasNewLabelingProcess(VideoControl* pVidCtrl)
 		QObject::connect(_w->getVideoWidget(), SIGNAL(signalNewFrame()), this, SLOT(updateFrameToBeLabeled()));
 		QObject::connect(_w->getVideoWidget(), SIGNAL(signalTransparencyChanged(int)), _labelingTask, SLOT(changeTransparency(int)));
 		_w->getVideoWidget()->setSkipFrameNum(pVidCtrl->getSkipFrameNum());
-		double posFrame = pVidCtrl->getPosFrames();
-		double ratio = posFrame / (pVidCtrl->getFrameCount() - 1.0);
+		
 		_w->getVideoWidget()->updateProgressBar(ratio);
 		_w->getVideoWidget()->updateCurrentFrameNum(posFrame);
 		_isLabeling = true;

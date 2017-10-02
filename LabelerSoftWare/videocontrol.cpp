@@ -126,9 +126,11 @@ bool VideoControl::getFrame(Mat& img)
 bool VideoControl::getFrame(Mat& img,double frameNum)
 {
     QWriteLocker locker(&_lock);
-	_videoCap.set(CAP_PROP_POS_FRAMES, frameNum);
-	_frameIdx = frameNum - 1;
-	if (_videoCap.read(img))
+	//_videoCap.set(CAP_PROP_POS_FRAMES, frameNum);
+	qDebug() << "CAP_PROP_POS_FRAMES:" << _videoCap.get(CAP_PROP_POS_FRAMES);
+	
+	_frameIdx = frameNum;
+	if (_videoCap.retrieve(img))
 	{
 		_curMat = img;
 		locker.unlock();

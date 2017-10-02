@@ -479,16 +479,16 @@ void LVideoWidget::currentFrameNumChanged(const QString& str)
 	int num = str.toInt(&ok);
 	if (ok&&num >= 0&&num<=vcontrol->getFrameCount())
 	{
+		vthread->setNextFrame(num);
+		vthread->emitNextImage();
 		if (!isEditting)
 		{
-			vthread->setNextFrame(num);
-			vthread->emitNextImage();
 			double ratio = vcontrol->getPosFrames() / (vcontrol->getFrameCount() - 1.0);
 			this->updateProgressBar(ratio);
 		}
 		else
 		{
-			vcontrol->setToFrameAndGrab(num);
+			//vcontrol->setToFrameAndGrab(num);
 			emit signalNewFrame();
 		}
 	}

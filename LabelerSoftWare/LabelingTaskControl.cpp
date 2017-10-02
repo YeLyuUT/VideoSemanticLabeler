@@ -24,7 +24,9 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_segmentation_control = NULL;
 	_autoLoadResult = autoLoadResult;
 	_pVidCtrl = pCtrl;
+	/*_pVidCtrl->reset(_pVidCtrl->getPosFrames());*/
 	int index = _pVidCtrl->getPosFrames();
+	qDebug() <<"index:" <<index;
 	_frameIdx = index;
 	cv::Mat matFrame;
 	if (!_pVidCtrl->getFrame(matFrame, index))

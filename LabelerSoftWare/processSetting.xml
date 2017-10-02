@@ -10,22 +10,32 @@
     If input file is a video, please specify the file path name,
 	If input files are images, please specify the image directory.
 -->
-K:/UAVDataCapturing/170629/DJI_0209.MP4
+<!-- D:/UAVDataCapturing/German/Gronau/100MEDIA/1.MP4 -->
+"C:/Work/New folder (2)/shuttle_out.avi"
+
 </InputFilePath>
 
 <OutputDir>
 <!--
 	Specify the output directory.
 -->
-./OutPut
+D:/UAVDataCapturing/German/Gronau/100MEDIA/1/OutPut
 </OutputDir>
+
+<Labeling_Frame_Interval>
+<!--
+	Specify labeling frame interval.
+	Not used for image files.
+-->
+30
+</Labeling_Frame_Interval>
 
 <LabelList>
 <!--
-    Specify the class Labels and their corresponding color in order of RGB.
+    Specify the class Labels and their corresponding color in <R><G><B>.
 	Please contain each class in a class tag like <class(N)>...</class(N)>.
 	<class(N)> should be different.
-	Please replace space ' ' with underline '_' character.
+	Please replace space ' ' with underline '_' character in content of <Name>.
 -->
 	<class1>
 	<Name>Void</Name><R>0</R><G>0</G><B>0</B>
@@ -37,7 +47,7 @@ K:/UAVDataCapturing/170629/DJI_0209.MP4
 	<Name>Road</Name><R>128</R><G>64</G><B>128</B>
 	</class3>
 	<class4>
-	<Name>Static_Car</Name><R>64</R><G>0</G><B>64</B>
+	<Name>Static_Car</Name><R>192</R><G>0</G><B>192</B>
 	</class4>
 	<class5>
 	<Name>Water_Surface</Name><R>0</R><G>0</G><B>128</B>
@@ -54,5 +64,3 @@ K:/UAVDataCapturing/170629/DJI_0209.MP4
 </LabelList>
 
 </opencv_storage>
-
-
