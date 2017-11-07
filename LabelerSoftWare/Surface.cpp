@@ -1117,7 +1117,13 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 				p *= _scaleRatio;
 				if (p.x >= 0 && p.y >= 0 && p.x < drawIMG.cols&&p.y < drawIMG.rows)
 				{
-					_tempVecPoint.push_back(p);
+					for (int i = 0; i < _scaleRatio; i++)
+					{
+						for (int j = 0; j < _scaleRatio; j++)
+						{
+							_tempVecPoint.push_back(p + Point(j,i));
+						}
+					}
 				}
 			}
 		}
