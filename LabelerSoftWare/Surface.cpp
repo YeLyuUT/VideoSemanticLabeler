@@ -508,6 +508,7 @@ void Surface::mousePressEvent(QMouseEvent *ev)
 void Surface::mouseMoveEvent(QMouseEvent *ev)
 {
 	//qDebug() << '(' << ev->x() << ':' << ev->y() << ')' ;
+	
 	if (isEditable())
 	{
 		if (!_startPolygonMode)
@@ -552,7 +553,6 @@ void Surface::mouseMoveEvent(QMouseEvent *ev)
 		updateCursorArea(false);
 		_mousePos = ev->pos();
 		updateCursorArea(true);
-
 	}
 	QLabel::mouseMoveEvent(ev);
 }
@@ -622,6 +622,7 @@ void Surface::mouseDoubleClickEvent(QMouseEvent* ev)
 
 void Surface::wheelEvent(QWheelEvent*ev)
 {
+	qDebug() << "Surface::wheelEvent";
 	QPoint numDegrees = ev->angleDelta() / 8;
 	QPoint numSteps = numDegrees / 15;
 	qDebug() << "Surface::wheelEvent";
@@ -640,7 +641,7 @@ void Surface::wheelEvent(QWheelEvent*ev)
 		break;
 	case Qt::KeyboardModifier::AltModifier:
 		{
-			zoom(numSteps.x(), ev->pos());
+		    zoom(numSteps.x(), ev->pos());
 			qDebug() << "AltModifier";
 		}
 		break;
@@ -648,7 +649,7 @@ void Surface::wheelEvent(QWheelEvent*ev)
 		break;
 	}
 	
-	ev->accept();
+	//ev->accept();
 }
 
 void Surface::leaveEvent(QEvent*ev)
@@ -852,7 +853,7 @@ void Surface::setScaleRatio(double ratio, double maximum, double minimum)
 	else
 	{
 		_scaleRatio = ratio;
-		int temp_scaleRank = 0;
+		/*int temp_scaleRank = 0;
 		if (_scaleRatio > maximum)
 		{
 			_scaleRatio = qMin(maximum, _scaleRatio);
@@ -866,7 +867,7 @@ void Surface::setScaleRatio(double ratio, double maximum, double minimum)
 			temp_scaleRank = int(log(_scaleRatio) / log(1.25));
 			setScaleRatioRank(temp_scaleRank);
 			_scaleRatio = pow(1.25, temp_scaleRank);
-		}
+		}*/
 		
 		
 		qDebug() << "_scaleRatio:" << _scaleRatio;
@@ -896,11 +897,11 @@ void Surface::updateScaleRatioByRank()
 {
 	if (_scaleRatioRank > 0)
 	{
-		setScaleRatio(pow(1.25, _scaleRatioRank));
+		setScaleRatio(pow(2, _scaleRatioRank));
 	}
 	else if (_scaleRatioRank < 0)
 	{
-		setScaleRatio(pow(0.8, -_scaleRatioRank));
+		setScaleRatio(pow(0.5, -_scaleRatioRank));
 	}
 	else
 	{
@@ -961,11 +962,10 @@ void Surface::zoom(int step, QPoint pt)
 	{
 		getCircleInnerPoints(_circleInnerPoint, _myPenRadius);
 	}
-	QPoint newPos = getPointAfterNewScale(pt, oldScaleRatio, newScaleRatio);
-	emit mousePositionShiftedByScale(pt, oldScaleRatio, newScaleRatio);
+	//QPoint newPos = getPointAfterNewScale(pt, oldScaleRatio, newScaleRatio);
 	applyScaleRatio();
-
 	this->resize(_ImageDraw.width(), _ImageDraw.height());
+	emit mousePositionShiftedByScale(pt, oldScaleRatio, newScaleRatio);
 	update();
 }
 

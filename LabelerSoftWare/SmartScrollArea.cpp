@@ -7,39 +7,82 @@
 SmartScrollArea::SmartScrollArea(QWidget*parent) :QScrollArea(parent)
 {
 	keyPressed = Qt::Key::Key_No;
+	QScrollBar* barY = this->verticalScrollBar();
+	QScrollBar* barX = this->horizontalScrollBar();
+	QObject::connect(barX, SIGNAL(valueChanged(int)), this, SLOT(saveXBar(int)));
+	QObject::connect(barY, SIGNAL(valueChanged(int)), this, SLOT(saveYBar(int)));
 }
 
+void SmartScrollArea::saveXBar(int val)
+{
+	qDebug() << "SmartScrollArea::saveXBar";
+	oldBarValue.setX(val);
+}
+void SmartScrollArea::saveYBar(int val)
+{
+	qDebug() << "SmartScrollArea::saveYBar";
+	oldBarValue.setY(val);
+}
 
 SmartScrollArea::~SmartScrollArea()
 {
 }
 
-void SmartScrollArea::gentleShiftScrollAreaWhenScaled(QPoint mousePt, double oldRatio, double newRatio)
+void SmartScrollArea::gentleShiftScrollAreaWhenScaled(QPoint mousePt,double oldRatio, double newRatio)
 {
 	qDebug() << "gentleShiftScrollAreaWhenScaled.";
 	QScrollBar* barY = this->verticalScrollBar();
 	QScrollBar* barX = this->horizontalScrollBar();
-	double ptX = (mousePt.x()) / oldRatio;
-	double ptY = (mousePt.y()) / oldRatio;
-	double ptXNew = (mousePt.x()) / newRatio;
-	double ptYNew = (mousePt.y()) / newRatio;
-	double diffX = (ptXNew - ptX)*newRatio;
-	double diffY = (ptYNew - ptY)*newRatio;
+	double ptX = double(mousePt.x());
+	double ptY = double(mousePt.y());
+	double X = ptX - /*oldBarValue.x();*/barX->value();
+	double Y = ptY - /*oldBarValue.y();*/barY->value();
+	double newPtX = ptX / oldRatio*newRatio;
+	double newPtY = ptY / oldRatio*newRatio;
+	int newBarX = newPtX - X;
+	int newBarY = newPtY - Y;
+	newBarY = qMax(barY->minimum(), newBarY);
+	newBarY = qMin(barY->maximum(), newBarY);
+	newBarX = qMax(barX->minimum(), newBarX);
+	newBarX = qMin(barX->maximum(), newBarX);
+	barY->setValue(newBarY);
+	barX->setValue(newBarX);
+	/*double ptX = double(mousePt.x()) / oldRatio;
+	double ptY = double(mousePt.y()) / oldRatio;
+	double ptXNew = double(mousePt.x()) / newRatio;
+	double ptYNew = double(mousePt.y()) / newRatio;
+	double diffX = 0;
+	double diffY = 0;
+	diffX = double(ptXNew - ptX)*newRatio;
+	diffY = double(ptYNew - ptY)*newRatio;
 
 	int scrollPos_X_New = barX->value() - diffX;
 	int scrollPos_Y_New = barY->value() - diffY;
-
 	scrollPos_Y_New = qMax(barY->minimum(), scrollPos_Y_New);
 	scrollPos_Y_New = qMin(barY->maximum(), scrollPos_Y_New);
 	scrollPos_X_New = qMax(barX->minimum(), scrollPos_X_New);
 	scrollPos_X_New = qMin(barX->maximum(), scrollPos_X_New);
 
+	
+	if (newRatio > oldRatio)
+	{
+		this->contentsRect();
+	}
+	qDebug() << this->contentsRect().x();
+	qDebug() << this->contentsRect().y();
+	qDebug() << this->contentsRect().width();
+	qDebug() << this->contentsRect().height();
 	barY->setValue(scrollPos_Y_New);
-	barX->setValue(scrollPos_X_New);
+	barX->setValue(scrollPos_X_New);*/
 }
 
 void SmartScrollArea::wheelEvent(QWheelEvent* ev)
 {
+	qDebug() << "SmartScrollArea::wheelEvent";
+	QScrollBar* barY = this->verticalScrollBar();
+	QScrollBar* barX = this->horizontalScrollBar();
+	oldBarValue.setX(barX->value());
+	oldBarValue.setY(barY->value());
 	return QScrollArea::wheelEvent(ev);
 }
 
