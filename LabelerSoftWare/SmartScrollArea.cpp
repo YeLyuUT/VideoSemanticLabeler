@@ -6,6 +6,7 @@
 
 SmartScrollArea::SmartScrollArea(QWidget*parent) :QScrollArea(parent)
 {
+	this->setWindowFlags(Qt::Window | Qt::WindowMinMaxButtonsHint);
 	keyPressed = Qt::Key::Key_No;
 	QScrollBar* barY = this->verticalScrollBar();
 	QScrollBar* barX = this->horizontalScrollBar();
