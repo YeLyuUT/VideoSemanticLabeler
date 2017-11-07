@@ -232,14 +232,14 @@ void VideoControl::setToFrameAndGrab(int idx)
 void VideoControl::setToNextFrameAndGrab()
 {
 	int idx = this->getPosFrames() + this->getSkipFrameNum();
-	this->setPosFrames(idx);
+	this->setPosFrames(idx-1);
 	_videoCap.grab();
 }
 
 void VideoControl::setToPreviousFrameAndGrab()
 {
 	int idx = this->getPosFrames() - this->getSkipFrameNum();
-	this->setPosFrames(idx);
+	this->setPosFrames(idx-1);
 	_videoCap.grab();
 }
 
