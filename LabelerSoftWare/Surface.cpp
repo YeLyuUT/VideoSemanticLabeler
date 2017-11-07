@@ -156,6 +156,7 @@ void Surface::showNormal()
 {
 	this->setScaleRatio(1.0);
 	this->applyScaleRatio();
+	this->resize(_ImageDraw.width(), _ImageDraw.height());
 	update();
 }
 
@@ -958,14 +959,24 @@ void Surface::zoom(int step, QPoint pt)
 	setScaleRatioRank(getScaleRatioRank() + step);
 	updateScaleRatioByRank();
 	double newScaleRatio = getScaleRatio();
+	if (oldScaleRatio == newScaleRatio) return;
 	if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
 	{
 		getCircleInnerPoints(_circleInnerPoint, _myPenRadius);
 	}
 	//QPoint newPos = getPointAfterNewScale(pt, oldScaleRatio, newScaleRatio);
 	applyScaleRatio();
-	this->resize(_ImageDraw.width(), _ImageDraw.height());
-	emit mousePositionShiftedByScale(pt, oldScaleRatio, newScaleRatio);
+	if (step < 0)
+	{
+		emit mousePositionShiftedByScale(pt, oldScaleRatio, newScaleRatio);
+		this->resize(_ImageDraw.width(), _ImageDraw.height());
+	}
+	else if (step > 0)
+	{
+		this->resize(_ImageDraw.width(), _ImageDraw.height());
+		emit mousePositionShiftedByScale(pt, oldScaleRatio, newScaleRatio);
+	}
+	
 	update();
 }
 
@@ -1076,7 +1087,7 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 			_tempVecSegs.push_back((*vecPts)[i]);
 		else
 		{
-			qDebug() << "Have Same Segs";
+			//qDebug() << "Have Same Segs";
 		}
 	}
 	if (_seg_drawn_num < _tempVecSegs.size())
@@ -1089,7 +1100,7 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 	}
 	if(_bUpdateClipMat)
 	{
-		qDebug() << "Have Same Segs";
+		//qDebug() << "Have Same Segs";
 		std::vector<Point>& refSavePixels = std::get<1>(_savedPixels);
 		Mat& drawIMG = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
 		for (size_t i = _seg_drawn_num; i < _tempVecSegs.size(); i++)
@@ -1129,7 +1140,7 @@ void Surface::slotPixelCovered(vector<PtrSegmentPoints>* vecPts)
 		this->update(r.x, r.y, r.width, r.height);
 		
 		
-		qDebug() << "slotPixelCovered";
+		//qDebug() << "slotPixelCovered";
 
 
 

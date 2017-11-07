@@ -76,7 +76,7 @@ private:
 	/*These functions set showing image scale*/
 	void setScaleRatio(double ratio, double maximum = 2.0, double minimum = 0.25);
 	double getScaleRatio();
-	void setScaleRatioRank(int rank, int maximum = 2, int minimum = -4);
+	void setScaleRatioRank(int rank, int maximum = 1, int minimum = -4);
 	int getScaleRatioRank();
 	void updateScaleRatioByRank();
 	void showNormal();
