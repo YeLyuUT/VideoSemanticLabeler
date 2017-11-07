@@ -181,7 +181,7 @@ void Surface::showScaledRefImg(const QImage* Img, cv::Rect rect)
 		Mat mRectImage, mResize;
 		Mat(ImageConversion::QImage_to_cvMat(*Img, false), rect).copyTo(mRectImage);
 		Mat mDrawImage = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
-		cv::resize(mRectImage, mResize, cv::Size(scaledRect.width, scaledRect.height));
+		cv::resize(mRectImage, mResize, cv::Size(scaledRect.width, scaledRect.height),0,0, cv::INTER_NEAREST);
 		mResize.copyTo(Mat(mDrawImage, scaledRect));
 	}
 	else
@@ -946,7 +946,7 @@ void Surface::updateRectOfImg(cv::Rect rect)
 	Mat mRectOriImage, mResizeOri;
 	Mat(ImageConversion::QImage_to_cvMat(*_oriImage, false), rect).copyTo(mRectOriImage);
 	Mat mScaledOriImage = ImageConversion::QImage_to_cvMat(_scaledOriImage, false);
-	cv::resize(mRectOriImage, mResizeOri, cv::Size(scaledRect.width, scaledRect.height));
+	cv::resize(mRectOriImage, mResizeOri, cv::Size(scaledRect.width, scaledRect.height),0,0, cv::INTER_NEAREST);
 	mResizeOri.copyTo(Mat(mScaledOriImage, scaledRect));
 	if (_bShowRef)
 		updateShowReferenceImg(rect);
