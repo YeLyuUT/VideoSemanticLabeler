@@ -134,6 +134,7 @@ void ProcessControl::processVideo()
 	QObject::connect(_w->getVideoWidget(), SIGNAL(edittingStopped()), this, SLOT(closeLabelingProcess()));
 	QObject::connect(_w->getVideoWidget(), SIGNAL(signalClose()), this, SLOT(labelerSoftWareQuit()));
 	QObject::connect(_w->getVideoWidget(), SIGNAL(signalAutoLoadResult(bool)), this, SLOT(toggleAutoLoadResult(bool)));
+	QObject::connect(_w->getVideoWidget(), SIGNAL(signalUseSPSegs(int)), this, SLOT(useSPSegsLabeling(int)));
 	_w->show();
 	
 }
@@ -266,5 +267,13 @@ void ProcessControl::toggleAutoLoadResult(bool checked)
 	if (_isLabeling&&_labelingTask)
 	{
 		_labelingTask->setAutoLoadResult(_autoLoadResult);
+	}
+}
+
+void ProcessControl::useSPSegsLabeling(int level)
+{
+	if (_isLabeling&&_labelingTask)
+	{
+		_labelingTask->setupSegmentationSurface(level);
 	}
 }

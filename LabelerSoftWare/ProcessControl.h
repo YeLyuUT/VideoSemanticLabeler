@@ -24,6 +24,7 @@ public slots:
 	void closeLabelingProcess();
 	void labelerSoftWareQuit();
 	void toggleAutoLoadResult(bool checked);
+	void useSPSegsLabeling(int level);
 	void switchToNextLabelFrame();
 	void switchToPreviousLabelFrame();
 	void updateFrameToBeLabeled();

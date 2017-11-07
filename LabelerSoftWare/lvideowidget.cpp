@@ -33,6 +33,8 @@ LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
 	wSliderText = nullptr;
 	wSliderTransparency = nullptr;
 	wCheckBoxAutoLoadResult = nullptr;
+	wButtonUseSPSegs = nullptr;
+	wSpinBoxSPSLevel = nullptr;
     constructInterface();
 	vcontrol = new VideoControl();
 	vthread = new VideoThread(vcontrol);
@@ -95,6 +97,9 @@ void LVideoWidget::setupConnections()
 	connect(wEditButton, SIGNAL(clicked()), this, SLOT(edit()));
 	connect(wSaveButton, SIGNAL(clicked()), this, SLOT(save()));
 	connect(wCheckBoxAutoLoadResult, SIGNAL(toggled(bool)), this, SLOT(toggleAutoLoadResult(bool)));
+	connect(wButtonUseSPSegs, SIGNAL(clicked()), this, SLOT(useSuperpixelEdit()));
+	connect(wSpinBoxSPSLevel, SIGNAL(valueChanged(int)), this, SLOT(slotSPSegsLevelChanged(int)));
+	
 	connect(wOpenSaveDir, SIGNAL(clicked()), this, SLOT(openSaveDir()));
 	connect(wCommitButton, SIGNAL(clicked()), this, SLOT(commitSetting()));
 	connect(vthread, SIGNAL(updateVideoInfo(double, double, double)), this, SLOT(updateInfos(double, double, double)));
@@ -139,6 +144,17 @@ void LVideoWidget::constructInterface()
 	hBoxLayout0->addWidget(wCheckBoxAutoLoadResult);
 	wCheckBoxAutoLoadResult->hide();
 	wCheckBoxAutoLoadResult->setChecked(false);//keep same as process control
+
+	wButtonUseSPSegs = new QPushButton("Use Superpixel Labeling");
+	hBoxLayout0->addWidget(wButtonUseSPSegs);
+	wButtonUseSPSegs->hide();
+
+	wSpinBoxSPSLevel = new QSpinBox();
+	wSpinBoxSPSLevel->setMaximum(3);
+	wSpinBoxSPSLevel->setMinimum(0);
+	hBoxLayout0->addWidget(wSpinBoxSPSLevel);
+	wSpinBoxSPSLevel->hide();
+
 	wSkipFrameNumEdit = new QLineEdit(this);
 	wSkipFrameNumEdit->setMaximumWidth(50);
 	wSkipFrameNumEdit->setText("1");
@@ -354,6 +370,20 @@ void LVideoWidget::toggleAutoLoadResult(bool checked)
 	emit signalAutoLoadResult(checked);
 }
 
+void LVideoWidget::useSuperpixelEdit()
+{
+	qDebug() << "emit useSuperpixelEdit";
+	int level = wSpinBoxSPSLevel->value();
+	emit signalUseSPSegs(level);
+}
+
+void LVideoWidget::slotSPSegsLevelChanged(int level)
+{
+	qDebug() << "emit useSuperpixelEdit";
+	emit signalUseSPSegs(level);
+}
+
+
 void LVideoWidget::openSaveDir()
 {
 	qDebug() << "emit signal OpenSaveDir";
@@ -378,6 +408,8 @@ void LVideoWidget::edit()
 		wStopButton->hide();
 		wSaveButton->show();
 		wCheckBoxAutoLoadResult->show();
+		wButtonUseSPSegs->show();
+		wSpinBoxSPSLevel->show();
 		wSliderText->show();
 		wSliderTransparency->show();
 		wOpenSaveDir->show();
@@ -412,6 +444,8 @@ void LVideoWidget::edit()
 		wStopButton->show();
 		wSaveButton->hide();
 		wCheckBoxAutoLoadResult->hide();
+		wButtonUseSPSegs->hide();
+		wSpinBoxSPSLevel->hide();
 		wSliderText->hide();
 		wSliderTransparency->hide();
 		wOpenSaveDir->hide();

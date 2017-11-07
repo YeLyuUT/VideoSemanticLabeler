@@ -21,9 +21,10 @@
 
 LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl* pCtrl, ClassSelection* selection, QString outPutDir,bool autoLoadResult, QObject* parent) :QObject(parent)
 {
-	_segmentation_control = NULL;
+	//_segmentation_control = NULL;
 	_autoLoadResult = autoLoadResult;
 	_pVidCtrl = pCtrl;
+	_segSurfaceSet = false;
 	/*_pVidCtrl->reset(_pVidCtrl->getPosFrames());*/
 	int index = _pVidCtrl->getPosFrames();
 	qDebug() <<"index:" <<index;
@@ -39,17 +40,22 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_outPutDir = outPutDir;
 	_InputImg = Img.copy();
 	_selection = selection;
-	_segmentation_control = new SegmentationControl(matFrame);
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, 5));
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, 10));
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, 15));
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, 20));
 	//_segmentation_control->doSlicSegmentation();
-	std::thread t(&SegmentationControl::doSlicSegmentation, _segmentation_control);
-	_segmentation_control->setSegmentationType(SegmentationControl::SLIC_);
-	setupOtherImg();
+	//std::thread t(&SegmentationControl::doSlicSegmentation, _segmentation_control);
+	//_segmentation_control->setSegmentationType(SegmentationControl::SLIC_);
+	
 
-	t.join();
-	_segImg = createQImageByMat(_segmentation_control->getSlicSegResultRef(), true);//set segImg
-	_surfaceSegmentation = new Surface(_segImg);
+	//t.join();
+	//_segImg = createQImageByMat(_segmentation_control->getSlicSegResultRef(), true);//set segImg
+	setupOtherImg();
 	_surfaceOriginal = new Surface(_InputImg);
 	_surfaceOutPut = new Surface(_outPutImg);
+	_surfaceSegmentation = nullptr;
+	//_surfaceSegmentation = new Surface(_segImg);
 
 	if (_autoLoadResult)
 	{
@@ -62,16 +68,16 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 		}
 	}
 	_surfaceOriginal->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
-	_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
 	_surfaceOutPut->setReferenceImage(&_surfaceOriginal->getOriImage());//_InputImg
-	_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
+	//_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
+	//_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
 	//_surfaceOutPut->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
 
 	_surfaceOriginal->setAllowPolyMode(true);
-	_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
-	QObject::connect(_segmentation_control, SIGNAL(signalSendPts(vector<PtrSegmentPoints>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<PtrSegmentPoints>*)));
-	QObject::connect(_surfaceSegmentation, SIGNAL(signalPixelCovered(vector<Point>*)), _segmentation_control, SLOT(slotReceivePts(vector<Point>*)));
-	QObject::connect(_surfaceSegmentation, SIGNAL(signalDrawPixelsToResult(vector<PtrSegmentPoints>*, QColor)), this, SLOT(retrieveSegmentsDraw(vector<PtrSegmentPoints>*, QColor)));
+	//_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
+	//QObject::connect(_segmentation_control, SIGNAL(signalSendPts(vector<PtrSegmentPoints>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<PtrSegmentPoints>*)));
+	//QObject::connect(_surfaceSegmentation, SIGNAL(signalPixelCovered(vector<Point>*)), _segmentation_control, SLOT(slotReceivePts(vector<Point>*)));
+	//QObject::connect(_surfaceSegmentation, SIGNAL(signalDrawPixelsToResult(vector<PtrSegmentPoints>*, QColor)), this, SLOT(retrieveSegmentsDraw(vector<PtrSegmentPoints>*, QColor)));
 	QObject::connect(_surfaceOriginal, SIGNAL(signalSendPolygonDraw(vector<Point>, QColor)), this, SLOT(retrievePolygonDraw(vector<Point>, QColor)));
 	
 	_SA1 = new SmartScrollArea();
@@ -80,11 +86,11 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 
 	/*set up relation between scrollarea and surface*/
 	_SA1->setWidget(_surfaceOriginal);
-	_SA2->setWidget(_surfaceSegmentation);
+	//_SA2->setWidget(_surfaceSegmentation);
 	_SA3->setWidget(_surfaceOutPut);
 
 	_surfaceOriginal->setScrollArea(_SA1);
-	_surfaceSegmentation->setScrollArea(_SA2);
+	//_surfaceSegmentation->setScrollArea(_SA2);
 	_surfaceOutPut->setScrollArea(_SA3);	
 
 	/*install event filters for scroll area*/
@@ -93,7 +99,7 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_SA3->installEventFilter(pProcCtrl);
 
 	_SA1->installEventFilter(_surfaceOriginal);
-	_SA2->installEventFilter(_surfaceSegmentation);
+	//_SA2->installEventFilter(_surfaceSegmentation);
 	_SA3->installEventFilter(_surfaceOutPut);
 
 	/*_surfaceSegmentation->setWindowTitle("Segmentation");
@@ -105,7 +111,7 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 
 	/************************************************/
 	_surfaceOriginal->setEditable(true);
-	_surfaceSegmentation->setEditable(true);
+	//_surfaceSegmentation->setEditable(true);
 	_surfaceOutPut->setEditable(true);
 
 	setupConnections();
@@ -119,15 +125,92 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 
 	_SA1->show();
 	_SA3->show();
-	_SA2->show();
+	//_SA2->show();
 }
 
 LabelingTaskControl::~LabelingTaskControl()
 {
-	if (_segmentation_control) { delete _segmentation_control; _segmentation_control = NULL; }
-
+	//if (_segmentation_control) { delete _segmentation_control; _segmentation_control = NULL; }
+	for (size_t i = 0; i < _segmentation_controls.size(); i++)
+	{
+		delete _segmentation_controls[i];
+	}
+	_segmentation_controls.resize(0);
 	closeAllSubWindows();
 	releaseAll();
+}
+
+void LabelingTaskControl::setupSegmentationSurface(int level)
+{
+	level = qMax<int>(0, level);
+	level = qMin<int>(_segmentation_controls.size(), level);
+	if (!_segSurfaceSet)
+	{
+		vector<std::thread> vecThreads;
+		for (size_t i = 0; i < _segmentation_controls.size(); i++)
+		{
+			_segmentation_controls[i]->setSegmentationType(SegmentationControl::SLIC_);
+			std::thread t(&SegmentationControl::doSlicSegmentation, _segmentation_controls[i]);
+			vecThreads.push_back(std::move(t));
+		}
+		for (size_t i = 0; i < vecThreads.size(); i++)
+		{
+			vecThreads[i].join();
+		}
+		//t.join();
+		_curSegmentation_control = _segmentation_controls[level];
+		_segImg = createQImageByMat(_curSegmentation_control->getSlicSegResultRef(), true);//set segImg
+		_surfaceSegmentation = new Surface(_segImg);
+		_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
+		_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
+		_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
+		QObject::connect(_curSegmentation_control, SIGNAL(signalSendPts(vector<PtrSegmentPoints>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<PtrSegmentPoints>*)));
+		QObject::connect(_surfaceSegmentation, SIGNAL(signalPixelCovered(vector<Point>*)), _curSegmentation_control, SLOT(slotReceivePts(vector<Point>*)));
+		QObject::connect(_surfaceSegmentation, SIGNAL(signalDrawPixelsToResult(vector<PtrSegmentPoints>*, QColor)), this, SLOT(retrieveSegmentsDraw(vector<PtrSegmentPoints>*, QColor)));
+		_SA2->setWidget(_surfaceSegmentation);
+		_surfaceSegmentation->setScrollArea(_SA2);
+		_SA2->installEventFilter(_surfaceSegmentation);
+		_surfaceSegmentation->setEditable(true);
+		QObject::connect(_surfaceSegmentation, SIGNAL(clearResult()), this, SLOT(clearResult()));
+		QObject::connect(_surfaceSegmentation, SIGNAL(openClassSelection()), _selection, SLOT(show()));
+		QObject::connect(_surfaceSegmentation, SIGNAL(closeClassSelection()), _selection, SLOT(hide()));
+		QObject::connect(_selection, SIGNAL(classChanged(QString, QColor)), _surfaceSegmentation, SLOT(changeClass(QString, QColor)));
+		QObject::connect(_surfaceSegmentation, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA2, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
+		QObject::connect(_surfaceSegmentation, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
+
+		_SA2->show();
+		_segSurfaceSet = true;
+	}
+	else
+	{
+		if (_surfaceSegmentation)
+		{
+			_surfaceSegmentation->deleteLater();
+			_curSegmentation_control = _segmentation_controls[level];
+			_segImg = createQImageByMat(_curSegmentation_control->getSlicSegResultRef(), true);//set segImg
+			_surfaceSegmentation = new Surface(_segImg);
+			_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
+			_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
+			_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
+			QObject::connect(_curSegmentation_control, SIGNAL(signalSendPts(vector<PtrSegmentPoints>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<PtrSegmentPoints>*)));
+			QObject::connect(_surfaceSegmentation, SIGNAL(signalPixelCovered(vector<Point>*)), _curSegmentation_control, SLOT(slotReceivePts(vector<Point>*)));
+			QObject::connect(_surfaceSegmentation, SIGNAL(signalDrawPixelsToResult(vector<PtrSegmentPoints>*, QColor)), this, SLOT(retrieveSegmentsDraw(vector<PtrSegmentPoints>*, QColor)));
+			_SA2->setWidget(_surfaceSegmentation);
+			_surfaceSegmentation->setScrollArea(_SA2);
+			_SA2->installEventFilter(_surfaceSegmentation);
+			_surfaceSegmentation->setEditable(true);
+			QObject::connect(_surfaceSegmentation, SIGNAL(clearResult()), this, SLOT(clearResult()));
+			QObject::connect(_surfaceSegmentation, SIGNAL(openClassSelection()), _selection, SLOT(show()));
+			QObject::connect(_surfaceSegmentation, SIGNAL(closeClassSelection()), _selection, SLOT(hide()));
+			QObject::connect(_selection, SIGNAL(classChanged(QString, QColor)), _surfaceSegmentation, SLOT(changeClass(QString, QColor)));
+			QObject::connect(_surfaceSegmentation, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA2, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
+			QObject::connect(_surfaceSegmentation, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
+
+			_SA2->show();
+		}
+		if (!_surfaceSegmentation)
+			throw std::exception("surface segmentation empty");
+	}
 }
 
 QImage LabelingTaskControl::createQImageByMat(Mat& Img,bool revertRGB)
@@ -153,7 +236,7 @@ void LabelingTaskControl::setupSurfaceWindowCloseConnections()
 
 void LabelingTaskControl::setupSurfaceHotKeyConnections()
 {
-	QObject::connect(_surfaceSegmentation, SIGNAL(clearResult()), this, SLOT(clearResult()));
+	//QObject::connect(_surfaceSegmentation, SIGNAL(clearResult()), this, SLOT(clearResult()));
 	QObject::connect(_surfaceOriginal, SIGNAL(clearResult()), this, SLOT(clearResult()));
 	QObject::connect(_surfaceOutPut, SIGNAL(clearResult()), this, SLOT(clearResult()));
 }
@@ -161,9 +244,9 @@ void LabelingTaskControl::setupSurfaceHotKeyConnections()
 void LabelingTaskControl::setupColorSelectionConnections()
 {
 	//connect surface and selection panel
-	QObject::connect(_surfaceSegmentation, SIGNAL(openClassSelection()), _selection, SLOT(show()));
-	QObject::connect(_surfaceSegmentation, SIGNAL(closeClassSelection()), _selection, SLOT(hide()));
-	QObject::connect(_selection, SIGNAL(classChanged(QString, QColor)), _surfaceSegmentation, SLOT(changeClass(QString, QColor)));
+	//QObject::connect(_surfaceSegmentation, SIGNAL(openClassSelection()), _selection, SLOT(show()));
+	//QObject::connect(_surfaceSegmentation, SIGNAL(closeClassSelection()), _selection, SLOT(hide()));
+	//QObject::connect(_selection, SIGNAL(classChanged(QString, QColor)), _surfaceSegmentation, SLOT(changeClass(QString, QColor)));
 
 	QObject::connect(_surfaceOriginal, SIGNAL(openClassSelection()), _selection, SLOT(show()));
 	QObject::connect(_surfaceOriginal, SIGNAL(closeClassSelection()), _selection, SLOT(hide()));
@@ -177,14 +260,14 @@ void LabelingTaskControl::setupColorSelectionConnections()
 void LabelingTaskControl::setupScrollAreaConnections()
 {
 	QObject::connect(_surfaceOriginal, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA1, SLOT(gentleShiftScrollAreaWhenScaled( QPoint, double, double)));
-	QObject::connect(_surfaceSegmentation, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA2, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
+	//QObject::connect(_surfaceSegmentation, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA2, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
 	QObject::connect(_surfaceOutPut, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA3, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
 }
 
 void LabelingTaskControl::setupSurfacePainterPathConnections()
 {
 	QObject::connect(_surfaceOriginal, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
-	QObject::connect(_surfaceSegmentation, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
+	//QObject::connect(_surfaceSegmentation, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
 	QObject::connect(_surfaceOutPut, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
 }
 
@@ -497,7 +580,8 @@ void LabelingTaskControl::resetSurfaceSource(Surface* surface, QImage* source)
 void LabelingTaskControl::reAttachOutPutImage()
 {
 	resetSurfaceSource(_surfaceOutPut, &_outPutImg);
-	_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());
+	if(_surfaceSegmentation)
+		_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());
 	_surfaceOriginal->setReferenceImage(&_surfaceOutPut->getOriImage());
 }
 
@@ -506,7 +590,8 @@ void LabelingTaskControl::changeTransparency(int value)
 	double v = value / 100.0;
 	_surfaceOriginal->setBlendAlpha(v, 1.0 - v);
 	_surfaceOutPut->setBlendAlpha(v, 1.0 - v);
-	_surfaceSegmentation->setBlendAlpha(v, 1.0 - v);
+	if(_surfaceSegmentation)
+		_surfaceSegmentation->setBlendAlpha(v, 1.0 - v);
 }
 
 cv::Rect LabelingTaskControl::getBoundingRectOfVecPts(vector<cv::Point>& vecPts)

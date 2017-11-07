@@ -19,6 +19,7 @@
 #include <QEvent>
 #include <QObject>
 #include <QCheckBox>
+#include <QSpinBox>
 #include <SmartScrollArea.h>
 
 class LVideoWidget : public QWidget
@@ -69,6 +70,8 @@ private:
 	QLabel* wSliderText;
 	QHBoxLayout *hBoxLayout0;//layout contain settings
 	QCheckBox* wCheckBoxAutoLoadResult;
+	QPushButton* wButtonUseSPSegs;
+	QSpinBox* wSpinBoxSPSLevel;
 
     VideoThread* vthread;
     VideoControl* vcontrol;
@@ -85,6 +88,7 @@ signals:
 	void signalClose();
 	void signalSave();
 	void signalAutoLoadResult(bool checked);
+	void signalUseSPSegs(int level);
 	void signalOpenSaveDir();
 	void signalNewFrame();
 	void signalTransparencyChanged(int);
@@ -96,6 +100,7 @@ public slots:
 	void save();
 	void transparencyValueChanged(int value);
 	void toggleAutoLoadResult(bool checked);
+	void useSuperpixelEdit();
 	void openSaveDir();
 	void commitSetting();
 	void hasEditResult(QImage&);
@@ -103,6 +108,7 @@ public slots:
     void changeFrameSize(int width,int height);
     void constructInfoPanel();
 	void receiveVideoState(int state);
+	void slotSPSegsLevelChanged(int level);
 
     void deleteInfoPanel();
 

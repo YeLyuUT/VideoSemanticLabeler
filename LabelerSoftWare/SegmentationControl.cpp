@@ -31,10 +31,13 @@ namespace test
 }
 #endif // COMPILE_TEST
 
-SegmentationControl::SegmentationControl(const Mat& IMG)
+SegmentationControl::SegmentationControl(const Mat& IMG, int slic_pixel_width)
 {
 	assert(IMG.type() == CV_8UC3);
 	_originalIMG = IMG;
+	if (slic_pixel_width <= 0)
+		throw std::exception("slic pixel width cannot be smaller than 1");
+	_slic_pixel_width = slic_pixel_width;
 	init();
 }
 
@@ -82,7 +85,7 @@ void SegmentationControl::doSlicSegmentation()
 	SLIC slic;
 	int numlabels(0);
 	double dummyM(0);
-	slic.PerformSLICO_ForGivenStepSize(IMG, width, height, labels, numlabels, 20, dummyM);
+	slic.PerformSLICO_ForGivenStepSize(IMG, width, height, labels, numlabels, _slic_pixel_width, dummyM);
 	slic.DrawContoursAroundSegmentsTwoColors(IMG, labels, width, height);
 	//updateSegmentsStorageWithLabelImage(segmentationType::SLIC_, labels, width, height);
 	updateSegmentsStorageWithLabelImage(segmentationType::SLIC_, _labelImg);

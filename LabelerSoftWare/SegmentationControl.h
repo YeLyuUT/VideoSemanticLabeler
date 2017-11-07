@@ -19,7 +19,7 @@ public:
 	enum segmentationType { DUMMY_FIRST = 0, MEAN_SHIFT, SLIC_, DUMMY_LAST }_segType;
 
 public:
-	explicit SegmentationControl(const Mat& IMG);
+	explicit SegmentationControl(const Mat& IMG,int slic_pixel_width=10);
 	~SegmentationControl();
 public:
 	/*various segmentations*/
@@ -68,5 +68,6 @@ private:
 	vector<PtrSegments> _vecAllSegmentationTypeSegments;
 	vector<int> _vecSegmentationSegmentsNum;
 	vector<PtrSegmentPoints> _tempVecPts;
+	int _slic_pixel_width;
 };
 

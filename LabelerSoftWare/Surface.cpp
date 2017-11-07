@@ -649,7 +649,7 @@ void Surface::wheelEvent(QWheelEvent*ev)
 		break;
 	}
 	
-	//ev->accept();
+	ev->accept();
 }
 
 void Surface::leaveEvent(QEvent*ev)

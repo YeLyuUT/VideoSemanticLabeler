@@ -11,7 +11,9 @@
 #include <videocontrol.h>
 #include <ProcessControl.h>
 #include <SegmentationControl.h>
+#include <vector>
 using cv::Mat;
+using std::vector;
 using std::shared_ptr;
 class ProcessControl;
 class LabelingTaskControl:public QObject
@@ -34,6 +36,8 @@ private:
 	void setupSurfaceHotKeyConnections();
 	void setupSurfaceWindowCloseConnections();
 	void setupConnections();
+
+
 	QImage createQImageByMat(Mat& Img, bool revertRGB = true);
 
 	void updateSurface(Surface *sf,cv::Rect rect=cv::Rect());
@@ -62,6 +66,8 @@ void clearResult();
 void loadResultFromDir();
 void changeTransparency(int value);
 
+void setupSegmentationSurface(int level=0);
+
 private:
 	/*Internal Images*/
 	/*QImage& _segImg();
@@ -82,12 +88,14 @@ private:
 	SmartScrollArea* _SA3;//ScrollArea3	
 	QImage _InputImg;
 	ClassSelection *_selection;
-	SegmentationControl* _segmentation_control;
+	vector<SegmentationControl*> _segmentation_controls;
+	SegmentationControl* _curSegmentation_control;
 	QRect _boundingRect;
 	bool _modified;
 	QString _outPutDir;
 	int _frameIdx;
 	VideoControl* _pVidCtrl;
 	bool _autoLoadResult;
+	bool _segSurfaceSet;
 };
 
