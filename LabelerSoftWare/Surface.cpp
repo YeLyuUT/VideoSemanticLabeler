@@ -647,8 +647,12 @@ void Surface::wheelEvent(QWheelEvent*ev)
 		break;
 	case Qt::KeyboardModifier::AltModifier:
 		{
-		    zoom(numSteps.x(), ev->pos());
+		if (isEditable())
+		{
+			zoom(numSteps.x(), ev->pos());
 			qDebug() << "AltModifier";
+		}
+		    
 		}
 		break;
 	default:
