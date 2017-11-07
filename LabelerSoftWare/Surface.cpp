@@ -586,7 +586,12 @@ void Surface::mouseReleaseEvent(QMouseEvent *ev)
 						emit signalDrawPixelsToResult(&_tempVecSegs, _myPenColor);
 					}
 					if (_bShowRef)
-						updateShowReferenceImg(cv::Rect());
+					{
+						//updateShowReferenceImg(cv::Rect());
+						cv::Rect r(_savedBoundingRect.x / _scaleRatio, _savedBoundingRect.y / _scaleRatio,
+							_savedBoundingRect.width / _scaleRatio, _savedBoundingRect.height / _scaleRatio);
+						updateShowReferenceImg(r);
+					}
 					_tempVecSegs.clear();
 					_tempVecPoint.clear();
 					_seg_drawn_num = 0;
