@@ -56,17 +56,20 @@ private:
 	void resetSurfaceSource(Surface* surface,QImage* source);
 protected:
 
+public:
+signals:
+	   void signalChangeLevelByDiff(int diff);
 public slots:
-void retrievePainterPath(int PenWidth, QPainterPath& paintPath);
-void retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, QColor color);
-void retrievePolygonDraw(vector<Point> vecPts, QColor clr);
-void saveLabelResult();//save directory is set by constructor
-void openSaveDir();//open the directory that will be used to hold saving files
-void clearResult();
-void loadResultFromDir();
-void changeTransparency(int value);
+	void retrievePainterPath(int PenWidth, QPainterPath& paintPath);
+	void retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, QColor color);
+	void retrievePolygonDraw(vector<Point> vecPts, QColor clr);
+	void saveLabelResult();//save directory is set by constructor
+	void openSaveDir();//open the directory that will be used to hold saving files
+	void clearResult();
+	void loadResultFromDir();
+	void changeTransparency(int value);
 
-void setupSegmentationSurface(int level=0);
+	void setupSegmentationSurface(int level=0);
 
 private:
 	/*Internal Images*/

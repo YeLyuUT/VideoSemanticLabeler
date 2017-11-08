@@ -109,6 +109,7 @@ public slots:
     void constructInfoPanel();
 	void receiveVideoState(int state);
 	void slotSPSegsLevelChanged(int level);
+	void slotSPSSegsLevelChangeOneStep(int diff);
 
     void deleteInfoPanel();
 

@@ -178,7 +178,7 @@ void LabelingTaskControl::setupSegmentationSurface(int level)
 		QObject::connect(_selection, SIGNAL(classChanged(QString, QColor)), _surfaceSegmentation, SLOT(changeClass(QString, QColor)));
 		QObject::connect(_surfaceSegmentation, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA2, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
 		QObject::connect(_surfaceSegmentation, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
-
+		QObject::connect(_surfaceSegmentation,SIGNAL(signalChangeSPSegLevel(int)),this,SIGNAL(signalChangeLevelByDiff(int)));
 		_SA2->show();
 		_segSurfaceSet = true;
 	}
@@ -186,7 +186,9 @@ void LabelingTaskControl::setupSegmentationSurface(int level)
 	{
 		if (_surfaceSegmentation)
 		{
+			bool show_ref = _surfaceSegmentation->_bShowRef;
 			_surfaceSegmentation->deleteLater();
+	
 			_curSegmentation_control = _segmentation_controls[level];
 			_segImg = createQImageByMat(_curSegmentation_control->getSlicSegResultRef(), true);//set segImg
 			_surfaceSegmentation = new Surface(_segImg);
@@ -206,7 +208,12 @@ void LabelingTaskControl::setupSegmentationSurface(int level)
 			QObject::connect(_selection, SIGNAL(classChanged(QString, QColor)), _surfaceSegmentation, SLOT(changeClass(QString, QColor)));
 			QObject::connect(_surfaceSegmentation, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA2, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
 			QObject::connect(_surfaceSegmentation, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
-
+			QObject::connect(_surfaceSegmentation, SIGNAL(signalChangeSPSegLevel(int)), this, SIGNAL(signalChangeLevelByDiff(int)));
+			if (show_ref)
+			{
+				_surfaceSegmentation->showReferenceImg();
+				_surfaceSegmentation->_bShowRef = true;
+			}
 			_SA2->show();
 		}
 		if (!_surfaceSegmentation)

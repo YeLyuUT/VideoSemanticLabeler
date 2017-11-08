@@ -383,6 +383,10 @@ void LVideoWidget::slotSPSegsLevelChanged(int level)
 	emit signalUseSPSegs(level);
 }
 
+void LVideoWidget::slotSPSSegsLevelChangeOneStep(int diff)
+{
+	this->wSpinBoxSPSLevel->setValue(wSpinBoxSPSLevel->value() + diff);
+}
 
 void LVideoWidget::openSaveDir()
 {

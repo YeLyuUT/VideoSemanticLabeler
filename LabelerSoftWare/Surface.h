@@ -67,6 +67,7 @@ signals:
 	void signalPixelCovered(vector<Point>* vecPts);//send out pixel covereded by cursor
 	void signalDrawPixelsToResult(vector<PtrSegmentPoints>*vecPts, QColor color);
 	void signalSendPolygonDraw(vector<Point> vecPts, QColor clr);
+	void signalChangeSPSegLevel(int diff);
 public slots:
 void changeClass(QString txt, QColor clr);
 void applyScaleRatio();
@@ -148,6 +149,7 @@ private:
 	bool _bUpdateClipMat;
 	bool _startPolygonMode;
 	bool _allowPolygonMode;
+	bool _bXbuttonDown;
 	SavedPixels _savedPixels;
 	Mat _drawClipMat;//temp clip mat for drawImage
 	cv::Rect _savedBoundingRect;
@@ -175,4 +177,5 @@ private:
 private:
 	const double _alpha_src = 0.6;
 	const double _alpha_dst = 0.4;
+	friend class LabelingTaskControl;
 };

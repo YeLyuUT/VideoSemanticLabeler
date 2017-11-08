@@ -25,6 +25,7 @@ Surface::Surface(const QImage& Img, QWidget*parent) :QLabel(parent), _blendImage
 	this->setMouseTracking(true);
 	_bUpdateClipMat = false;
 	_bLButtonDown = false;
+	_bXbuttonDown = false;
 	_bColorFlipped = false;
 	_bSelectClass = false;
 	setCursorInvisible(false);
@@ -305,6 +306,8 @@ void Surface::keyPressEvent(QKeyEvent *ev)
 		this->showReferenceOriginalImg(); break;
 	case Qt::Key::Key_R:
 		emit clearResult(); break;
+	case Qt::Key::Key_X:
+		_bXbuttonDown = true; break;
 	case Qt::Key::Key_Z:
 		if (ev->modifiers() == Qt::KeyboardModifier::ControlModifier)
 		{
@@ -350,8 +353,9 @@ void Surface::keyReleaseEvent(QKeyEvent *ev)
 	case Qt::Key::Key_V:
 		this->showScaled(); break;
 	case Qt::Key::Key_Tab:
-
 		break;
+	case Qt::Key::Key_X:
+		_bXbuttonDown = false;break;
 	case Qt::Key::Key_1:
 		if (_bShowRef)
 		{
@@ -658,7 +662,10 @@ void Surface::wheelEvent(QWheelEvent*ev)
 	default:
 		break;
 	}
-	
+	if (_bXbuttonDown)
+	{
+		emit signalChangeSPSegLevel(numSteps.y());
+	}
 	ev->accept();
 }
 

@@ -89,7 +89,7 @@ void SmartScrollArea::wheelEvent(QWheelEvent* ev)
 
 void SmartScrollArea::keyPressEvent(QKeyEvent*ev)
 {
-	qDebug() << "SmartScrollArea::keyPressEvent";
+	//qDebug() << "SmartScrollArea::keyPressEvent";
 	switch (ev->key())
 	{
 	case Qt::Key::Key_W://move up	
