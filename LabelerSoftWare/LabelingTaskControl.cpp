@@ -11,6 +11,7 @@
 #include <thread>
 #include <QtUtils.h>
 #include <limits.h>
+#include <QScrollBar>
 //#define CHECK_RETRIEVE_PAINTERPATH
 //#define CHECK_MASK_OUTPUTIMAGE
 //#define CHECK_QIMAGE
@@ -41,10 +42,10 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_outPutDir = outPutDir;
 	_InputImg = Img.copy();
 	_selection = selection;
-	_segmentation_controls.push_back(new SegmentationControl(matFrame, 5));
-	_segmentation_controls.push_back(new SegmentationControl(matFrame, 10));
-	_segmentation_controls.push_back(new SegmentationControl(matFrame, 15));
-	_segmentation_controls.push_back(new SegmentationControl(matFrame, 20));
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, 8));
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, 12));
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, 18));
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, 24));
 	//_segmentation_control->doSlicSegmentation();
 	//std::thread t(&SegmentationControl::doSlicSegmentation, _segmentation_control);
 	//_segmentation_control->setSegmentationType(SegmentationControl::SLIC_);
@@ -187,6 +188,10 @@ void LabelingTaskControl::setupSegmentationSurface(int level)
 		if (_surfaceSegmentation)
 		{
 			bool show_ref = _surfaceSegmentation->_bShowRef;
+			int barX = _SA2->horizontalScrollBar()->value();
+			int barY = _SA2->verticalScrollBar()->value();
+			int scaleRank = _surfaceSegmentation->getScaleRatioRank();
+				
 			_surfaceSegmentation->deleteLater();
 	
 			_curSegmentation_control = _segmentation_controls[level];
@@ -209,6 +214,12 @@ void LabelingTaskControl::setupSegmentationSurface(int level)
 			QObject::connect(_surfaceSegmentation, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), _SA2, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
 			QObject::connect(_surfaceSegmentation, SIGNAL(painterPathCreated(int, QPainterPath&)), this, SLOT(retrievePainterPath(int, QPainterPath&)));
 			QObject::connect(_surfaceSegmentation, SIGNAL(signalChangeSPSegLevel(int)), this, SIGNAL(signalChangeLevelByDiff(int)));
+			_surfaceSegmentation->setScaleRatioRank(scaleRank);
+			_surfaceSegmentation->updateScaleRatioByRank();
+			_surfaceSegmentation->applyScaleRatio();
+			_surfaceSegmentation->resize(_surfaceSegmentation->_ImageDraw.width(), _surfaceSegmentation->_ImageDraw.height());
+			_SA2->horizontalScrollBar()->setValue(barX);
+			_SA2->verticalScrollBar()->setValue(barY);
 			if (show_ref)
 			{
 				_surfaceSegmentation->showReferenceImg();
