@@ -191,12 +191,14 @@ void LabelingTaskControl::setupSegmentationSurface(int level)
 			int barX = _SA2->horizontalScrollBar()->value();
 			int barY = _SA2->verticalScrollBar()->value();
 			int scaleRank = _surfaceSegmentation->getScaleRatioRank();
-				
+			double blendRatioRef = _surfaceSegmentation->getBlendAlphaReference();
+			double blendRatioSrc = _surfaceSegmentation->getBlendAlphaSource();
 			_surfaceSegmentation->deleteLater();
 	
 			_curSegmentation_control = _segmentation_controls[level];
 			_segImg = createQImageByMat(_curSegmentation_control->getSlicSegResultRef(), true);//set segImg
 			_surfaceSegmentation = new Surface(_segImg);
+			_surfaceSegmentation->setBlendAlpha(blendRatioSrc, blendRatioRef);
 			_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
 			_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
 			_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);

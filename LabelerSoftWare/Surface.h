@@ -37,6 +37,8 @@ public:
 	void setScrollArea(QScrollArea* pScrollArea=NULL);
 public:
 	void setBlendAlpha(double source = 0.5, double reference = 0.5);
+	double getBlendAlphaSource();
+	double getBlendAlphaReference();
 	void zoom(int step, QPoint pt = QPoint(0, 0));//step is the relative scale ratio rank, pt is the focus point.
 	void setEditable(bool b = true);
 	void startLabel();

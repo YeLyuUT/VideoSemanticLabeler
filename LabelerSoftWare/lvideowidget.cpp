@@ -181,7 +181,7 @@ void LVideoWidget::constructInterface()
 	wSliderTransparency = new QSlider(Qt::Orientation::Horizontal,this);
 	wSliderTransparency->setMinimum(0);
 	wSliderTransparency->setMaximum(100);
-	wSliderTransparency->setValue(100);
+	wSliderTransparency->setValue(50);
 	hLayoutTransparencySetting->addWidget(wSliderText);
 	hLayoutTransparencySetting->addWidget(wSliderTransparency);
 	wSliderText->hide();

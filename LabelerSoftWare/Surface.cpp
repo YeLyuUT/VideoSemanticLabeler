@@ -458,6 +458,7 @@ void Surface::mousePressEvent(QMouseEvent *ev)
 			}
 			else if (_startPolygonMode)
 			{
+				_bLButtonDown = true;
 				std::chrono::duration<double> duration(steady_clock::now() - _timePoint);
 				int ms = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 				if (ms < 200)
@@ -541,19 +542,23 @@ void Surface::mouseMoveEvent(QMouseEvent *ev)
 		}
 		else
 		{
-			cv::Rect& r = _savedBoundingRect;
-			_drawClipMat = Mat();
-			this->update(r.x, r.y, r.width, r.height);
-			QPoint endPoint = ev->pos();
-			vector<Point> vecPts = transformVecPtsByScaleAndPos(_rightClickCache, _scaleRatio, Point(0, 0));
-			vecPts.push_back(cv::Point(endPoint.x(), endPoint.y()));
+			if (!_bLButtonDown)
+			{
+				cv::Rect& r = _savedBoundingRect;
+				_drawClipMat = Mat();
+				this->update(r.x, r.y, r.width, r.height);
+				QPoint endPoint = ev->pos();
+				vector<Point> vecPts = transformVecPtsByScaleAndPos(_rightClickCache, _scaleRatio, Point(0, 0));
+				vecPts.push_back(cv::Point(endPoint.x(), endPoint.y()));
+
+				r = cv::boundingRect(vecPts);
+				vecPts = transformVecPtsByScaleAndPos(vecPts, 1.0, -r.tl());
+				Mat& drawIMG = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
+				Mat(drawIMG, r).copyTo(_drawClipMat);
+				drawPolytonToMat(vecPts, _drawClipMat);
+				this->update(r.x, r.y, r.width, r.height);
+			}
 			
-			r = cv::boundingRect(vecPts);
-			vecPts = transformVecPtsByScaleAndPos(vecPts, 1.0, -r.tl());
-			Mat& drawIMG = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
-			Mat(drawIMG, r).copyTo(_drawClipMat);
-			drawPolytonToMat(vecPts, _drawClipMat);
-			this->update(r.x, r.y, r.width, r.height);
 		}
 		updateCursorArea(false);
 		_mousePos = ev->pos();
@@ -604,6 +609,10 @@ void Surface::mouseReleaseEvent(QMouseEvent *ev)
 					_bLButtonDown = false;
 				}
 			}
+		}
+		else
+		{
+			_bLButtonDown = false;
 		}
 //#ifdef CHECK_QIMAGE
 //		Mat temp = ImageConversion::QImage_to_cvMat(_ImageDraw, false);
@@ -1027,6 +1036,15 @@ void Surface::setBlendAlpha(double source, double reference)
 {
 	blendAlphaSource = source;
 	blendAlphaReference = reference;
+}
+
+double Surface::getBlendAlphaSource()
+{
+	return blendAlphaSource;
+}
+double Surface::getBlendAlphaReference()
+{
+	return blendAlphaReference;
 }
 
 void Surface::setMyPenRadius(int val)
