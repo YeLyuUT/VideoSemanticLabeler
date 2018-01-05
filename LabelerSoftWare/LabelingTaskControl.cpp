@@ -162,9 +162,13 @@ void LabelingTaskControl::setupSegmentationSurface(int level)
 		//t.join();
 		_curSegmentation_control = _segmentation_controls[level];
 		_segImg = createQImageByMat(_curSegmentation_control->getSlicSegResultRef(), true);//set segImg
-		_surfaceSegmentation = new Surface(_segImg);
+		//_surfaceSegmentation = new Surface(_segImg);
+   
+    _surfaceSegmentation = new Surface(_InputImg);
 		_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
-		_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
+    //store segmentation result image instead
+		//_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
+    _surfaceSegmentation->setReferenceOriginalImage(&_segImg);
 		_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
 		QObject::connect(_curSegmentation_control, SIGNAL(signalSendPts(vector<PtrSegmentPoints>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<PtrSegmentPoints>*)));
 		QObject::connect(_surfaceSegmentation, SIGNAL(signalPixelCovered(vector<Point>*)), _curSegmentation_control, SLOT(slotReceivePts(vector<Point>*)));
@@ -197,10 +201,12 @@ void LabelingTaskControl::setupSegmentationSurface(int level)
 	
 			_curSegmentation_control = _segmentation_controls[level];
 			_segImg = createQImageByMat(_curSegmentation_control->getSlicSegResultRef(), true);//set segImg
-			_surfaceSegmentation = new Surface(_segImg);
+			//_surfaceSegmentation = new Surface(_segImg);
+      _surfaceSegmentation = new Surface(_InputImg);
 			_surfaceSegmentation->setBlendAlpha(blendRatioSrc, blendRatioRef);
 			_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
-			_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
+			//_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
+      _surfaceSegmentation->setReferenceOriginalImage(&_segImg);
 			_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
 			QObject::connect(_curSegmentation_control, SIGNAL(signalSendPts(vector<PtrSegmentPoints>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<PtrSegmentPoints>*)));
 			QObject::connect(_surfaceSegmentation, SIGNAL(signalPixelCovered(vector<Point>*)), _curSegmentation_control, SLOT(slotReceivePts(vector<Point>*)));

@@ -308,7 +308,7 @@ void SLIC::DrawContoursAroundSegmentsTwoColors(
 	for( int j = 0; j < numboundpix; j++ )
 	{
 		int ii = contoury[j]*width + contourx[j];
-		img[ii] = 0x808080;
+		img[ii] = 0xf0f0f0;
 		//img[ii] = 0x000000;
 		//----------------------------------
 		// Uncomment this for thicker lines

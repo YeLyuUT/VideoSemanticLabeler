@@ -206,9 +206,19 @@ void Surface::showReferenceImg()
 	if (_referenceImage)
 	{
 		qDebug() << "showReferenceImg";
-		QImage img;
-		img = blendImage(*_oriImage, blendAlphaSource, *_referenceImage, blendAlphaReference);
-		showScaledRefImg(&img);
+    if (_drawType == DRAW_TYPE::PIXEL_WISE)
+    {
+      QImage img;
+      img = blendImage(*_oriImage, blendAlphaSource, *_referenceImage, blendAlphaReference);
+      showScaledRefImg(&img);
+    }
+    else if(_drawType==DRAW_TYPE::SUPER_PIXEL_WISE)
+    {
+      QImage img;
+      img = blendImage(*_oriImage, blendAlphaSource, *_referenceOriginalImage, blendAlphaReference);
+      img = blendImage(img, blendAlphaSource, *_referenceImage, blendAlphaReference);
+      showScaledRefImg(&img);
+    }
 		//showScaledRefImg(_referenceImage); ??please uncomment this to restore
 	}
 	else
@@ -222,10 +232,20 @@ void Surface::updateShowReferenceImg(cv::Rect rect)
 {
 	if (_referenceImage)
 	{
-		QImage img;
-		img = blendImage(*_oriImage, blendAlphaSource, *_referenceImage, blendAlphaReference, rect);
-		qDebug() << "To showScaledRefImg";
-		showScaledRefImg(&img,rect);
+    qDebug() << "To showScaledRefImg";
+    if (_drawType == DRAW_TYPE::PIXEL_WISE)
+    {
+      QImage img;
+      img = blendImage(*_oriImage, blendAlphaSource, *_referenceImage, blendAlphaReference, rect);
+      showScaledRefImg(&img, rect);
+    }
+    else if (_drawType == DRAW_TYPE::SUPER_PIXEL_WISE)
+    {
+      QImage img;
+      img = blendImage(*_oriImage, blendAlphaSource, *_referenceOriginalImage, blendAlphaReference,rect);
+      img = blendImage(img, blendAlphaSource, *_referenceImage, blendAlphaReference,rect);
+      showScaledRefImg(&img,rect);
+    }
 		//showScaledRefImg(_referenceImage); ??please uncomment this to restore
 	}
 	else

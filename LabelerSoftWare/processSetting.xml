@@ -1,40 +1,40 @@
 <?xml version="1.0"?>
 <opencv_storage>
 <!--
-    This file contains processing parameters for the BenchMark program
+    This file contains processing parameters for the Labeling program
 -->
 
 <InputFilePath>
 <!--
-	Specify the input file path. 
-    If input file is a video, please specify the file path name,
-	If input files are images, please specify the image directory.
+	Specify the input video file path. 
+	use double backward slash(\\) or single forward slash(/) to navigate folder.
 -->
-<!-- D:/UAVDataCapturing/German/Gronau/100MEDIA/1.MP4 -->
-"C:/Work/New folder (2)/shuttle_out.avi"
-
+D:/UAVDataCapturing/German/Gronau/100MEDIA/1.MP4
+<!-- D:\\UAVDataCapturing\\China\\170706\\DJI_0003.MOV -->
 </InputFilePath>
 
 <OutputDir>
 <!--
 	Specify the output directory.
+	Make sure the directory exists.
 -->
-D:/UAVDataCapturing/German/Gronau/100MEDIA/1/OutPut
+<!-- D:/UAVDataCapturing/German/Gronau/100MEDIA/1/OutPut -->
+D:/UAVDataCapturing/German/Gronau/100MEDIA/1/vid1
 </OutputDir>
 
 <Labeling_Frame_Interval>
 <!--
-	Specify labeling frame interval.
-	Not used for image files.
+	Specify the default labeling frame interval.
+	Can be altered in the program.
 -->
-30
+150
 </Labeling_Frame_Interval>
 
 <LabelList>
 <!--
     Specify the class Labels and their corresponding color in <R><G><B>.
 	Please contain each class in a class tag like <class(N)>...</class(N)>.
-	<class(N)> should be different.
+	For tag<class(N)>, N should be different.
 	Please replace space ' ' with underline '_' character in content of <Name>.
 -->
 	<class1>
@@ -50,7 +50,7 @@ D:/UAVDataCapturing/German/Gronau/100MEDIA/1/OutPut
 	<Name>Static_Car</Name><R>192</R><G>0</G><B>192</B>
 	</class4>
 	<class5>
-	<Name>Water_Surface</Name><R>0</R><G>0</G><B>128</B>
+	<Name>Tree</Name><R>0</R><G>128</G><B>0</B>
 	</class5>
 	<class6>
 	<Name>Vegetation</Name><R>128</R><G>128</G><B>0</B>
