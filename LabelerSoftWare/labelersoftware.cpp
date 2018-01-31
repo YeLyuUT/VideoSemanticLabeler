@@ -12,7 +12,8 @@
 #include <QString>
 #include <QDebug>
 #include <opencv.hpp>
-LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QString outputDir, LabelList labelList, QWidget *parent)
+LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QString outputDir,
+  LabelList labelList, string imgExtension, int extractBoundary, QWidget *parent)
 	: QMainWindow(parent)
 {
 	_lvw = NULL;
@@ -20,6 +21,8 @@ LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QStr
 	_filePath = inputFilePath;
 	_outputDir = outputDir;
 	_labelList = labelList;
+  _imgExtension = QString::fromStdString(imgExtension);
+  _extractBoundary = extractBoundary;
 	//this->setAttribute(Qt::WA_DeleteOnClose);
 	ui.setupUi(this);
 	mlayout = new QVBoxLayout();

@@ -48,6 +48,7 @@ private:
 	bool saveResult(QString filePath, bool saveOriginalImg = true);
 	bool saveOriginalIMG(QString filePath);
 	bool maySaveResult(QString filePath);
+  bool saveBoundaryFile(Mat& Image,QString filePath);
 	bool checkModified();
 	QString getResultSavingPathName();
 	QString getOriginalIMGSavingPathName();
@@ -100,5 +101,6 @@ private:
 	VideoControl* _pVidCtrl;
 	bool _autoLoadResult;
 	bool _segSurfaceSet;
+  ProcessControl* _pCtrl;
 };
 

@@ -11,8 +11,11 @@ typedef vector<Label> LabelList;
 
 struct MetaData
 {
+public:
 	string filePath;
 	string outputDir;
 	LabelList labelList;
 	int skipFrameNum;
+  string imgExtension;
+  int extractBoundary;
 };

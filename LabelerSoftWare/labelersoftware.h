@@ -11,7 +11,7 @@ class LabelerSoftWare : public QMainWindow
 {
 	Q_OBJECT
 public:
-	LabelerSoftWare(int processingType, QString inputFilePath, QString outputDir, LabelList labelList, QWidget *parent = 0);
+  LabelerSoftWare(int processingType, QString inputFilePath, QString outputDir, LabelList labelList, string imgExtension, int extractBoundary, QWidget *parent = 0);
 	virtual ~LabelerSoftWare();
 
 	LVideoWidget*& getVideoWidget();
@@ -28,6 +28,8 @@ private:
 	int _type;
 	QString _filePath;
 	QString _outputDir;
+  QString _imgExtension;
+  int _extractBoundary;
 	LabelList _labelList;
 	LVideoWidget* _lvw;
 	QPoint _lastRectPos;

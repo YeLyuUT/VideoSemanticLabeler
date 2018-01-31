@@ -22,6 +22,7 @@
 
 LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl* pCtrl, ClassSelection* selection, QString outPutDir,bool autoLoadResult, QObject* parent) :QObject(parent)
 {
+  _pCtrl = pProcCtrl;
 	//_segmentation_control = NULL;
 	_autoLoadResult = autoLoadResult;
 	_pVidCtrl = pCtrl;
@@ -341,6 +342,7 @@ bool LabelingTaskControl::maySaveResult(QString filePath)
 		QMessageBox::StandardButton button = 
 		QMessageBox::warning(NULL,"Saving File...","This file already exists, do you want to rewrite it?",
 			QMessageBox::StandardButton::Ok|QMessageBox::StandardButton::Cancel);
+    bool isSaveSuccessful = false;
 		if (button == QMessageBox::StandardButton::Ok)
 		{
 			return saveResult(filePath);
@@ -351,6 +353,19 @@ bool LabelingTaskControl::maySaveResult(QString filePath)
 	return saveResult(filePath);
 }
 
+bool LabelingTaskControl::saveBoundaryFile(Mat& Image,QString filePath)
+{
+  string qfPath = (filePath + ".b").toStdString();
+  FILE* pF = fopen(qfPath.c_str(), "wb+");
+  if (pF == NULL)
+  {
+    QMessageBox::warning(NULL,QString("Error"),QString("Cannot create boundary file."),QMessageBox::Ok,QMessageBox::NoButton);
+    return false;
+  }
+  //cv::findContours()
+ 
+}
+
 bool LabelingTaskControl::saveResult(QString filePath, bool saveOriginalImg)
 {
 	const QImage& pImg = _surfaceOutPut->getOriImage();
@@ -359,6 +374,11 @@ bool LabelingTaskControl::saveResult(QString filePath, bool saveOriginalImg)
 	Mat ImgRvt;
 	cv::cvtColor(Img, ImgRvt, CV_RGB2BGR);
 	bool bsave = cv::imwrite(filePath.toStdString(), ImgRvt);
+  int extractBoundary = _pCtrl->get_extractBoundary();
+  if (extractBoundary != 0)
+  {
+
+  }
 	qDebug() << "File Saved To: " << filePath;
 	if (!bsave)
 	{
@@ -394,8 +414,19 @@ bool LabelingTaskControl::saveOriginalIMG(QString filePath)
 
 void LabelingTaskControl::saveLabelResult()
 {
-	QString filePath = getResultSavingPathName();
-	if (maySaveResult(filePath))
+  bool isSaved = false;
+  try
+  {
+    QString filePath = getResultSavingPathName();
+    isSaved = maySaveResult(filePath);
+  }
+  catch (...)
+  {
+    _pCtrl->set_imgExtension(string("png"));
+    QString filePath = getResultSavingPathName();
+    isSaved = maySaveResult(filePath);
+  }
+	if (isSaved)
 	{
 		qDebug() << "Save Successful";
 	}
@@ -408,12 +439,14 @@ void LabelingTaskControl::saveLabelResult()
 QString LabelingTaskControl::getResultSavingPathName()
 {
 	qDebug() << "_frameIdx:" << _frameIdx;
-	return QString(this->_outPutDir + QString("/%1.bmp")).arg(_frameIdx);
+  QString ext = QString::fromStdString(_pCtrl->get_imgExtension());
+	return QString(this->_outPutDir + QString("/%1.")+ext).arg(_frameIdx);
 }
 
 QString LabelingTaskControl::getOriginalIMGSavingPathName()
 {
-	return QString(this->_outPutDir + QString("/%1_ori.bmp")).arg(_frameIdx);
+  QString ext = QString::fromStdString(_pCtrl->get_imgExtension());
+  return QString(this->_outPutDir + QString("/%1_ori." + ext)).arg(_frameIdx);
 }
 
 void LabelingTaskControl::openSaveDir()

@@ -8,17 +8,19 @@
 #include <LabelingTaskControl.h>
 #include <ImageConversion.h>
 
-ProcessControl::ProcessControl(string filePath, string outputDir, int skipFrameNum, LabelList& labelList, QObject* parent) :QObject(parent)
+ProcessControl::ProcessControl(MetaData& meta, QObject* parent) :QObject(parent)
 {
 	_type = PROCESS_TYPE_NONE;
-	_filePath = filePath;
-	_outputDir = outputDir;
-	_labelList = labelList;
-	_selection = new ClassSelection(labelList);
+	_filePath = meta.filePath;
+	_outputDir = meta.outputDir;
+	_labelList = meta.labelList;
+  _imgExtension = meta.imgExtension;
+  _extractBoundary = meta.extractBoundary;
+	_selection = new ClassSelection(meta.labelList);
 	_w = NULL;
 	_labelingTask = NULL;	
 	_isLabeling = false;
-	_skipFrameNum = skipFrameNum;
+	_skipFrameNum = meta.skipFrameNum;
 	_autoLoadResult = false;//Please keep this the same as in the video widget.
 }
 
@@ -120,14 +122,14 @@ bool ProcessControl::checkCreateOutputDir()
 void ProcessControl::processImages()
 {
 	qDebug()<<"processImages" << endl;
-	_w = new LabelerSoftWare(1, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
+  _w = new LabelerSoftWare(1, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList, _imgExtension, _extractBoundary);
 	_w->show();
 }
 
 void ProcessControl::processVideo()
 {
 	qDebug() << "processVideo" << endl;
-	_w = new LabelerSoftWare(2, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList);
+	_w = new LabelerSoftWare(2, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList,_imgExtension,_extractBoundary);
 	_w->getVideoWidget()->getInternalVideoControl()->setSavedSkipFrameNum(_skipFrameNum);
 	_w->getVideoWidget()->setSkipFrameNum(1);
 	QObject::connect(_w->getVideoWidget(), SIGNAL(edittingStarted(VideoControl*)), this, SLOT(hasNewLabelingProcess(VideoControl*)));

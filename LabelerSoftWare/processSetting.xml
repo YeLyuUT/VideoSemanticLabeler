@@ -22,6 +22,15 @@ D:/UAVDataCapturing/German/Gronau/100MEDIA/1.MP4
 D:/UAVDataCapturing/German/Gronau/100MEDIA/1/vid1
 </OutputDir>
 
+<ImgExtension>
+<!--
+	Specify the saving file extension without dot(.) that opencv library supports,
+	such as bmp,png,jpg,tif. If the extension is not valid, png file type will be used.
+-->
+png
+</ImgExtension>
+
+
 <Labeling_Frame_Interval>
 <!--
 	Specify the default labeling frame interval.

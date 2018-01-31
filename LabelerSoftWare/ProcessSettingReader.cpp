@@ -3,6 +3,7 @@
 #include <QString>
 #include <QDebug>
 #include <exception>
+#include <regex>
 using cv::FileNode;
 using cv::FileNodeIterator;
 ProcessSettingReader::ProcessSettingReader(string filePath):FileStorage(filePath,FileStorage::READ)
@@ -28,8 +29,18 @@ bool ProcessSettingReader::parse()
 	if (_data.outputDir.empty()) throw std::exception("Please specify <OutputDir> tag");
 	qDebug() << "OutputDir:" << _data.outputDir.c_str();
 
+  //std::regex isStartWithDot("[\\.][a-zA-Z_0-9]+");
+  (*this)["ImgExtension"] >> _data.imgExtension;
+	if (_data.imgExtension.empty()) throw std::exception("Please specify <ImgExtension> tag");
+  //if (!std::regex_match(_data.imgExtension, isStartWithDot)) throw std::exception("Please specify a extension start with dot(.) for <ImgExtension> tag");
+	qDebug() << "ImgExtension:" << _data.imgExtension.c_str();
+
+ // (*this)["ExtractBoundary"] >> _data.extractBoundary;
+	////if (_data.extractBoundary) throw std::exception("Please specify <ExtractBoundary> tag");
+	//qDebug() << "ExtractBoundary:" << _data.extractBoundary;
+
 	(*this)["Labeling_Frame_Interval"] >> _data.skipFrameNum;
-	if (_data.skipFrameNum<=0) throw std::exception("Please specify <Labeling_Frame_Interval> tag as positive integer");
+	if (_data.skipFrameNum<=0) throw std::exception("Please specify a positive number for <Labeling_Frame_Interval> tag");
 	qDebug() << "OutputDir:" << _data.skipFrameNum;
 
 	FileNode n = (*this)["LabelList"];

@@ -24,25 +24,25 @@ LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
     vthread= nullptr;
     vcontrol= nullptr;
     MainLayout = nullptr;
-	wTotalFrameNumText = nullptr;
-	wCurrentFrameNumEdit = nullptr;
-	wEditButton = nullptr;
-	wCommitButton = nullptr;
-	wSaveButton = nullptr;
-	wOpenSaveDir = nullptr;
-	wSliderText = nullptr;
-	wSliderTransparency = nullptr;
-	wCheckBoxAutoLoadResult = nullptr;
-	wButtonUseSPSegs = nullptr;
-	wSpinBoxSPSLevel = nullptr;
+    wTotalFrameNumText = nullptr;
+    wCurrentFrameNumEdit = nullptr;
+    wEditButton = nullptr;
+    wCommitButton = nullptr;
+    wSaveButton = nullptr;
+    wOpenSaveDir = nullptr;
+    wSliderText = nullptr;
+    wSliderTransparency = nullptr;
+    wCheckBoxAutoLoadResult = nullptr;
+    wButtonUseSPSegs = nullptr;
+    wSpinBoxSPSLevel = nullptr;
     constructInterface();
-	vcontrol = new VideoControl();
-	vthread = new VideoThread(vcontrol);
-	addEventFilters();
-	setupConnections();
-	_skipFrameNum = 1;
-	isEditting = false;
-	NormalWindow();
+    vcontrol = new VideoControl();
+    vthread = new VideoThread(vcontrol);
+    addEventFilters();
+    setupConnections();
+    _skipFrameNum = 1;
+    isEditting = false;
+    NormalWindow();
 }
 
 LVideoWidget::~LVideoWidget()
