@@ -27,7 +27,7 @@ D:/UAVDataCapturing/German/Gronau/100MEDIA/1/vid1
 	Specify the saving file extension without dot(.) that opencv library supports,
 	such as bmp,png,jpg,tif. If the extension is not valid, png file type will be used.
 -->
-png
+bmp
 </ImgExtension>
 
 

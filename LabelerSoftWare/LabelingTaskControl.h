@@ -29,6 +29,9 @@ private:
 	void closeAllSubWindows();
 	void doSegmentation();//TODO
 
+  cv::Vec3b getColorByCanvasIndex(int idx);
+  cv::Mat getClrMask(cv::Vec3b clr,Mat& Img);
+  cv::Mat getDiffClrMask(cv::Vec3b clr,Mat& Img);
 	cv::Rect getBoundingRectOfVecPts(vector<cv::Point>& vecPts);
 	void setupColorSelectionConnections();//set quick access to color selection panel
 	void setupScrollAreaConnections();
@@ -59,7 +62,7 @@ protected:
 
 public:
 signals:
-	   void signalChangeLevelByDiff(int diff);
+	void signalChangeLevelByDiff(int diff);
 public slots:
 	void retrievePainterPath(int PenWidth, QPainterPath& paintPath);
 	void retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, QColor color);
@@ -69,7 +72,7 @@ public slots:
 	void clearResult();
 	void loadResultFromDir();
 	void changeTransparency(int value);
-
+  void slotSetCanvasIndex(int index);
 	void setupSegmentationSurface(int level=0);
 
 private:
@@ -101,6 +104,8 @@ private:
 	VideoControl* _pVidCtrl;
 	bool _autoLoadResult;
 	bool _segSurfaceSet;
+  int _canvas_idx;
+  cv::Vec3b _canvasColor;
   ProcessControl* _pCtrl;
 };
 

@@ -123,11 +123,30 @@ bool VideoControl::getFrame(Mat& img)
 	}
 }
 
+bool VideoControl::getFrameWithoutIncreaseFrameIdx(Mat& img, double frameNum)
+{
+  QWriteLocker locker(&_lock);
+	//_videoCap.set(CAP_PROP_POS_FRAMES, frameNum);
+	qDebug() << "getFrameWithoutIncreaseFrameIdx";
+	
+	_frameIdx = frameNum;
+	if (_videoCap.retrieve(img))
+	{
+		_curMat = img;
+		locker.unlock();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 bool VideoControl::getFrame(Mat& img,double frameNum)
 {
     QWriteLocker locker(&_lock);
 	//_videoCap.set(CAP_PROP_POS_FRAMES, frameNum);
-	qDebug() << "CAP_PROP_POS_FRAMES:" << _videoCap.get(CAP_PROP_POS_FRAMES);
+	qDebug() << "getFrame";
 	
 	_frameIdx = frameNum;
 	if (_videoCap.retrieve(img))
@@ -232,14 +251,14 @@ void VideoControl::setToFrameAndGrab(int idx)
 void VideoControl::setToNextFrameAndGrab()
 {
 	int idx = this->getPosFrames() + this->getSkipFrameNum();
-	this->setPosFrames(idx-1);
+	this->setPosFrames(idx);
 	_videoCap.grab();
 }
 
 void VideoControl::setToPreviousFrameAndGrab()
 {
 	int idx = this->getPosFrames() - this->getSkipFrameNum();
-	this->setPosFrames(idx-1);
+	this->setPosFrames(idx);
 	_videoCap.grab();
 }
 

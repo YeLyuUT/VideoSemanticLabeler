@@ -6,6 +6,7 @@
 #include "DataType.h"
 #include <QVBoxLayout>
 #include <LVideoWidget.h>
+#include <ClassSelection.h>
 
 class LabelerSoftWare : public QMainWindow
 {

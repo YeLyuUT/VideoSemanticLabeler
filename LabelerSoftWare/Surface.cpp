@@ -543,7 +543,7 @@ void Surface::mouseMoveEvent(QMouseEvent *ev)
 			{
 				if (_bLButtonDown)
 				{
-					qDebug() << "Draw: " << '(' << ev->x() << ':' << ev->y() << ')';
+					//qDebug() << "Draw: " << '(' << ev->x() << ':' << ev->y() << ')';
 					QPoint endPoint = ev->pos();
 					drawLineTo(endPoint);
 					updateRectArea(QRect(_lastPoint, endPoint).normalized(), _myPenRadius, false);

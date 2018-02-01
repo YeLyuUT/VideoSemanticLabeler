@@ -28,16 +28,18 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_pVidCtrl = pCtrl;
 	_segSurfaceSet = false;
 	_curSegmentation_control = nullptr;
+  this->_canvas_idx = 0;
 	/*_pVidCtrl->reset(_pVidCtrl->getPosFrames());*/
 	int index = _pVidCtrl->getPosFrames();
-	qDebug() <<"index:" <<index;
+	qDebug() <<"index:" <<_pVidCtrl->getPosFrames();
 	_frameIdx = index;
 	cv::Mat matFrame;
-	if (!_pVidCtrl->getFrame(matFrame, index))
+	if (!_pVidCtrl->getFrameWithoutIncreaseFrameIdx(matFrame, index))
 	{ 
 		QMessageBox::critical(NULL, "Frame Cannot Read", "This frame cannot be read", QMessageBox::Cancel);
 		//throw std::exception("cannot load Image to be labeled"); 
 	};
+qDebug() <<"index:" <<_pVidCtrl->getPosFrames();
 	QImage Img = ImageConversion::cvMat_to_QImage(matFrame,true, true);
 	_modified = false;
 	_outPutDir = outPutDir;
@@ -54,6 +56,7 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 
 	//t.join();
 	//_segImg = createQImageByMat(_segmentation_control->getSlicSegResultRef(), true);//set segImg
+qDebug() <<"index:" <<_pVidCtrl->getPosFrames();
 	setupOtherImg();
 	_surfaceOriginal = new Surface(_InputImg);
 	_surfaceOutPut = new Surface(_outPutImg);
@@ -75,7 +78,7 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	//_surfaceSegmentation->setReferenceImage(&_surfaceOutPut->getOriImage());//_outPutImg
 	//_surfaceSegmentation->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
 	//_surfaceOutPut->setReferenceOriginalImage(&_surfaceOriginal->getOriImage());//_InputImg
-
+qDebug() <<"index:" <<_pVidCtrl->getPosFrames();
 	_surfaceOriginal->setAllowPolyMode(true);
 	//_surfaceSegmentation->setDrawType(Surface::DRAW_TYPE::SUPER_PIXEL_WISE);
 	//QObject::connect(_segmentation_control, SIGNAL(signalSendPts(vector<PtrSegmentPoints>*)), _surfaceSegmentation, SLOT(slotPixelCovered(vector<PtrSegmentPoints>*)));
@@ -118,13 +121,13 @@ LabelingTaskControl::LabelingTaskControl(ProcessControl* pProcCtrl,VideoControl*
 	_surfaceOutPut->setEditable(true);
 
 	setupConnections();
-
+qDebug() <<"index:" <<_pVidCtrl->getPosFrames();
 	//_surfaceSegmentation->show();
 	//_surfaceOriginal->show();
 	//_surfaceOutPut->show();
 	_SA3->move(QPoint(000,300));	
-	_SA1->move(QPoint(600,300));	
-	_SA2->move(QPoint(1200,300));	
+	_SA1->move(QPoint(500,300));	
+	_SA2->move(QPoint(1000,300));	
 
 	_SA1->show();
 	_SA3->show();
@@ -515,24 +518,34 @@ void LabelingTaskControl::retrievePainterPath(int PenWidth, QPainterPath& paintP
 	updateOutPutImg(_boundingRect, _painterPathImage);
 }
 
-void LabelingTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
+void LabelingTaskControl::updateOutPutImg(QRect boundingRect, QImage& mask)
 {
-	Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg, false);
-	Mat maskImg = ImageConversion::QImage_to_cvMat(mask, false);
+  Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg, false);
+  Mat maskImg = ImageConversion::QImage_to_cvMat(mask, false);
 
-	qDebug() << CV_8UC3 << "==" << maskImg.type();
-	QColor clr = _selection->getCurrentColor();
-	outPutImg.setTo(Vec3b(clr.red(), clr.green(), clr.blue()), maskImg);
+  qDebug() << CV_8UC3 << "==" << maskImg.type();
+  QColor clr = _selection->getCurrentColor();
+  if (this->_canvas_idx > 0)
+  {
+    Mat mask = this->getClrMask(this->_canvasColor, outPutImg);
+    maskImg = maskImg&mask;
+    outPutImg.setTo(Vec3b(clr.red(), clr.green(), clr.blue()), maskImg);
+  }
+  else
+  {
+    outPutImg.setTo(Vec3b(clr.red(), clr.green(), clr.blue()), maskImg);
+  }
+
 #ifdef CHECK_MASK_OUTPUTIMAGE
 	cv::imshow("CHECK_MASK_OUTPUTIMAGE outPutImg", outPutImg);
 	cv::imshow("CHECK_MASK_OUTPUTIMAGE maskImg", maskImg);
 	cv::waitKey(500);
 #endif
-	qDebug() << "To get Rect";
-	qDebug() << "maskImg.rows:" << maskImg.rows;
-	qDebug() << "maskImg.cols:" << maskImg.cols;
-	qDebug() << "mask.rows:" << mask.height();
-	qDebug() << "mask.cols:" << mask.width();
+	//qDebug() << "To get Rect";
+	//qDebug() << "maskImg.rows:" << maskImg.rows;
+	//qDebug() << "maskImg.cols:" << maskImg.cols;
+	//qDebug() << "mask.rows:" << mask.height();
+	//qDebug() << "mask.cols:" << mask.width();
 	int min_x = maskImg.cols, min_y = maskImg.rows, max_x = 0, max_y = 0;
 	for (int i = 0; i < maskImg.rows; i++)
 	{
@@ -556,11 +569,13 @@ void LabelingTaskControl::updateOutPutImg(QRect boundingRect,QImage& mask)
 		r = cv::Rect();
 	}
 	else
-		r = cv::Rect(cv::Point(min_x, min_y), cv::Point(max_x + 1, max_y + 1));
-	qDebug() << outPutImg.cols << ',' << outPutImg.rows;
-	qDebug() <<"Rect:"<< r.x << ',' << r.y << ';' << r.width << ',' << r.height;
+  { 
+    r = cv::Rect(cv::Point(min_x, min_y), cv::Point(max_x + 1, max_y + 1));
+    updateAllSurfaces(r);
+  }
+	//qDebug() << outPutImg.cols << ',' << outPutImg.rows;
+	//qDebug() <<"Rect:"<< r.x << ',' << r.y << ';' << r.width << ',' << r.height;
 	//updateSurface(_surfaceOutPut, r);
-	updateAllSurfaces(r);
 }
 
 void LabelingTaskControl::updateImgByTouchedSegments(QImage& Img)
@@ -573,9 +588,9 @@ void LabelingTaskControl::updateAllSurfaces(cv::Rect r)
 	/*if (_surfaceSegmentation) _surfaceSegmentation->update();
 	if (_surfaceOriginal) _surfaceOriginal->update();
 	if (_surfaceOutPut) _surfaceOutPut->update();*/
-	updateSurface(_surfaceSegmentation, r);
-	updateSurface(_surfaceOriginal, r);
-	updateSurface(_surfaceOutPut, r);
+  updateSurface(_surfaceSegmentation, r);
+  updateSurface(_surfaceOriginal, r);
+  updateSurface(_surfaceOutPut, r);
 }
 
 void LabelingTaskControl::updateSurface(Surface *sf, cv::Rect rect)
@@ -654,6 +669,12 @@ void LabelingTaskControl::changeTransparency(int value)
 		_surfaceSegmentation->setBlendAlpha(v, 1.0 - v);
 }
 
+void LabelingTaskControl::slotSetCanvasIndex(int index)
+{
+  this->_canvas_idx = index;
+  this->_canvasColor = this->getColorByCanvasIndex(index);
+}
+
 cv::Rect LabelingTaskControl::getBoundingRectOfVecPts(vector<cv::Point>& vecPts)
 {
 	int min_x = INT_MAX, min_y = INT_MAX, max_x = 0, max_y = 0;
@@ -683,7 +704,17 @@ void LabelingTaskControl::retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, 
 			if (min_y > pt.y) min_y = pt.y;
 			if (max_x < pt.x) max_x = pt.x;
 			if (max_y < pt.y) max_y = pt.y;
-			outPutImg.at<cv::Vec3b>(pt.y, pt.x) = Vec3b(color.red(), color.green(), color.blue());
+      if (_canvas_idx > 0)
+      {
+        if (outPutImg.at<cv::Vec3b>(pt.y, pt.x) == this->_canvasColor)
+        {
+          outPutImg.at<cv::Vec3b>(pt.y, pt.x) = Vec3b(color.red(), color.green(), color.blue());
+        }
+      }
+      else
+      {
+        outPutImg.at<cv::Vec3b>(pt.y, pt.x) = Vec3b(color.red(), color.green(), color.blue());
+      }
 		}
 	}
 	cv::Rect r;
@@ -699,12 +730,24 @@ void LabelingTaskControl::retrieveSegmentsDraw(vector<PtrSegmentPoints>*vecPts, 
 
 void LabelingTaskControl::retrievePolygonDraw(vector<Point> vecPts,QColor clr)
 {
-	if (vecPts.size() > 0)
-	{
-		Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg, false);
-		vector<vector<Point> > vecvecPts;
-		vecvecPts.push_back(vecPts);
-		cv::drawContours(outPutImg, vecvecPts, -1, cv::Scalar(clr.red(), clr.green(), clr.blue()), -1);
+  if (vecPts.size() > 0)
+  {
+    Mat outPutImg = ImageConversion::QImage_to_cvMat(_outPutImg, false);
+    vector<vector<Point> > vecvecPts;
+    vecvecPts.push_back(vecPts);
+    if (_canvas_idx > 0)
+    {
+      Mat temp;
+      outPutImg.copyTo(temp);
+      cv::drawContours(temp, vecvecPts, -1, cv::Scalar(clr.red(), clr.green(), clr.blue()), -1);
+      Mat mask = this->getClrMask(_canvasColor, outPutImg);
+      temp.copyTo(outPutImg, mask);
+    }
+    else
+    {
+      cv::drawContours(outPutImg, vecvecPts, -1, cv::Scalar(clr.red(), clr.green(), clr.blue()), -1);
+    }
+    
 		cv::Rect r = getBoundingRectOfVecPts(vecPts);
 		if (r.empty())
 		{
@@ -712,4 +755,55 @@ void LabelingTaskControl::retrievePolygonDraw(vector<Point> vecPts,QColor clr)
 		}
 		updateAllSurfaces(r);
 	}
+}
+
+cv::Vec3b LabelingTaskControl::getColorByCanvasIndex(int idx)
+{
+  qDebug() << "LabelingTaskControl::getColorByCanvasIndex:" << idx;
+  LabelList lst = _selection->getLabelList();
+  if (idx != 0)
+  {
+    int R = std::get<1>(lst[idx - 1]);
+    int G = std::get<2>(lst[idx - 1]);
+    int B = std::get<3>(lst[idx - 1]);
+    return cv::Vec3b(R, G, B);
+  }
+  else
+    return cv::Vec3b(0, 0, 0);
+}
+
+cv::Mat LabelingTaskControl::getClrMask(cv::Vec3b clr, Mat& Img)
+{
+  static Mat mClr(Img.rows, Img.cols, Img.type());
+  mClr.setTo(clr);
+  vector<Mat> vec_clr;
+  vector<Mat> vec_img;
+  cv::split(Img, vec_img);
+  cv::split(mClr, vec_clr);
+  static Mat mask;
+  mask = Mat(vec_img[0] == vec_clr[0]);
+  for (int i = 1; i < vec_clr.size(); i++)
+  {
+    mask = mask&(Mat(vec_img[i] == vec_clr[i]));
+  }
+
+  return mask;
+}
+
+cv::Mat LabelingTaskControl::getDiffClrMask(cv::Vec3b clr,Mat& Img)
+{
+  Mat mClr(Img.rows, Img.cols, Img.type());
+  mClr.setTo(clr);
+
+  vector<Mat> vec_clr;
+  vector<Mat> vec_img;
+  cv::split(Img, vec_img);
+  cv::split(mClr, vec_clr);
+
+  Mat mask = Mat(vec_img[0] == vec_clr[0]);
+  for (int i = 1; i < vec_clr.size(); i++)
+  {
+    mask = mask&(Mat(vec_img[i] == vec_clr[i]));
+  }
+  return mask;
 }

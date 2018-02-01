@@ -21,15 +21,17 @@
 #include <QCheckBox>
 #include <QSpinBox>
 #include <SmartScrollArea.h>
+#include <QComboBox>
+#include <DataType.h>
 
 class LVideoWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit LVideoWidget(QWidget *parent = 0);
+  explicit LVideoWidget(LabelList labelList, QWidget *parent = 0);
 	virtual ~LVideoWidget();
 public:
-    bool openVideo(QString fileName);
+  bool openVideo(QString fileName);
 	VideoControl* getInternalVideoControl();
 	void setSkipFrameNum(int num);
 	void setSkipFrameNumToLabelingMode();
@@ -37,6 +39,7 @@ public:
 private:
 	bool isOpenned();
 	void closeVideo();
+  QComboBox* createComboBox(LabelList labelList);
 	void constructInterface();
 	void addEventFilters();
 	void setupConnections();
@@ -50,18 +53,18 @@ protected:
 	void hideEvent(QHideEvent* ev);
 	void keyPressEvent(QKeyEvent *ev);
 private:
-    Surface* wFrame;
-    QLabel* wStatus;
+  Surface* wFrame;
+  QLabel* wStatus;
 	QLabel* wTotalFrameNumText;
 	QLabel* wSkipFrameNumText;
 	QLineEdit* wSkipFrameNumEdit;
 	QLineEdit* wCurrentFrameNumEdit;
-    ClickableProgressBar* wProgressBar;
-    SmartScrollArea* wScrollArea;
-    QDockWidget* wInfoPanel;
-    QPushButton* wPlayButton;
-    QPushButton* wPauseButton;
-    QPushButton* wStopButton;
+  ClickableProgressBar* wProgressBar;
+  SmartScrollArea* wScrollArea;
+  QDockWidget* wInfoPanel;
+  QPushButton* wPlayButton;
+  QPushButton* wPauseButton;
+  QPushButton* wStopButton;
 	QPushButton* wEditButton;
 	QPushButton* wCommitButton;
 	QPushButton* wSaveButton;
@@ -72,17 +75,20 @@ private:
 	QCheckBox* wCheckBoxAutoLoadResult;
 	QPushButton* wButtonUseSPSegs;
 	QSpinBox* wSpinBoxSPSLevel;
+  QComboBox* wComboBoxCanvas;
 
-    VideoThread* vthread;
-    VideoControl* vcontrol;
-    QVector<QLabel*> vecHints;
-    QVBoxLayout* MainLayout;
+  VideoThread* vthread;
+  VideoControl* vcontrol;
+  QVector<QLabel*> vecHints;
+  QVBoxLayout* MainLayout;
 	QPoint _oldScrollPos;
 	int _skipFrameNum;
 	bool isEditting;
+  LabelList _labelList;
+  int canvasSelectionIdx;
 signals:
-    void hasOpennedVideo();
-    void hasClosedVideo();
+  void hasOpennedVideo();
+  void hasClosedVideo();
 	void edittingStarted(VideoControl* vidCtrl);
 	void edittingStopped();
 	void signalClose();
@@ -92,10 +98,11 @@ signals:
 	void signalOpenSaveDir();
 	void signalNewFrame();
 	void signalTransparencyChanged(int);
+  void signalCanvasIndexChanged(int);
 public slots:
-    void play();
-    void stop();
-    void pause();
+  void play();
+  void stop();
+  void pause();
 	void edit();
 	void save();
 	void transparencyValueChanged(int value);
@@ -104,14 +111,15 @@ public slots:
 	void openSaveDir();
 	void commitSetting();
 	void hasEditResult(QImage&);
-    void showImage(const QImage&img);
-    void changeFrameSize(int width,int height);
-    void constructInfoPanel();
+  void showImage(const QImage&img);
+  void changeFrameSize(int width, int height);
+  void constructInfoPanel();
 	void receiveVideoState(int state);
 	void slotSPSegsLevelChanged(int level);
+  void slotCanvasIndexChanged(int index);
 	void slotSPSSegsLevelChangeOneStep(int diff);
 
-    void deleteInfoPanel();
+  void deleteInfoPanel();
 
 	void skipFrameNumChanged(const QString& str);
 	void currentFrameNumChanged(const QString& str);
@@ -121,7 +129,7 @@ public slots:
 	void updateCurrentFrameNum(double num);
 	void updateProgressBar(double frameRatio);
 
-    void changeVideoPos(double framePosRatio);
+  void changeVideoPos(double framePosRatio);
 };
 
 #endif // LVIDEOWIDGET_H

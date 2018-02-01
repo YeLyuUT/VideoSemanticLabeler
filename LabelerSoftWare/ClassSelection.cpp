@@ -151,3 +151,8 @@ string ClassSelection::getCurrentString()
 {
 	return _curLabelText;
 }
+
+LabelList ClassSelection::getLabelList()
+{
+  return _pLs;
+}

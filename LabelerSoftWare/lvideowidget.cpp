@@ -10,9 +10,10 @@
 #include <QApplication>
 #include <ImageConversion.h>
 #include <labelersoftware.h>
+#include <QPixmap>
 
 using namespace cv;
-LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
+LVideoWidget::LVideoWidget(LabelList labelList, QWidget *parent) : QWidget(parent)
 {
     wFrame= nullptr;
     wProgressBar= nullptr;
@@ -35,6 +36,9 @@ LVideoWidget::LVideoWidget(QWidget *parent) : QWidget(parent)
     wCheckBoxAutoLoadResult = nullptr;
     wButtonUseSPSegs = nullptr;
     wSpinBoxSPSLevel = nullptr;
+    wComboBoxCanvas = nullptr;
+    _labelList = labelList;
+    canvasSelectionIdx = 0;
     constructInterface();
     vcontrol = new VideoControl();
     vthread = new VideoThread(vcontrol);
@@ -99,12 +103,12 @@ void LVideoWidget::setupConnections()
 	connect(wCheckBoxAutoLoadResult, SIGNAL(toggled(bool)), this, SLOT(toggleAutoLoadResult(bool)));
 	connect(wButtonUseSPSegs, SIGNAL(clicked()), this, SLOT(useSuperpixelEdit()));
 	connect(wSpinBoxSPSLevel, SIGNAL(valueChanged(int)), this, SLOT(slotSPSegsLevelChanged(int)));
+  connect(wComboBoxCanvas, SIGNAL(currentIndexChanged(int)), this, SLOT(slotCanvasIndexChanged(int)));
 	
 	connect(wOpenSaveDir, SIGNAL(clicked()), this, SLOT(openSaveDir()));
 	connect(wCommitButton, SIGNAL(clicked()), this, SLOT(commitSetting()));
 	connect(vthread, SIGNAL(updateVideoInfo(double, double, double)), this, SLOT(updateInfos(double, double, double)));
 	connect(wFrame, SIGNAL(mousePositionShiftedByScale(QPoint, double, double)), wScrollArea, SLOT(gentleShiftScrollAreaWhenScaled(QPoint, double, double)));
-	
 }
 
 void LVideoWidget::addEventFilters()
@@ -154,6 +158,10 @@ void LVideoWidget::constructInterface()
 	wSpinBoxSPSLevel->setMinimum(0);
 	hBoxLayout0->addWidget(wSpinBoxSPSLevel);
 	wSpinBoxSPSLevel->hide();
+
+  wComboBoxCanvas = this->createComboBox(this->_labelList);
+  hBoxLayout0->addWidget(wComboBoxCanvas);
+  wComboBoxCanvas->hide();
 
 	wSkipFrameNumEdit = new QLineEdit(this);
 	wSkipFrameNumEdit->setMaximumWidth(50);
@@ -383,6 +391,12 @@ void LVideoWidget::slotSPSegsLevelChanged(int level)
 	emit signalUseSPSegs(level);
 }
 
+void LVideoWidget::slotCanvasIndexChanged(int index)
+{
+  qDebug() << "emit canvas index:" << index;
+  emit signalCanvasIndexChanged(index);
+}
+
 void LVideoWidget::slotSPSSegsLevelChangeOneStep(int diff)
 {
 	this->wSpinBoxSPSLevel->setValue(wSpinBoxSPSLevel->value() + diff);
@@ -414,6 +428,7 @@ void LVideoWidget::edit()
 		wCheckBoxAutoLoadResult->show();
 		wButtonUseSPSegs->show();
 		wSpinBoxSPSLevel->show();
+    wComboBoxCanvas->show();
 		wSliderText->show();
 		wSliderTransparency->show();
 		wOpenSaveDir->show();
@@ -436,6 +451,7 @@ void LVideoWidget::edit()
 	}
 	else
 	{ 
+    //qDebug()<<"index before end:"<<vcontrol->getPosFrames();
 		QWidget* pa = (QWidget*)this->parent();
 		LabelerSoftWare* ppa = (LabelerSoftWare*)pa->parent();
 		ppa->moveToLastPos();
@@ -450,6 +466,7 @@ void LVideoWidget::edit()
 		wCheckBoxAutoLoadResult->hide();
 		wButtonUseSPSegs->hide();
 		wSpinBoxSPSLevel->hide();
+    wComboBoxCanvas->hide();
 		wSliderText->hide();
 		wSliderTransparency->hide();
 		wOpenSaveDir->hide();
@@ -601,4 +618,22 @@ void LVideoWidget::transparencyValueChanged(int value)
 {
 	//qDebug() << "LVideoWidget::transparencyValueChanged" << endl;
 	emit signalTransparencyChanged(value);
+}
+
+QComboBox* LVideoWidget::createComboBox(LabelList labelList)
+{
+  QComboBox* qCbb = new QComboBox(this);
+  QPixmap pxmpAll(30, 30);
+  pxmpAll.fill(QColor(255, 255, 255));
+  qCbb->addItem(QIcon(pxmpAll),"All");
+  for (int i = 0; i < labelList.size(); i++)
+  {
+    int R = std::get<1>(labelList[i]);
+    int G = std::get<2>(labelList[i]);
+    int B = std::get<3>(labelList[i]);
+    QPixmap pxmp(30,30);
+    pxmp.fill(QColor(R, G, B));
+    qCbb->addItem(QIcon(pxmp),QString::fromStdString(std::get<0>(labelList[i])));
+  }
+  return qCbb;
 }

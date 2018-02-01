@@ -154,8 +154,8 @@ void ProcessControl::hasNewLabelingProcess(VideoControl* pVidCtrl)
 		QObject::connect(_w->getVideoWidget(), SIGNAL(signalNewFrame()), this, SLOT(updateFrameToBeLabeled()));
 		QObject::connect(_w->getVideoWidget(), SIGNAL(signalTransparencyChanged(int)), _labelingTask, SLOT(changeTransparency(int)));
 		QObject::connect(_labelingTask, SIGNAL(signalChangeLevelByDiff(int)), _w->getVideoWidget(), SLOT(slotSPSSegsLevelChangeOneStep(int)));
+    QObject::connect(_w->getVideoWidget(), SIGNAL(signalCanvasIndexChanged(int)), _labelingTask, SLOT(slotSetCanvasIndex(int)));
 		_w->getVideoWidget()->setSkipFrameNum(pVidCtrl->getSkipFrameNum());
-		
 		_w->getVideoWidget()->updateProgressBar(ratio);
 		_w->getVideoWidget()->updateCurrentFrameNum(posFrame);
 		_isLabeling = true;
@@ -173,6 +173,7 @@ void ProcessControl::closeLabelingProcess()
 		QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalOpenSaveDir()), _labelingTask, SLOT(openSaveDir()));
 		QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalNewFrame()), this, SLOT(updateFrameToBeLabeled()));
 		QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalTransparencyChanged(int)), _labelingTask, SLOT(changeTransparency(int)));
+    QObject::disconnect(_w->getVideoWidget(), SIGNAL(signalCanvasIndexChanged(int)), _labelingTask, SLOT(slotSetCanvasIndex(int)));
 		_labelingTask->deleteLater();
 		_labelingTask = NULL;
 		qDebug() << "LabelingTaskControl Closed";

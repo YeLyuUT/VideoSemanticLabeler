@@ -55,7 +55,7 @@ void LabelerSoftWare::moveToLastPos()
 
 void LabelerSoftWare::createVideoProcessWindow()
 {
-	_lvw = new LVideoWidget(this);
+  _lvw = new LVideoWidget(_labelList, this);
 	mlayout->addWidget(_lvw);
 	_lvw->openVideo(_filePath);
 }

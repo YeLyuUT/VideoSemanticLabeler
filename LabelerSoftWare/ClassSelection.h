@@ -17,6 +17,7 @@ public:
 	explicit ClassSelection(LabelList& ls, QWidget* parent = NULL, int wItemNumber = 4);
 	virtual ~ClassSelection();
 public:
+  LabelList getLabelList();
 	bool setToItem(int num);
 	QString getSelectedItemText();
 	bool eventFilter(QObject * watched, QEvent * ev);
