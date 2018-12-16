@@ -16,6 +16,7 @@ LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QStr
   LabelList labelList, string imgExtension, int extractBoundary, QWidget *parent)
 	: QMainWindow(parent)
 {
+  this->setWindowIcon(QIcon(":/icon/icon/L.jpg"));
 	_lvw = NULL;
 	_type = processingType;
 	_filePath = inputFilePath;

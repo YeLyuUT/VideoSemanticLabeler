@@ -96,6 +96,7 @@ void SegmentationControl::doSlicSegmentation()
 	int idx = getSegmentationType0basedIdx(segmentationType::SLIC_);
 	getMatRef(idx) = outIMG;
 	delete[]IMG;
+  //simple progessbar not thread safe. Only to show simply.
 }
 
 int SegmentationControl::getSegmentationTypeNum()

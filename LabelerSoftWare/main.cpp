@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 		}
 		catch (std::exception &e)
 		{
-			QMessageBox::critical(NULL, "Error", QString("XML file content wrong!\n")+ QString(e.what()), QMessageBox::StandardButton::Cancel);
+			QMessageBox::critical(NULL, "Error", QString("XML file content wrong! Please check the content is correct.\n")+ QString(e.what()), QMessageBox::StandardButton::Cancel);
 			return 0;
 		}
 		catch (...)

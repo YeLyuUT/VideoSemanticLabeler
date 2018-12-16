@@ -7,6 +7,8 @@
 #include <labelersoftware.h>
 #include <LabelingTaskControl.h>
 #include <ImageConversion.h>
+#include <vector>
+using std::vector;
 
 ProcessControl::ProcessControl(MetaData& meta, QObject* parent) :QObject(parent)
 {
@@ -22,6 +24,8 @@ ProcessControl::ProcessControl(MetaData& meta, QObject* parent) :QObject(parent)
 	_isLabeling = false;
 	_skipFrameNum = meta.skipFrameNum;
 	_autoLoadResult = false;//Please keep this the same as in the video widget.
+  _superpixel_scales = meta.superpixel_scales;
+  //qDebug() << _superpixel_scales.size() << endl;
 }
 
 

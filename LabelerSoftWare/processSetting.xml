@@ -9,7 +9,7 @@
 	Specify the input video file path. 
 	use double backward slash(\\) or single forward slash(/) to navigate folder.
 -->
-D:/UAVDataCapturing/German/Gronau/100MEDIA/1.MP4
+E:/UAVDataCapturing/German/Gronau/100MEDIA/1.MP4
 <!-- D:\\UAVDataCapturing\\China\\170706\\DJI_0003.MOV -->
 </InputFilePath>
 
@@ -19,7 +19,7 @@ D:/UAVDataCapturing/German/Gronau/100MEDIA/1.MP4
 	Make sure the directory exists.
 -->
 <!-- D:/UAVDataCapturing/German/Gronau/100MEDIA/1/OutPut -->
-D:/UAVDataCapturing/German/Gronau/100MEDIA/1/vid1
+E:/UAVDataCapturing/German/Gronau/100MEDIA/1/vid1
 </OutputDir>
 
 <ImgExtension>
@@ -27,7 +27,7 @@ D:/UAVDataCapturing/German/Gronau/100MEDIA/1/vid1
 	Specify the saving file extension without dot(.) that opencv library supports,
 	such as bmp,png,jpg,tif. If the extension is not valid, png file type will be used.
 -->
-bmp
+png
 </ImgExtension>
 
 
@@ -36,7 +36,7 @@ bmp
 	Specify the default labeling frame interval.
 	Can be altered in the program.
 -->
-150
+1
 </Labeling_Frame_Interval>
 
 <LabelList>
@@ -71,5 +71,18 @@ bmp
 	<Name>Moving_Car</Name><R>64</R><G>0</G><B>128</B>
 	</class8>
 </LabelList>
+
+<SuperPixel>
+<!--
+    SLIC superpixel segmentation is used for superpixel-wise annotation.
+	The program will use 4 scales for such annation.
+	Each number for each scale is distance between the initialized superpixel center.
+	The smaller number, the smaller each superpixel is, and the more superpixels.
+-->
+	<scale1>8</scale1>
+	<scale2>12</scale2>
+	<scale3>18</scale3>
+	<scale4>24</scale4>
+</SuperPixel>
 
 </opencv_storage>

@@ -36,6 +36,7 @@ LVideoWidget::LVideoWidget(LabelList labelList, QWidget *parent) : QWidget(paren
     wCheckBoxAutoLoadResult = nullptr;
     wButtonUseSPSegs = nullptr;
     wSpinBoxSPSLevel = nullptr;
+    wCanvasSelectionTxt = nullptr;
     wComboBoxCanvas = nullptr;
     _labelList = labelList;
     canvasSelectionIdx = 0;
@@ -118,23 +119,23 @@ void LVideoWidget::addEventFilters()
 
 void LVideoWidget::constructInterface()
 {
-    MainLayout = new QVBoxLayout();
-    this->setLayout(MainLayout);
-	/*1st level create canvas*/
-    wScrollArea = new SmartScrollArea();
-    wScrollArea->setBackgroundRole(QPalette::Dark);
+  MainLayout = new QVBoxLayout();
+  this->setLayout(MainLayout);
+  /*1st level create canvas*/
+  wScrollArea = new SmartScrollArea();
+  wScrollArea->setBackgroundRole(QPalette::Dark);
 
-	wFrame = new Surface(QImage(), this);
-    wScrollArea->setWidget(wFrame);
-    MainLayout->addWidget(wScrollArea);
+  wFrame = new Surface(QImage(), this);
+  wScrollArea->setWidget(wFrame);
+  MainLayout->addWidget(wScrollArea);
 
 	/*2nd level create status*/
 	QWidget* tW0 = new QWidget(this);
 	hBoxLayout0 = new QHBoxLayout();
 	tW0->setLayout(hBoxLayout0);
-    wStatus = new QLabel(this);
-    wStatus->setText(QString("Stopped"));
-    wStatus->setStyleSheet("QLabel {  color : red; }");
+  wStatus = new QLabel(this);
+  wStatus->setText(QString("Stopped"));
+  wStatus->setStyleSheet("QLabel {  color : red; }");
 	hBoxLayout0->addWidget(wStatus);
 	wEditButton = new QPushButton("Start Labeling",this);
 	hBoxLayout0->addWidget(wEditButton);
@@ -159,6 +160,10 @@ void LVideoWidget::constructInterface()
 	hBoxLayout0->addWidget(wSpinBoxSPSLevel);
 	wSpinBoxSPSLevel->hide();
 
+  wCanvasSelectionTxt = new QLabel(this);
+  wCanvasSelectionTxt->setText("Class to Modify:");
+  wCanvasSelectionTxt->hide();
+  hBoxLayout0->addWidget(wCanvasSelectionTxt);
   wComboBoxCanvas = this->createComboBox(this->_labelList);
   hBoxLayout0->addWidget(wComboBoxCanvas);
   wComboBoxCanvas->hide();
@@ -429,6 +434,7 @@ void LVideoWidget::edit()
 		wButtonUseSPSegs->show();
 		wSpinBoxSPSLevel->show();
     wComboBoxCanvas->show();
+    wCanvasSelectionTxt->show();
 		wSliderText->show();
 		wSliderTransparency->show();
 		wOpenSaveDir->show();
@@ -467,6 +473,7 @@ void LVideoWidget::edit()
 		wButtonUseSPSegs->hide();
 		wSpinBoxSPSLevel->hide();
     wComboBoxCanvas->hide();
+    wCanvasSelectionTxt->hide();
 		wSliderText->hide();
 		wSliderTransparency->hide();
 		wOpenSaveDir->hide();

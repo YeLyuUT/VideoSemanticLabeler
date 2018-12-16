@@ -59,7 +59,19 @@ bool ProcessSettingReader::parse()
 			<< std::get<2>(label) << "\t" << std::get<3>(label);
 		_data.labelList.push_back(label);
 	}
-	
+	//superpixel_scales
+  SuperpixelScales scales(4,10);
+  FileNode ss = (*this)["SuperPixel"];
+  qDebug() << "Superpixel size" << ss.size();
+  if (ss.size() != 4) throw std::exception("Please specify correct number of superpixels");
+  FileNodeIterator it_s = ss.begin(), it_s_end = ss.end();
+  int idx = 0;
+  for (; it_s != it_s_end; ++it_s,++idx)
+  {
+    (*it_s) >> scales[idx];
+    qDebug() << "scale input:"<< scales[idx] << endl;
+  }
+  _data.superpixel_scales = scales;
 	return true;
 }
 

@@ -3,6 +3,7 @@
 #include "opencv.hpp"
 #include <vector>
 #include <memory>
+#include <QProgressBar>
 using std::shared_ptr;
 using cv::Mat;
 using std::vector;

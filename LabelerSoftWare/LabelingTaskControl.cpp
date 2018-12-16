@@ -12,6 +12,11 @@
 #include <QtUtils.h>
 #include <limits.h>
 #include <QScrollBar>
+#include <QProgressBar>
+#include <QString>
+#include <QtConcurrent>
+#include <numeric>
+
 //#define CHECK_RETRIEVE_PAINTERPATH
 //#define CHECK_MASK_OUTPUTIMAGE
 //#define CHECK_QIMAGE
@@ -45,10 +50,11 @@ qDebug() <<"index:" <<_pVidCtrl->getPosFrames();
 	_outPutDir = outPutDir;
 	_InputImg = Img.copy();
 	_selection = selection;
-	_segmentation_controls.push_back(new SegmentationControl(matFrame, 8));
-	_segmentation_controls.push_back(new SegmentationControl(matFrame, 12));
-	_segmentation_controls.push_back(new SegmentationControl(matFrame, 18));
-	_segmentation_controls.push_back(new SegmentationControl(matFrame, 24));
+  auto& sp_scales = _pCtrl->get_superpixel_scales();
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, sp_scales[0]));
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, sp_scales[1]));
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, sp_scales[2]));
+	_segmentation_controls.push_back(new SegmentationControl(matFrame, sp_scales[3]));
 	//_segmentation_control->doSlicSegmentation();
 	//std::thread t(&SegmentationControl::doSlicSegmentation, _segmentation_control);
 	//_segmentation_control->setSegmentationType(SegmentationControl::SLIC_);
@@ -152,17 +158,50 @@ void LabelingTaskControl::setupSegmentationSurface(int level)
 	level = qMin<int>(_segmentation_controls.size(), level);
 	if (!_segSurfaceSet)
 	{
-		vector<std::thread> vecThreads;
+		vector<QFuture<void>> vecThreads;
+    //QLabel* progress_widget = new QLabel();
+    //progress_widget->setWindowTitle("SLIC segmentation");
+    //progress_widget->setMinimumHeight(50);
+    //progress_widget->setFixedWidth(200);
+    QProgressBar* progress = new QProgressBar();
+    progress->setWindowTitle("Please wait for SLIC segmentation.");
+    progress->show();
+    progress->setMaximum(4);
+    progress->setMinimum(0);
+    progress->setValue(0);
+    progress->setMinimumWidth(500);
+    progress->setMinimumHeight(50);
+    progress->setAlignment(Qt::AlignCenter);
+    progress->setFormat(QString("Processing SLIC segmentation..."));
+
 		for (size_t i = 0; i < _segmentation_controls.size(); i++)
 		{
 			_segmentation_controls[i]->setSegmentationType(SegmentationControl::SLIC_);
-			std::thread t(&SegmentationControl::doSlicSegmentation, _segmentation_controls[i]);
+			QFuture<void> t = QtConcurrent::run(_segmentation_controls[i],&SegmentationControl::doSlicSegmentation);
 			vecThreads.push_back(std::move(t));
 		}
-		for (size_t i = 0; i < vecThreads.size(); i++)
-		{
-			vecThreads[i].join();
-		}
+    std::vector<int> isReady(4,0);
+    int readyNum = 0;
+    int newreadyNum = 0;
+    while (true)
+    {
+      bool allTrue = true;
+      for (int i = 0; i < 4; i++)
+      {
+        if (vecThreads[i].isFinished() == false) allTrue = false;
+        else isReady[i] = 1;
+      }
+      if (allTrue) break;
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      newreadyNum = std::accumulate(isReady.begin(),isReady.end(),0);
+      if (readyNum != newreadyNum) { readyNum = newreadyNum; progress->setValue(readyNum); }
+      QCoreApplication::processEvents();
+    }
+		
+    progress->setFormat(QString("Done!"));
+    progress->setValue(4);
+    progress->deleteLater();
+    
 		//t.join();
 		_curSegmentation_control = _segmentation_controls[level];
 		_segImg = createQImageByMat(_curSegmentation_control->getSlicSegResultRef(), true);//set segImg
@@ -366,7 +405,7 @@ bool LabelingTaskControl::saveBoundaryFile(Mat& Image,QString filePath)
     return false;
   }
   //cv::findContours()
- 
+  return true;
 }
 
 bool LabelingTaskControl::saveResult(QString filePath, bool saveOriginalImg)
@@ -443,13 +482,17 @@ QString LabelingTaskControl::getResultSavingPathName()
 {
 	qDebug() << "_frameIdx:" << _frameIdx;
   QString ext = QString::fromStdString(_pCtrl->get_imgExtension());
-	return QString(this->_outPutDir + QString("/%1.")+ext).arg(_frameIdx);
+  char buff[10];
+  sprintf(buff,"%06d", _frameIdx);
+	return QString(this->_outPutDir + QString("/%1.")+ext).arg(QString(buff));
 }
 
 QString LabelingTaskControl::getOriginalIMGSavingPathName()
 {
   QString ext = QString::fromStdString(_pCtrl->get_imgExtension());
-  return QString(this->_outPutDir + QString("/%1_ori." + ext)).arg(_frameIdx);
+  char buff[10];
+  sprintf(buff,"%06d", _frameIdx);
+  return QString(this->_outPutDir + QString("/%1_ori." + ext)).arg(QString(buff));
 }
 
 void LabelingTaskControl::openSaveDir()

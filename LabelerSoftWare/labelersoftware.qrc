@@ -1,4 +1,7 @@
 <RCC>
-    <qresource prefix="LabelerSoftWare">
+    <qresource prefix="/LabelerSoftWare"/>
+    <qresource prefix="/image"/>
+    <qresource prefix="/icon">
+        <file>icon/L.jpg</file>
     </qresource>
 </RCC>

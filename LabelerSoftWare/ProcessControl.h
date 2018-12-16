@@ -58,6 +58,7 @@ public:
     defGeter(_isLabeling, bool)
     defGeter(_skipFrameNum, int)
     defGeter(_autoLoadResult, bool)
+    defGeter(_superpixel_scales,SuperpixelScales)
 
     defSeter(_type, int)
     defSeter(_filePath, string)
@@ -70,6 +71,7 @@ public:
     defSeter(_isLabeling, bool)
     defSeter(_skipFrameNum, int)
     defSeter(_autoLoadResult, bool)
+    defSeter(_superpixel_scales,SuperpixelScales)
 
 private:
 	int _type;
@@ -84,5 +86,6 @@ private:
 	bool _isLabeling;
 	int _skipFrameNum;//used to store parameter from metaData(xml file)
 	bool _autoLoadResult;
+  vector<int> _superpixel_scales;
 };
 

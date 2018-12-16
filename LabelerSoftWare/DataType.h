@@ -8,6 +8,7 @@ using std::string;
 
 typedef tuple<string, int, int, int> Label;//LabelText,R,G,B
 typedef vector<Label> LabelList;
+typedef vector<int> SuperpixelScales;//SLIC superpixel scales
 
 struct MetaData
 {
@@ -18,4 +19,5 @@ public:
 	int skipFrameNum;
   string imgExtension;
   int extractBoundary;
+  SuperpixelScales superpixel_scales;
 };

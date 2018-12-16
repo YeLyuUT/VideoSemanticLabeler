@@ -75,6 +75,8 @@ private:
 	QCheckBox* wCheckBoxAutoLoadResult;
 	QPushButton* wButtonUseSPSegs;
 	QSpinBox* wSpinBoxSPSLevel;
+
+  QLabel* wCanvasSelectionTxt;
   QComboBox* wComboBoxCanvas;
 
   VideoThread* vthread;
