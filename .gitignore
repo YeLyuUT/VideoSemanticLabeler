@@ -3,8 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-#not ignored
-!/deploy/**
+
 
 # User-specific files
 *.suo
@@ -299,3 +298,6 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+#not ignored
+!/deploy/**

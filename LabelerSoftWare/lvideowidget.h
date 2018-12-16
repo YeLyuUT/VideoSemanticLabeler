@@ -132,6 +132,7 @@ public slots:
 	void updateProgressBar(double frameRatio);
 
   void changeVideoPos(double framePosRatio);
+
 };
 
 #endif // LVIDEOWIDGET_H

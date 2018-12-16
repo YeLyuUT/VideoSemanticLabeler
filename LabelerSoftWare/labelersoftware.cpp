@@ -17,7 +17,8 @@ LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QStr
 	: QMainWindow(parent)
 {
   this->setWindowIcon(QIcon(":/icon/icon/L.jpg"));
-	_lvw = NULL;
+
+  _lvw = NULL;
 	_type = processingType;
 	_filePath = inputFilePath;
 	_outputDir = outputDir;
@@ -28,7 +29,8 @@ LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QStr
 	ui.setupUi(this);
 	mlayout = new QVBoxLayout();
 	ui.centralWidget->setLayout(mlayout);
-
+  //About
+  connect(ui.actionAboutMe,SIGNAL(triggered()),this,SLOT(About()));
 	if (_type == 1)
 	{
 		createImageProcessWindow();
@@ -37,6 +39,8 @@ LabelerSoftWare::LabelerSoftWare(int processingType, QString inputFilePath, QStr
 	{
 		createVideoProcessWindow();
 	}
+  
+  this->show();
 }
 
 LabelerSoftWare::~LabelerSoftWare()
@@ -68,4 +72,12 @@ void LabelerSoftWare::createImageProcessWindow()
 LVideoWidget*& LabelerSoftWare::getVideoWidget()
 {
 	return _lvw;
+}
+
+
+
+void LabelerSoftWare::About()
+{
+  QMessageBox::about(this, tr("About Me"),
+            tr("Developer:<b>Ye Lyu</b>.<br> Webpage:<a href = https://yelyuut.github.io/ >Here</a>"));
 }

@@ -15,6 +15,7 @@
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
@@ -25,9 +26,11 @@ QT_BEGIN_NAMESPACE
 class Ui_LabelerSoftWareClass
 {
 public:
-    QMenuBar *menuBar;
-    QToolBar *mainToolBar;
+    QAction *actionAboutMe;
     QWidget *centralWidget;
+    QMenuBar *menuBar;
+    QMenu *menuAbout;
+    QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
     void setupUi(QMainWindow *LabelerSoftWareClass)
@@ -35,18 +38,27 @@ public:
         if (LabelerSoftWareClass->objectName().isEmpty())
             LabelerSoftWareClass->setObjectName(QStringLiteral("LabelerSoftWareClass"));
         LabelerSoftWareClass->resize(600, 400);
-        menuBar = new QMenuBar(LabelerSoftWareClass);
-        menuBar->setObjectName(QStringLiteral("menuBar"));
-        LabelerSoftWareClass->setMenuBar(menuBar);
-        mainToolBar = new QToolBar(LabelerSoftWareClass);
-        mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
-        LabelerSoftWareClass->addToolBar(mainToolBar);
+        actionAboutMe = new QAction(LabelerSoftWareClass);
+        actionAboutMe->setObjectName(QStringLiteral("actionAboutMe"));
         centralWidget = new QWidget(LabelerSoftWareClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         LabelerSoftWareClass->setCentralWidget(centralWidget);
+        menuBar = new QMenuBar(LabelerSoftWareClass);
+        menuBar->setObjectName(QStringLiteral("menuBar"));
+        menuBar->setGeometry(QRect(0, 0, 600, 26));
+        menuAbout = new QMenu(menuBar);
+        menuAbout->setObjectName(QStringLiteral("menuAbout"));
+        LabelerSoftWareClass->setMenuBar(menuBar);
+        mainToolBar = new QToolBar(LabelerSoftWareClass);
+        mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
+        mainToolBar->setEnabled(true);
+        LabelerSoftWareClass->addToolBar(Qt::TopToolBarArea, mainToolBar);
         statusBar = new QStatusBar(LabelerSoftWareClass);
         statusBar->setObjectName(QStringLiteral("statusBar"));
         LabelerSoftWareClass->setStatusBar(statusBar);
+
+        menuBar->addAction(menuAbout->menuAction());
+        menuAbout->addAction(actionAboutMe);
 
         retranslateUi(LabelerSoftWareClass);
 
@@ -56,6 +68,8 @@ public:
     void retranslateUi(QMainWindow *LabelerSoftWareClass)
     {
         LabelerSoftWareClass->setWindowTitle(QApplication::translate("LabelerSoftWareClass", "LabelerSoftWare", 0));
+        actionAboutMe->setText(QApplication::translate("LabelerSoftWareClass", "AboutMe", 0));
+        menuAbout->setTitle(QApplication::translate("LabelerSoftWareClass", "About", 0));
     } // retranslateUi
 
 };

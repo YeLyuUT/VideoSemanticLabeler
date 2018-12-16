@@ -22,6 +22,7 @@ public:
 private:
 	void createVideoProcessWindow();
 	void createImageProcessWindow();
+
 private:
 	Ui::LabelerSoftWareClass ui;
 private:
@@ -34,6 +35,9 @@ private:
 	LabelList _labelList;
 	LVideoWidget* _lvw;
 	QPoint _lastRectPos;
+
+private slots:
+void About();
 };
 
 #endif // LABELERSOFTWARE_H

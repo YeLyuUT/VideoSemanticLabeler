@@ -134,7 +134,7 @@ void ProcessControl::processVideo()
 {
 	qDebug() << "processVideo" << endl;
 	_w = new LabelerSoftWare(2, QString(_filePath.c_str()), QString(_outputDir.c_str()), _labelList,_imgExtension,_extractBoundary);
-	_w->getVideoWidget()->getInternalVideoControl()->setSavedSkipFrameNum(_skipFrameNum);
+  _w->getVideoWidget()->getInternalVideoControl()->setSavedSkipFrameNum(_skipFrameNum);
 	_w->getVideoWidget()->setSkipFrameNum(1);
 	QObject::connect(_w->getVideoWidget(), SIGNAL(edittingStarted(VideoControl*)), this, SLOT(hasNewLabelingProcess(VideoControl*)));
 	QObject::connect(_w->getVideoWidget(), SIGNAL(edittingStopped()), this, SLOT(closeLabelingProcess()));

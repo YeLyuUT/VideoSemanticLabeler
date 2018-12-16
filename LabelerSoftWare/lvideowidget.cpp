@@ -47,6 +47,7 @@ LVideoWidget::LVideoWidget(LabelList labelList, QWidget *parent) : QWidget(paren
     setupConnections();
     _skipFrameNum = 1;
     isEditting = false;
+    
     NormalWindow();
 }
 
@@ -60,6 +61,8 @@ LVideoWidget::~LVideoWidget()
 	if (vcontrol != nullptr) delete vcontrol;
     qDebug()<<"Video Widget Deleted."<<endl;
 }
+
+
 
 void LVideoWidget::ShrinkWindow()
 {
@@ -171,9 +174,13 @@ void LVideoWidget::constructInterface()
 	wSkipFrameNumEdit = new QLineEdit(this);
 	wSkipFrameNumEdit->setMaximumWidth(50);
 	wSkipFrameNumEdit->setText("1");
+  wSkipFrameNumEdit->hide();
+
 	hBoxLayout0->addWidget(wSkipFrameNumEdit);
 	wSkipFrameNumText = new QLabel(this);
 	wSkipFrameNumText->setText("<--SkipFrameNumber");
+  wSkipFrameNumText->hide();
+
 	hBoxLayout0->addWidget(wSkipFrameNumText);
 
 	wCurrentFrameNumEdit = new QLineEdit(this);
@@ -437,6 +444,8 @@ void LVideoWidget::edit()
     wCanvasSelectionTxt->show();
 		wSliderText->show();
 		wSliderTransparency->show();
+    wSkipFrameNumEdit->show();
+    wSkipFrameNumText->show();
 		wOpenSaveDir->show();
 		wEditButton->setText("Stop Labeling");
 		wStatus->setText(QString("Editting..."));
@@ -476,6 +485,8 @@ void LVideoWidget::edit()
     wCanvasSelectionTxt->hide();
 		wSliderText->hide();
 		wSliderTransparency->hide();
+    wSkipFrameNumEdit->hide();
+    wSkipFrameNumText->hide();
 		wOpenSaveDir->hide();
 		wEditButton->setText("Start Labeling");
 		wStatus->setText(QString("Stopped"));
