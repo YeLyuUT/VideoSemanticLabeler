@@ -22,5 +22,5 @@ You can specify your own class names and colors for your own purpose.
 ![](pics/labeling_eg.png)
 
 ## Contact
-Author: [Ye Lyu](https://yelyuut.github.io/)
-y.lyu@utwente.nl
+Author: [Ye Lyu](https://yelyuut.github.io/) 
+Email: y.lyu@utwente.nl
