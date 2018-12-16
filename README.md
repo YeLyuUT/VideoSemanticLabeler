@@ -24,7 +24,7 @@ Please cite 'UAVid' in your publication if it helps your research:
 		          George Vosselman and 
 		          Guisong Xia and 
 		          Alper Yilmaz and 
-	            Michael Ying Yang},
+              Michael Ying Yang},
 		Title  = {The UAVid Dataset for Video Semantic Segmentation},
 		Year   = {2018},
 		Eprint = {arXiv:1810.10438},
