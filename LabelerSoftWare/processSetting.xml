@@ -10,7 +10,6 @@
 	use double backward slash(\\) or single forward slash(/) to navigate folder.
 -->
 E:/UAVDataCapturing/German/Gronau/100MEDIA/1.MP4
-<!-- D:\\UAVDataCapturing\\China\\170706\\DJI_0003.MOV -->
 </InputFilePath>
 
 <OutputDir>
@@ -18,7 +17,6 @@ E:/UAVDataCapturing/German/Gronau/100MEDIA/1.MP4
 	Specify the output directory.
 	Make sure the directory exists.
 -->
-<!-- D:/UAVDataCapturing/German/Gronau/100MEDIA/1/OutPut -->
 E:/UAVDataCapturing/German/Gronau/100MEDIA/1/vid1
 </OutputDir>
 
@@ -47,7 +45,7 @@ png
 	Please replace space ' ' with underline '_' character in content of <Name>.
 -->
 	<class1>
-	<Name>Void</Name><R>0</R><G>0</G><B>0</B>
+	<Name>Clutter</Name><R>0</R><G>0</G><B>0</B>
 	</class1>
 	<class2>
 	<Name>Building</Name><R>128</R><G>0</G><B>0</B>
