@@ -21,10 +21,10 @@ Please cite 'UAVid' in your publication if it helps your research:
 
 	@misc{1810.10438,
 		Author = {Ye Lyu and 
-				  George Vosselman and 
-				  Guisong Xia and 
-				  Alper Yilmaz and 
-				  Michael Ying Yang},
+		          George Vosselman and 
+		          Guisong Xia and 
+		          Alper Yilmaz and 
+	            Michael Ying Yang},
 		Title  = {The UAVid Dataset for Video Semantic Segmentation},
 		Year   = {2018},
 		Eprint = {arXiv:1810.10438},
