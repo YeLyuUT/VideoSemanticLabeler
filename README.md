@@ -19,12 +19,16 @@ You can set your own label list in **processSetting.xml** file in the same way a
 ## Citation
 Please cite 'UAVid' in your publication if it helps your research:
 
-@misc{1810.10438,
-Author = {Ye Lyu and George Vosselman and Guisong Xia and Alper Yilmaz and Michael Ying Yang},
-Title = {The UAVid Dataset for Video Semantic Segmentation},
-Year = {2018},
-Eprint = {arXiv:1810.10438},
-}
+	@misc{1810.10438,
+		Author = {Ye Lyu and 
+				  George Vosselman and 
+				  Guisong Xia and 
+				  Alper Yilmaz and 
+				  Michael Ying Yang},
+		Title  = {The UAVid Dataset for Video Semantic Segmentation},
+		Year   = {2018},
+		Eprint = {arXiv:1810.10438},
+	}
 
 ## Enjoy your labeling!
 **UAVid dataset example**
