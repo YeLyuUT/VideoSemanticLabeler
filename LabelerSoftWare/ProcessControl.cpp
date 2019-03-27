@@ -44,20 +44,26 @@ void ProcessControl::process()
 {
 	if(!checkCreateOutputDir()) throw std::exception("Output Directory is not valid");
 	_type = checkForProcessType();
-	switch (_type)
-	{
-	case 0:
-		QMessageBox::critical(NULL, "Information", "Processing type cannot be defined.\n", QMessageBox::StandardButton::Ok);
-		break;
-	case 1:
-		processImages();
-		break;
-	case 2:
-		processVideo();
-		break;
-	default:
-		break;
-	};
+  try {
+    switch (_type)
+    {
+    case 0:
+      QMessageBox::critical(NULL, "Information", "Processing type cannot be defined.\n", QMessageBox::StandardButton::Ok);
+      break;
+    case 1:
+      processImages();
+      break;
+    case 2:
+      processVideo();
+      break;
+    default:
+      break;
+    };
+  }
+  catch (std::exception &e)
+  {
+    QMessageBox::critical(NULL, "Error", QString(e.what()), QMessageBox::StandardButton::Cancel);
+  }
 }
 
 int ProcessControl::checkForProcessType()
