@@ -20,15 +20,15 @@ You can set your own label list in **processSetting.xml** file in the same way a
 Please cite 'UAVid' in your publication if it helps your research:
 
 	@article{LYU2020108,
-	author = "Ye Lyu and George Vosselman and Gui-Song Xia and Alper Yilmaz and Michael Ying Yang",
-	title = "UAVid: A semantic segmentation dataset for UAV imagery",
-	journal = "ISPRS Journal of Photogrammetry and Remote Sensing",
-	volume = "165",
-	pages = "108 - 119",
-	year = "2020",
-	issn = "0924-2716",
-	doi = "https://doi.org/10.1016/j.isprsjprs.2020.05.009",
-	url = "http://www.sciencedirect.com/science/article/pii/S0924271620301295"
+		author = "Ye Lyu and George Vosselman and Gui-Song Xia and Alper Yilmaz and Michael Ying Yang",
+		title = "UAVid: A semantic segmentation dataset for UAV imagery",
+		journal = "ISPRS Journal of Photogrammetry and Remote Sensing",
+		volume = "165",
+		pages = "108 - 119",
+		year = "2020",
+		issn = "0924-2716",
+		doi = "https://doi.org/10.1016/j.isprsjprs.2020.05.009",
+		url = "http://www.sciencedirect.com/science/article/pii/S0924271620301295"
 	}
 	
 	@misc{1810.10438,
